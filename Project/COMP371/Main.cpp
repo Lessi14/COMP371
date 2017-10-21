@@ -23,10 +23,12 @@ glm::vec3 camera_position;
 glm::vec3 triangle_scale;
 glm::mat4 projection_matrix;
 
+const char* INVERTED_CUBE_NAME = "Objects/inverted_normal_cube.obj";
+
 // Constant vectors
 const glm::vec3 center(0.0f, 0.0f, 0.0f);
 const glm::vec3 up(0.0f, 1.0f, 0.0f);
-const glm::vec3 eye(0.0f, 0.0f, 3.0f);
+const glm::vec3 eye(0.0f, 0.0f, 50.0f);
 
 
 // Is called whenever a key is pressed/released via GLFW
@@ -156,7 +158,7 @@ int main()
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec3> normals;
 	std::vector<glm::vec2> UVs;
-	loadOBJ("cube.obj", vertices, normals, UVs); //read the vertices from the cube.obj file
+	loadOBJNoUV(INVERTED_CUBE_NAME, vertices, normals);
 
 	GLuint VAO, VBO,EBO;
 	glGenVertexArrays(1, &VAO);
