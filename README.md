@@ -1,7 +1,7 @@
 # COMP371
 Our comp 371 project yo.
 
-##Members:
+## Members:
 * Bruce Edouard Brazier - 27419562
 * Dias Marat - 27277911
 * Emili Vasseva - 27526741
