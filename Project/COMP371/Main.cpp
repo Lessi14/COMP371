@@ -13,6 +13,7 @@
 #include "gtc/matrix_transform.hpp"
 #include "gtc/type_ptr.hpp"
 #include "objloader.hpp"  //include the object loader
+#include <map>;
 
 using namespace std;
 
@@ -26,6 +27,10 @@ glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
+std::map<const char *, std::vector<glm::vec3>> objectVertices;
+std::map<const char *, std::vector<glm::vec3>> objectNormals;
+std::map<const char *, std::vector<glm::vec2>> objectUVs;
+
 //Which mode to render in between point, lines, and triangles
 int objRenderMode = GL_TRIANGLES;
 
@@ -36,20 +41,20 @@ double last_cursor_y;
 const char* INVERTED_CUBE_NAME = "Objects/inverted_normal_cube1.obj";
 const char* BED1_NAME = "Objects/bed1.obj";
 const char* CABINET3_NAME = "Objects/cabinet3.obj";
-const char* COFFE_TABLE1_NAME = "Objects/coffee_table1.obj";
+const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
 const char* TOILET_NAME = "Objects/toilet.obj";
 const char* TORCHERE1_NAME = "Objects/torchere1.obj";
 
 // Constant vectors
 const glm::vec3 center(0.0f, 0.0f, 0.0f);
 const glm::vec3 up(0.0f, 1.0f, 0.0f);
-const glm::vec3 eye(0.0f, 0.0f, 30.0f);
+const glm::vec3 eye(0.0f, 0.0f, 3.0f);
 
 //Is called whenever the mouse moves on the window
 //While certain mouse buttons are pressed, this method makes it so that the camera will move
 void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	/*if (last_cursor_x != NULL && last_cursor_y != NULL)
+	if (last_cursor_x != NULL && last_cursor_y != NULL)
 	{
 		int leftState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 		int rightState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
@@ -99,7 +104,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	}
 	//update last cursor position
 	last_cursor_x = xpos;
-	last_cursor_y = ypos;*/
+	last_cursor_y = ypos;
 }
 
 //This method will be called when the window is resized and will ensure the application displays properly
@@ -107,7 +112,7 @@ void window_resize_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 
-	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 100.0f, -0.01f);
+	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
 }
 
 // Is called whenever a key is pressed/released via GLFW
@@ -180,6 +185,26 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
+void loadObjNoUVsToMap(const char* objName)
+{
+	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec3> normals;
+	loadOBJNoUV(objName, vertices, normals);
+	objectVertices[objName] = vertices;
+	objectNormals[objName] = normals;
+}
+
+void loadObjToMap(const char* objName)
+{
+	std::vector<glm::vec3> vertices;
+	std::vector<glm::vec3> normals;
+	std::vector<glm::vec2> UVs;
+	loadOBJ(objName, vertices, normals, UVs);
+	objectVertices[objName] = vertices;
+	objectNormals[objName] = normals;
+	objectUVs[objName] = UVs;
+}
+
 // The MAIN function, from here we start the application and run the game loop
 int main()
 {
@@ -220,7 +245,7 @@ int main()
 
 	glViewport(0, 0, width, height);
 
-	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 100.0f, -0.01f);
+	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
 
 	// Set depth buffer
 	/*glEnable(GL_DEPTH_TEST);
@@ -305,11 +330,12 @@ int main()
 
 	glUseProgram(shaderProgram);
 
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec3> normals;
-	std::vector<glm::vec2> UVs;
-	loadOBJNoUV("Objects/pacman.obj", vertices, normals);
-	//loadOBJ(BED1_NAME, vertices, normals, UVs);
+	loadObjNoUVsToMap(INVERTED_CUBE_NAME);
+	loadObjToMap(BED1_NAME);
+	loadObjToMap(CABINET3_NAME);
+	loadObjToMap(COFFEE_TABLE1_NAME);
+	loadObjToMap(TOILET_NAME);
+	loadObjToMap(TORCHERE1_NAME);
 
 	GLuint VAO, VBO,EBO;
 	glGenVertexArrays(1, &VAO);
@@ -326,19 +352,19 @@ int main()
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
-	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objectVertices[BED1_NAME].size() * sizeof(glm::vec3), &objectVertices[BED1_NAME].front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, normals_VBO);
-	glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), &normals.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objectNormals[BED1_NAME].size() * sizeof(glm::vec3), &objectNormals[BED1_NAME].front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
 
-	/*glBindBuffer(GL_ARRAY_BUFFER, uvs_VBO);
-	glBufferData(GL_ARRAY_BUFFER, UVs.size() * sizeof(glm::vec3), &UVs.front(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, uvs_VBO);
+	glBufferData(GL_ARRAY_BUFFER, objectUVs[BED1_NAME].size() * sizeof(glm::vec3), &objectUVs[BED1_NAME].front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(2);*/
+	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
@@ -370,7 +396,7 @@ int main()
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 
 		glBindVertexArray(VAO);
-		glDrawArrays(objRenderMode, 0, vertices.size());
+		glDrawArrays(objRenderMode, 0, objectVertices[BED1_NAME].size());
 		glBindVertexArray(0);
 
 		// Swap the screen buffers
