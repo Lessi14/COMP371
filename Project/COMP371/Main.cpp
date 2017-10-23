@@ -14,6 +14,7 @@
 #include "gtc/type_ptr.hpp"
 #include "objloader.hpp"  //include the object loader
 #include <map>;
+#include "camera.h"
 
 using namespace std;
 
@@ -45,10 +46,18 @@ const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
 const char* TOILET_NAME = "Objects/toilet.obj";
 const char* TORCHERE1_NAME = "Objects/torchere1.obj";
 
-// Constant vectors
-const glm::vec3 center(0.0f, 0.0f, 0.0f);
-const glm::vec3 up(0.0f, 1.0f, 0.0f);
-const glm::vec3 eye(0.0f, 0.0f, 3.0f);
+
+// Camera from object class and attributes
+Camera camera(glm::vec3(2.1f, 1.4f, -2.5f));
+
+float lastX = WIDTH / 2.0f;
+float lastY = HEIGHT / 2.0f;
+bool firstMouse = true;
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
+
 
 //Is called whenever the mouse moves on the window
 //While certain mouse buttons are pressed, this method makes it so that the camera will move
@@ -56,51 +65,21 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (last_cursor_x != NULL && last_cursor_y != NULL)
 	{
-		int leftState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-		int rightState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
-		int middleState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE);
-		if (leftState == GLFW_PRESS)
+		if (firstMouse)
 		{
-			glm::mat4 trans;
-			if (xpos > last_cursor_x)
-			{
-				trans = glm::rotate(trans, glm::radians(2.0f), glm::vec3(1.0, 0.0, 0.0));
-				view_matrix = view_matrix * trans;
-			}
-			else if (xpos < last_cursor_x)
-			{
-				trans = glm::rotate(trans, glm::radians(2.0f), glm::vec3(-1.0, 0.0, 0.0));
-				view_matrix = view_matrix * trans;
-			}
+			lastX = xpos;
+			lastY = ypos;
+			firstMouse = false;
 		}
-		else if (rightState == GLFW_PRESS)
-		{
-			glm::mat4 trans;
-			if (ypos > last_cursor_y)
-			{
-				trans = glm::rotate(trans, glm::radians(2.0f), glm::vec3(0.0, 1.0, 0.0));
-				view_matrix = view_matrix * trans;
-			}
-			else if (ypos < last_cursor_y)
-			{
-				trans = glm::rotate(trans, glm::radians(2.0f), glm::vec3(0.0, -1.0, 0.0));
-				view_matrix = view_matrix * trans;
-			}
-		}
-		else if (middleState == GLFW_PRESS)
-		{
-			glm::mat4 trans;
-			if (ypos > last_cursor_y)
-			{
-				trans = glm::rotate(trans, glm::radians(2.0f), glm::vec3(0.0, 0.0, 1.0));
-				view_matrix = view_matrix * trans;
-			}
-			else if (ypos < last_cursor_y)
-			{
-				trans = glm::rotate(trans, glm::radians(2.0f), glm::vec3(0.0, 0.0, -1.0));
-				view_matrix = view_matrix * trans;
-			}
-		}
+
+		float xoffset = xpos - lastX;
+		float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+		lastX = xpos;
+		lastY = ypos;
+
+		camera.ProcessMouseMovement(xoffset, yoffset);
+
 	}
 	//update last cursor position
 	last_cursor_x = xpos;
@@ -115,74 +94,38 @@ void window_resize_callback(GLFWwindow* window, int width, int height)
 	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
 }
 
+void processInput(GLFWwindow *window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera.ProcessKeyboard(FORWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera.ProcessKeyboard(LEFT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		camera.ProcessKeyboard(UP, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		camera.ProcessKeyboard(DOWN, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS)
+		camera.Reset();
+}
+
+
+
 // Is called whenever a key is pressed/released via GLFW
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
-	glm::mat4 trans;
-	if (action == GLFW_PRESS || action == GLFW_REPEAT)
-	{
-		switch (key)
-		{
-		//WASD moves the camera left, right, up, and down
-		case GLFW_KEY_W:
-			trans = glm::translate(trans, glm::vec3(0.0, 0.0, 3.0));
-			view_matrix = view_matrix * trans;
-			break;
-		case GLFW_KEY_A:
-			trans = glm::translate(trans, glm::vec3(3.0, 0.0, 0.0));
-			view_matrix = view_matrix * trans;
-			break;
-		case GLFW_KEY_S:
-			trans = glm::translate(trans, glm::vec3(0.0, 0.0, -3.0));
-			view_matrix = view_matrix * trans;
-			break;
-		case GLFW_KEY_D:
-			trans = glm::translate(trans, glm::vec3(-3.0, 0.0, 0.0));
-			view_matrix = view_matrix * trans;
-			break;
-			//Q moves up
-		case GLFW_KEY_Q:
-			trans = glm::translate(trans, glm::vec3(0.0, -3.0, 0.0));
-			view_matrix = view_matrix * trans;
-			break;
-			//E moves down
-		case GLFW_KEY_E:
-			trans = glm::translate(trans, glm::vec3(0.0, 3.0, 0.0));
-			view_matrix = view_matrix * trans;
-			break;
-			//Arrow keys rotate the camera
-		case GLFW_KEY_LEFT:
-			trans = glm::rotate(trans, glm::radians(2.0f), glm::vec3(0.0, 1.0, 0.0));
-			view_matrix = view_matrix * trans;
-			break;
-		case GLFW_KEY_RIGHT:
-			trans = glm::rotate(trans, glm::radians(2.0f), glm::vec3(0.0, -1.0, 0.0));
-			view_matrix = view_matrix * trans;
-			break;
-		case GLFW_KEY_UP:
-			trans = glm::rotate(trans, glm::radians(2.0f), glm::vec3(1.0, 0.0, 0.0));
-			view_matrix = view_matrix * trans;
-			break;
-		case GLFW_KEY_DOWN:
-			trans = glm::rotate(trans, glm::radians(2.0f), glm::vec3(-1.0, 0.0, 0.0));
-			view_matrix = view_matrix * trans;
-			break;
-			//Home key resets the view
-		case GLFW_KEY_HOME:
-			view_matrix = glm::lookAt(eye, center, up);
-			break;
-			//P, L, and T set the render mode to points, lines, and triagles
-		case GLFW_KEY_P:
-			objRenderMode = GL_POINTS;
-			break;
-		case GLFW_KEY_L:
-			objRenderMode = GL_LINES;
-			break;
-		case GLFW_KEY_T:
-			objRenderMode = GL_TRIANGLES;
-			break;
-		}
-	}
+	std::cout << key << std::endl;
 }
 
 void loadObjNoUVsToMap(const char* objName)
@@ -229,6 +172,10 @@ int main()
 	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_motion_callback);
 	glfwSetFramebufferSizeCallback(window, window_resize_callback);
+
+	// tell GLFW to capture our mouse
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 
 	// Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
 	glewExperimental = GL_TRUE;
@@ -376,19 +323,22 @@ int main()
 	GLuint viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
 	GLuint transformLoc = glGetUniformLocation(shaderProgram, "model_matrix");
 
-	view_matrix = glm::lookAt(eye, center, up);
-
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
+		processInput(window);
 		glfwPollEvents();
 
 		// Render
 		// Clear the colorbuffer
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
+		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model_matrix));
