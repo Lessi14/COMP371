@@ -39,6 +39,12 @@ int objRenderMode = GL_TRIANGLES;
 double last_cursor_x;
 double last_cursor_y;
 
+GLuint vertexShader;
+GLuint fragmentShader;
+GLuint shaderProgram;
+
+GLFWwindow* window;
+
 const char* INVERTED_CUBE_NAME = "Objects/inverted_normal_cube1.obj";
 const char* BED1_NAME = "Objects/bed1.obj";
 const char* CABINET3_NAME = "Objects/cabinet3.obj";
@@ -46,6 +52,8 @@ const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
 const char* TOILET_NAME = "Objects/toilet.obj";
 const char* TORCHERE1_NAME = "Objects/torchere1.obj";
 
+GLuint VAO, VBO, EBO;
+GLuint vertices_VBO, normals_VBO, uvs_VBO;
 
 // Camera from object class and attributes
 Camera camera(glm::vec3(2.1f, 1.4f, -2.5f));
@@ -148,60 +156,12 @@ void loadObjToMap(const char* objName)
 	objectUVs[objName] = UVs;
 }
 
-// The MAIN function, from here we start the application and run the game loop
-int main()
+///Read teh files and create the shaders. Create main  shader program.
+void setShaders()
 {
-	std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
-	// Init GLFW
-	glfwInit();
-	// Set all the required options for GLFW
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	// Create a GLFWwindow object that we can use for GLFW's functions
-	GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Load one cube", nullptr, nullptr);
-	if (window == nullptr)
-	{
-		std::cout << "Failed to create GLFW window" << std::endl;
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(window);
-	// Set the required callback functions
-	glfwSetKeyCallback(window, key_callback);
-	glfwSetCursorPosCallback(window, mouse_motion_callback);
-	glfwSetFramebufferSizeCallback(window, window_resize_callback);
-
-	// tell GLFW to capture our mouse
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-
-	// Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
-	glewExperimental = GL_TRUE;
-	// Initialize GLEW to setup the OpenGL Function pointers
-	if (glewInit() != GLEW_OK)
-	{
-		std::cout << "Failed to initialize GLEW" << std::endl;
-		return -1;
-	}
-
-	// Define the viewport dimensions
-	int width, height;
-	glfwGetFramebufferSize(window, &width, &height);
-
-	glViewport(0, 0, width, height);
-
-	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
-
-	// Set depth buffer
-	/*glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LESS);*/
 
 	// Build and compile our shader program
 	// Vertex shader
-
 	// Read the Vertex Shader code from the file
 	string vertex_shader_path = "vertex.shader";
 	string VertexShaderCode;
@@ -236,7 +196,7 @@ int main()
 		exit(-1);
 	}
 
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	char const * VertexSourcePointer = VertexShaderCode.c_str();
 	glShaderSource(vertexShader, 1, &VertexSourcePointer, NULL);
 	glCompileShader(vertexShader);
@@ -250,7 +210,7 @@ int main()
 		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 	// Fragment shader
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
 	glShaderSource(fragmentShader, 1, &FragmentSourcePointer, NULL);
 	glCompileShader(fragmentShader);
@@ -262,7 +222,7 @@ int main()
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 	// Link shaders
-	GLuint shaderProgram = glCreateProgram();
+	shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexShader);
 	glAttachShader(shaderProgram, fragmentShader);
 	glLinkProgram(shaderProgram);
@@ -274,22 +234,55 @@ int main()
 	}
 	glDeleteShader(vertexShader); //free up memory
 	glDeleteShader(fragmentShader);
+}
 
-	glUseProgram(shaderProgram);
+///Set teh window component. Including height and width.
+void windowSetup()
+{
+	std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
+	// Init GLFW
+	glfwInit();
+	// Set all the required options for GLFW
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	loadObjNoUVsToMap(INVERTED_CUBE_NAME);
-	loadObjToMap(BED1_NAME);
-	loadObjToMap(CABINET3_NAME);
-	loadObjToMap(COFFEE_TABLE1_NAME);
-	loadObjToMap(TOILET_NAME);
-	loadObjToMap(TORCHERE1_NAME);
+	// Create a GLFWwindow object that we can use for GLFW's functions
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Load one cube", nullptr, nullptr);
+	if (window == nullptr)
+	{
+		std::cout << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		//return -1;
+	}
+	glfwMakeContextCurrent(window);
+	// Set the required callback functions
+	glfwSetKeyCallback(window, key_callback);
+	glfwSetCursorPosCallback(window, mouse_motion_callback);
+	glfwSetFramebufferSizeCallback(window, window_resize_callback);
 
-	GLuint VAO, VBO,EBO;
+	// tell GLFW to capture our mouse
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+
+	// Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
+	glewExperimental = GL_TRUE;
+	// Initialize GLEW to setup the OpenGL Function pointers
+	if (glewInit() != GLEW_OK)
+	{
+		std::cout << "Failed to initialize GLEW" << std::endl;
+		//return -1;
+	}
+}
+
+
+///Set the VAO, VBOS for the vertices, UVs and the normals.
+void setVBOs()
+{
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
-	// Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
-	GLuint vertices_VBO, normals_VBO, uvs_VBO;
+
 
 	glGenBuffers(1, &vertices_VBO);
 	glGenBuffers(1, &normals_VBO);
@@ -316,6 +309,37 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
+}
+
+/// The MAIN function, from here we start the application and run the game loop
+int main()
+{
+	windowSetup();
+
+	// Define the viewport dimensions
+	int width, height;
+	glfwGetFramebufferSize(window, &width, &height);
+
+	glViewport(0, 0, width, height);
+
+	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
+
+	// Set depth buffer
+	/*glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LESS);*/
+	
+	setShaders();
+	glUseProgram(shaderProgram);
+
+	loadObjNoUVsToMap(INVERTED_CUBE_NAME);
+	loadObjToMap(BED1_NAME);
+	loadObjToMap(CABINET3_NAME);
+	loadObjToMap(COFFEE_TABLE1_NAME);
+	loadObjToMap(TOILET_NAME);
+	loadObjToMap(TORCHERE1_NAME);
+
+	setVBOs();
 
 	triangle_scale = glm::vec3(1.0f);
 
@@ -337,7 +361,7 @@ int main()
 		// Render
 		// Clear the colorbuffer
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
