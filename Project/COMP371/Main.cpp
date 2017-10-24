@@ -35,14 +35,22 @@ std::map<const char *, std::vector<glm::vec2>> objectUVs;
 //Which mode to render in between point, lines, and triangles
 int objRenderMode = GL_TRIANGLES;
 
-//Last location of the cursor
-double last_cursor_x;
-double last_cursor_y;
+//Mouse
+double lastClickX = 0;
+double lastClickY = 0;
+double last_cursor_x = 0;
+double last_cursor_y = 0;
+GLuint currentButton = -1;
 
+
+
+//Global variable for the shaders
 GLuint vertexShader;
 GLuint fragmentShader;
 GLuint shaderProgram;
 
+
+//Global variable for the window
 GLFWwindow* window;
 
 const char* INVERTED_CUBE_NAME = "Objects/inverted_normal_cube1.obj";
@@ -56,7 +64,8 @@ GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
 
 // Camera from object class and attributes
-Camera camera(glm::vec3(2.1f, 1.4f, -2.5f));
+//Camera camera(glm::vec3(2.1f, 1.4f, -2.5f));
+Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
 
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
@@ -66,32 +75,59 @@ bool firstMouse = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
-
 //Is called whenever the mouse moves on the window
-//While certain mouse buttons are pressed, this method makes it so that the camera will move
+///While certain mouse buttons are pressed, this method makes it so that the camera will move
 void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	if (last_cursor_x != NULL && last_cursor_y != NULL)
-	{
-		if (firstMouse)
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+		if (last_cursor_x != NULL && last_cursor_y != NULL)
 		{
+			if (firstMouse)
+			{
+				lastX = xpos;
+				lastY = ypos;
+				firstMouse = false;
+			}
+
+			float xoffset = xpos - lastX;
+			float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
 			lastX = xpos;
 			lastY = ypos;
-			firstMouse = false;
+
+			camera.ProcessMouseMovement(xoffset, yoffset);
+
 		}
-
-		float xoffset = xpos - lastX;
-		float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
-
-		lastX = xpos;
-		lastY = ypos;
-
-		camera.ProcessMouseMovement(xoffset, yoffset);
-
 	}
 	//update last cursor position
 	last_cursor_x = xpos;
 	last_cursor_y = ypos;
+}
+
+///Determines the position of the mouse.
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	//last click for x and y
+	lastClickX = xpos;
+	lastClickY = ypos;
+	double diffY = lastClickX - ypos;
+	double diffX = lastClickY - xpos;
+
+	switch (currentButton)
+	{
+	case GLFW_MOUSE_BUTTON_LEFT:
+		currentButton = GLFW_MOUSE_BUTTON_LEFT;
+		break;
+	case GLFW_MOUSE_BUTTON_RIGHT:
+		currentButton = GLFW_MOUSE_BUTTON_RIGHT;
+		break;
+	case GLFW_MOUSE_BUTTON_MIDDLE:
+		currentButton = GLFW_MOUSE_BUTTON_MIDDLE;
+		break;
+	default:
+		break;
+	}
+
 }
 
 //This method will be called when the window is resized and will ensure the application displays properly
@@ -99,7 +135,7 @@ void window_resize_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 
-	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
+	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
 }
 
 void processInput(GLFWwindow *window)
@@ -129,11 +165,27 @@ void processInput(GLFWwindow *window)
 }
 
 
-
-// Is called whenever a key is pressed/released via GLFW
+///Key callabck
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
 	std::cout << key << std::endl;
+	//Pressed
+	if (1 == action) {
+		switch (key)
+		{	
+		case GLFW_KEY_C:
+			//Change the camera			
+			break;
+		case GLFW_KEY_S:
+			//Editing camera
+			break;
+		case GLFW_KEY_F:
+			//Flying  or viewing camera
+			break;		
+		default:
+			break;
+		}
+	}
 }
 
 void loadObjNoUVsToMap(const char* objName)
@@ -237,7 +289,7 @@ void setShaders()
 }
 
 ///Set teh window component. Including height and width.
-void windowSetup()
+int windowSetup()
 {
 	std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
 	// Init GLFW
@@ -253,7 +305,7 @@ void windowSetup()
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
-		//return -1;
+		return -1;
 	}
 	glfwMakeContextCurrent(window);
 	// Set the required callback functions
@@ -262,7 +314,8 @@ void windowSetup()
 	glfwSetFramebufferSizeCallback(window, window_resize_callback);
 
 	// tell GLFW to capture our mouse
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); ----------------------------------------------------------------
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 
 	// Set this to true so GLEW knows to use a modern approach to retrieving function pointers and extensions
@@ -271,7 +324,7 @@ void windowSetup()
 	if (glewInit() != GLEW_OK)
 	{
 		std::cout << "Failed to initialize GLEW" << std::endl;
-		//return -1;
+		return -1;
 	}
 }
 
@@ -303,7 +356,7 @@ void setVBOs()
 
 	glBindBuffer(GL_ARRAY_BUFFER, uvs_VBO);
 	glBufferData(GL_ARRAY_BUFFER, objectUVs[BED1_NAME].size() * sizeof(glm::vec3), &objectUVs[BED1_NAME].front(), GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -311,10 +364,50 @@ void setVBOs()
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 }
 
+glm::vec3 getCameraRay()
+{	
+	//Get the position of the Mouses
+	double mouseX = last_cursor_x;
+	double mouseY = last_cursor_y;
+
+	//Step 1 Get the normalizedCoordinates
+	float xNorm = (2.0f*mouseX) / WIDTH - 1.0f;
+	float yNorm = ((2.0f*mouseY) / HEIGHT - 1.0f)*-1.0f; //--------------------------------
+
+	//Step 2 Get clipCoords
+	glm::vec4 clipCoord(xNorm,yNorm,-1.0f,1.0f);
+
+	//Step 3 Get Eye coordinates //get an inverse projection matrix
+	//Get the projection matrix
+	glm::mat4 local_projection_matrix = projection_matrix;
+	//Get the inverted matrix
+	glm::mat4 invertedMatrix = glm::inverse(local_projection_matrix);
+	//get the eye coordinates 4d ?
+	glm::vec4 temp = invertedMatrix * clipCoord;
+	glm::vec4 eyeCoord(temp.x,temp.y,-1.0f,0.0f);
+
+	//Step 4 get world way
+	//get local view matrix
+	glm::mat4 local_view_matrix = view_matrix;
+	//get the inverse
+	glm::mat4 inverted_view_matrix = glm::inverse(local_view_matrix);
+	// get the ray
+	glm::vec4 temp2 = inverted_view_matrix * eyeCoord;
+	glm::vec3 worldRay(temp2.x, temp2.y, temp2.z);
+	//glm::vec3 worldRayNorm = glm::normalize(worldRay);
+	glm::vec3 worldRayNorm = (worldRay);
+
+	cout << "x: "  << worldRayNorm.x << "y: " << worldRayNorm.y <<  "z: " << worldRayNorm.z << endl;
+	return { 0.0f, 0.0f, 0.0f };
+}
+
 /// The MAIN function, from here we start the application and run the game loop
 int main()
 {
-	windowSetup();
+	
+	if (-1 ==  windowSetup()) {
+		return -1;
+	}
 
 	// Define the viewport dimensions
 	int width, height;
@@ -322,17 +415,17 @@ int main()
 
 	glViewport(0, 0, width, height);
 
-	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 0.0f, 100.0f);
+	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.00f, 100.0f);
 
 	// Set depth buffer
-	/*glEnable(GL_DEPTH_TEST);
-	glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LESS);*/
+	glEnable(GL_DEPTH_TEST);
+	//glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LESS);
 	
 	setShaders();
 	glUseProgram(shaderProgram);
 
-	loadObjNoUVsToMap(INVERTED_CUBE_NAME);
+	//loadObjNoUVsToMap(INVERTED_CUBE_NAME); //Crashed due to an error with the uvs.
 	loadObjToMap(BED1_NAME);
 	loadObjToMap(CABINET3_NAME);
 	loadObjToMap(COFFEE_TABLE1_NAME);
@@ -352,11 +445,15 @@ int main()
 	{
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		lastFrame = currentFrame;		
+
+		
 
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		processInput(window);
 		glfwPollEvents();
+
+		getCameraRay();
 
 		// Render
 		// Clear the colorbuffer
