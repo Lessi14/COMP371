@@ -364,7 +364,7 @@ void setVBOs()
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 }
 
-glm::vec3 get3dPosition()
+glm::vec3 getCameraRay()
 {	
 	//Get the position of the Mouses
 	double mouseX = last_cursor_x;
@@ -455,7 +455,7 @@ int main()
 		processInput(window);
 		glfwPollEvents();
 
-		get3dPosition();
+		getCameraRay();
 
 		// Render
 		// Clear the colorbuffer
