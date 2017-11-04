@@ -31,6 +31,7 @@ glm::mat4 model_matrix;
 std::map<const char *, std::vector<glm::vec3>> objectVertices;
 std::map<const char *, std::vector<glm::vec3>> objectNormals;
 std::map<const char *, std::vector<glm::vec2>> objectUVs;
+std::map<const char *, glm::mat4> objectModels;
 
 
 //Which mode to render in between point, lines, and triangles
@@ -166,7 +167,6 @@ void processInput(GLFWwindow *window)
 		camera.Reset();
 }
 
-
 ///Key callabck
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
@@ -197,6 +197,7 @@ void loadObjNoUVsToMap(const char* objName)
 	loadOBJNoUV(objName, vertices, normals);
 	objectVertices[objName] = vertices;
 	objectNormals[objName] = normals;
+	objectModels[objName] = glm::mat4(1.0f);
 }
 
 void loadObjToMap(const char* objName)
@@ -208,6 +209,7 @@ void loadObjToMap(const char* objName)
 	objectVertices[objName] = vertices;
 	objectNormals[objName] = normals;
 	objectUVs[objName] = UVs;
+	objectModels[objName] = glm::mat4(1.0f);
 }
 
 ///Read teh files and create the shaders. Create main  shader program.
@@ -459,9 +461,15 @@ int main()
 
 	triangle_scale = glm::vec3(1.0f);
 
+	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
+	
+	objectModels[FLOOR] *= glm::translate(objectModels[FLOOR], glm::vec3(0, 0, 0));	
+	objectModels[BED1_NAME] *= glm::translate(objectModels[BED1_NAME], glm::vec3(0, 0.5f, 0));
+
 	GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	GLuint viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
 	GLuint transformLoc = glGetUniformLocation(shaderProgram, "model_matrix");
+	GLuint camera_pos_addr = glGetUniformLocation(shaderProgram, "view_pos");
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -483,13 +491,20 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model_matrix));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[BED1_NAME]));
 		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 
 		glBindVertexArray(VAO);
 		glDrawArrays(objRenderMode, 0, objectVertices[BED1_NAME].size());
 		glBindVertexArray(0);
+
+
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[FLOOR]));
+		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 
 		glBindVertexArray(VAOFloor);
 		glDrawArrays(objRenderMode, 0, objectVertices[FLOOR].size());
