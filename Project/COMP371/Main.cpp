@@ -32,6 +32,7 @@ std::map<const char *, std::vector<glm::vec3>> objectVertices;
 std::map<const char *, std::vector<glm::vec3>> objectNormals;
 std::map<const char *, std::vector<glm::vec2>> objectUVs;
 
+
 //Which mode to render in between point, lines, and triangles
 int objRenderMode = GL_TRIANGLES;
 
@@ -41,9 +42,6 @@ double lastClickY = 0;
 double last_cursor_x = 0;
 double last_cursor_y = 0;
 GLuint currentButton = -1;
-
-
-
 //Global variable for the shaders
 GLuint vertexShader;
 GLuint fragmentShader;
@@ -59,9 +57,12 @@ const char* CABINET3_NAME = "Objects/cabinet3.obj";
 const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
 const char* TOILET_NAME = "Objects/toilet.obj";
 const char* TORCHERE1_NAME = "Objects/torchere1.obj";
+const char* FLOOR = "Objects/floorTemp.obj";
 
 GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
+GLuint VAOFloor;
+GLuint verticesFloor, normals_Floor, uvsFloor;
 
 // Camera from object class and attributes
 //Camera camera(glm::vec3(2.1f, 1.4f, -2.5f));
@@ -138,6 +139,7 @@ void window_resize_callback(GLFWwindow* window, int width, int height)
 	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
 }
 
+///Process input from the keyboard.
 void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -329,6 +331,35 @@ int windowSetup()
 }
 
 
+///Extractedd the method which creates the vbos.
+void setIndividualBuffers(GLuint localVAO,GLuint verticesVBO , GLuint normalsVBO , GLuint uvsVBO, const char* path)
+{
+	glGenBuffers(1, &verticesVBO);
+	glGenBuffers(1, &normalsVBO);
+	glGenBuffers(1, &uvsVBO);
+
+	glBindVertexArray(localVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
+	glBufferData(GL_ARRAY_BUFFER, objectVertices[path].size() * sizeof(glm::vec3), &objectVertices[path].front(),
+	             GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
+	glBufferData(GL_ARRAY_BUFFER, objectNormals[path].size() * sizeof(glm::vec3), &objectNormals[path].front(),
+	             GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
+	glBufferData(GL_ARRAY_BUFFER, objectUVs[path].size() * sizeof(glm::vec3), &objectUVs[path].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
 ///Set the VAO, VBOS for the vertices, UVs and the normals.
 void setVBOs()
 {
@@ -336,30 +367,21 @@ void setVBOs()
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 
-
 	glGenBuffers(1, &vertices_VBO);
 	glGenBuffers(1, &normals_VBO);
 	glGenBuffers(1, &uvs_VBO);
+	
+	//Bed
+	setIndividualBuffers(VAO, vertices_VBO, normals_VBO, uvs_VBO, BED1_NAME);
 
-	// Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
-	glBindVertexArray(VAO);
+	//Tentative for floor
+	glGenVertexArrays(1, &VAOFloor);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vertices_VBO);
-	glBufferData(GL_ARRAY_BUFFER, objectVertices[BED1_NAME].size() * sizeof(glm::vec3), &objectVertices[BED1_NAME].front(), GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
+	glGenBuffers(1, &verticesFloor);
+	glGenBuffers(1, &normals_Floor);
+	glGenBuffers(1, &uvsFloor);
 
-	glBindBuffer(GL_ARRAY_BUFFER, normals_VBO);
-	glBufferData(GL_ARRAY_BUFFER, objectNormals[BED1_NAME].size() * sizeof(glm::vec3), &objectNormals[BED1_NAME].front(), GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, uvs_VBO);
-	glBufferData(GL_ARRAY_BUFFER, objectUVs[BED1_NAME].size() * sizeof(glm::vec3), &objectUVs[BED1_NAME].front(), GL_STATIC_DRAW);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	setIndividualBuffers(VAOFloor, verticesFloor, normals_Floor, uvsFloor, FLOOR);
 
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 }
@@ -431,6 +453,7 @@ int main()
 	loadObjToMap(COFFEE_TABLE1_NAME);
 	loadObjToMap(TOILET_NAME);
 	loadObjToMap(TORCHERE1_NAME);
+	loadObjToMap(FLOOR);
 
 	setVBOs();
 
@@ -445,9 +468,7 @@ int main()
 	{
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;		
-
-		
+		lastFrame = currentFrame;			
 
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		processInput(window);
@@ -468,6 +489,10 @@ int main()
 
 		glBindVertexArray(VAO);
 		glDrawArrays(objRenderMode, 0, objectVertices[BED1_NAME].size());
+		glBindVertexArray(0);
+
+		glBindVertexArray(VAOFloor);
+		glDrawArrays(objRenderMode, 0, objectVertices[FLOOR].size());
 		glBindVertexArray(0);
 
 		// Swap the screen buffers
