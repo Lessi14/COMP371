@@ -10,6 +10,7 @@ void main()
 {
 	vec3 lightColour = vec3(1.0f, 1.0f, 1.0f);
 	vec3 cubeColour = col;
+	//vec3 cubeColour = vec3(1.0f, 0.0f, 0.0f);
 	float specularStrength = 0.5;
 
 	//light position

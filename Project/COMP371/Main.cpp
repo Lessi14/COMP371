@@ -59,11 +59,12 @@ const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
 const char* TOILET_NAME = "Objects/toilet.obj";
 const char* TORCHERE1_NAME = "Objects/torchere1.obj";
 const char* FLOOR = "Objects/floorTemp.obj";
+const char* WALL = "Objects/wall.obj";
 
 GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
-GLuint VAOFloor;
-GLuint verticesFloor, normals_Floor, uvsFloor;
+GLuint VAOFloor, verticesFloor, normals_Floor, uvsFloor;
+GLuint VAOWall, verticesWall, normalsWall, uvsWall;
 
 // Camera from object class and attributes
 //Camera camera(glm::vec3(2.1f, 1.4f, -2.5f));
@@ -385,6 +386,14 @@ void setVBOs()
 
 	setIndividualBuffers(VAOFloor, verticesFloor, normals_Floor, uvsFloor, FLOOR);
 
+	glGenVertexArrays(1, &VAOWall);
+
+	glGenBuffers(1, &verticesWall);
+	glGenBuffers(1, &normalsWall);
+	glGenBuffers(1, &uvsWall);
+
+	setIndividualBuffers(VAOWall, verticesWall, normalsWall, uvsWall, WALL);
+
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 }
 
@@ -456,6 +465,7 @@ int main()
 	loadObjToMap(TOILET_NAME);
 	loadObjToMap(TORCHERE1_NAME);
 	loadObjToMap(FLOOR);
+	loadObjToMap(WALL);
 
 	setVBOs();
 
@@ -463,6 +473,8 @@ int main()
 
 	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
 	
+	objectModels[WALL] *= glm::scale(objectModels[WALL], glm::vec3(1, 0.5, 1));
+	objectModels[WALL] *= glm::translate(objectModels[WALL], glm::vec3(0.5, 1, 5));
 	objectModels[FLOOR] *= glm::translate(objectModels[FLOOR], glm::vec3(0, 0, 0));	
 	objectModels[BED1_NAME] *= glm::translate(objectModels[BED1_NAME], glm::vec3(0, 0.5f, 0));
 
@@ -500,7 +512,7 @@ int main()
 		glDrawArrays(objRenderMode, 0, objectVertices[BED1_NAME].size());
 		glBindVertexArray(0);
 
-
+		//Floor
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[FLOOR]));
 		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
@@ -508,6 +520,16 @@ int main()
 
 		glBindVertexArray(VAOFloor);
 		glDrawArrays(objRenderMode, 0, objectVertices[FLOOR].size());
+		glBindVertexArray(0);
+
+		//Wall
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[WALL]));
+		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
+
+		glBindVertexArray(VAOWall);
+		glDrawArrays(objRenderMode, 0, objectVertices[WALL].size());
 		glBindVertexArray(0);
 
 		// Swap the screen buffers
