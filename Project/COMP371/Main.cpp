@@ -71,6 +71,7 @@ GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
 GLuint VAOFloor, verticesFloor, normals_Floor, uvsFloor;
 GLuint VAOWall, verticesWall, normalsWall, uvsWall;
+
 GLuint VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO;
 
 // Camera from object class and attributes
@@ -145,7 +146,7 @@ void window_resize_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
 
-	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
+	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 25.0f);
 }
 
 ///Process input from the keyboard.
@@ -351,6 +352,8 @@ void setIndividualBuffers(GLuint localVAO,GLuint verticesVBO , GLuint normalsVBO
 void setVBOs()
 {
 	glGenVertexArrays(1, &VAO);
+	//glGenBuffers(1, &VBO);
+	//glGenBuffers(1, &EBO);
 
 	glGenBuffers(1, &vertices_VBO);
 	glGenBuffers(1, &normals_VBO);
@@ -493,7 +496,7 @@ int main()
 
 	bedBox->calculateBounderyBox();
 	objectVertices[bedBox->name] = bedBox->lowPolyVertices;
-	
+	//objectNormals[bed->name] = bed->lowPolyVerticesNormals; //not sure	
 	setVBOs();
 
 	triangle_scale = glm::vec3(1.0f);
@@ -531,8 +534,6 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
-
-		//kept this for reference
 		/*glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[BED1_NAME]));
 		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
@@ -557,14 +558,12 @@ int main()
 	}
 
 	bed = nullptr;
-	bedBox = nullptr;
 	cabinet = nullptr;
 	coffee = nullptr;
 	toilet = nullptr;
 	torchere = nullptr;
 	floor = nullptr;
 	wall = nullptr;
-	delete bedBox;
 	delete bed;
 	delete cabinet;
 	delete coffee;

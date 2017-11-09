@@ -86,7 +86,10 @@ public:
 	
 	///Calculate the square around the object
 	void calculateBounderyBox();
-	
+
+	///Calculate the center of the object using the boundary box.
+	void calculateCenter();
+
 	//Basic Architecture
 	vector<vec3> vertices, normals;
 	vector<vec2> uvs;
@@ -104,6 +107,10 @@ public:
 	vector<vec3> boundingbox, lowPolyVertices, lowPolyVerticesNormals;
 	
 	//Models for the transformations
-	glm::mat4 defaultObjectModel, objectModel;	
+	glm::mat4 defaultObjectModel, objectModel;
+
+
+
+	
 };
 

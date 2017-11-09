@@ -142,10 +142,11 @@ void Object::calculateLowPoly(int verticeSkip)
 {
 	for (auto incr = 0; incr < vertices.size() - 3; incr += 3)
 	{
-		if (incr%verticeSkip == 0)
-		{
-			lowPolyVertices.push_back(vertices.at(incr));
-		}
+		//if (incr%verticeSkip != 0)
+		//{
+		lowPolyVertices.push_back(vertices.at(incr));
+		//lowPolyVerticesNormals.push_back(normals.at(incr)) //deos that make sense ?
+	//}
 	}
 }
 
@@ -167,7 +168,7 @@ void Object::calculateBounderyBox()
 		if (vertex.y < minVertex.y)	minVertex.y = vertex.y;
 		if (vertex.z < minVertex.z)	minVertex.z = vertex.z;
 	}	
-	//Forgive the hardcode, too tired to figure out a better way.
+
 	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
 	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
 	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
@@ -177,32 +178,32 @@ void Object::calculateBounderyBox()
 	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
 	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
 	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
+	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z)); //16 2 4 
+	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z)); //6 9 21
+	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z)); //1 22 7
+	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z)); //12 20 8 ----
+	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z)); //6 9 21
+	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z)); //19 10 5
+	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z)); //12 20 8 ----
+	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z)); //19 10 5
+	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));	//15 11 18 
+	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z)); //12 20 8 ----
+	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z)); //0 13 23 
+	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z)); //3 14 17 
+	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z)); //12 20 8 ----
+	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z)); //3 14 17 
+	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));	//15 11 18 
+	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z)); //16 2 4 
+	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z)); //3 14 17
+	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));	//15 11 18 
+	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z)); //16 2 4 
+	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));	//15 11 18 
+	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z)); //19 10 5
+	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z)); //12 20 8 ----
+	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z)); //6 9 21
+	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z)); //1 22 7
+	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z)); //12 20 8 ----
+	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z)); //1 22 7
+	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z)); //0 13 23	
 }
 
