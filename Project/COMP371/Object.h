@@ -24,6 +24,10 @@ public:
 		vector<vec3> vertices,
 		vector<vec3> normals,
 		vector<vec2> uvs,
+		map<const char*, vector<vec3>> &objectVertices,
+		map<const char*, vector<vec3>> &objectNormals,
+		map<const char*, vector<vec2>> &objectUVs,
+		map<const char *, mat4> &objectModels,
 		vec3 worldCoordinates);		
 
 	///Specify the number of vertices to be skipped
@@ -31,6 +35,10 @@ public:
 		vector<vec3> vertices,
 		vector<vec3> normals,
 		vector<vec2> uvs,
+		map<const char*, vector<vec3>> &objectVertices,
+		map<const char*, vector<vec3>> &objectNormals,
+		map<const char*, vector<vec2>> &objectUVs,
+		map<const char *, mat4> &objectModels,
 		vec3 worldCoordinates,
 		int verticeSkip);
 
@@ -38,23 +46,29 @@ public:
 	Object(const char * name,
 		vector<vec3> vertices,
 		vector<vec3> normals,
-		vector<vec2> uvs);
+		vector<vec2> uvs,
+		map<const char*, vector<vec3>> &objectVertices,
+		map<const char*, vector<vec3>> &objectNormals,
+		map<const char*, vector<vec2>> &objectUVs,
+		map<const char *, mat4> &objectModels);
 
 	///Basic constructor with verticeSkip
 	Object(const char * name,
 		vector<vec3> vertices,
 		vector<vec3> normals,
 		vector<vec2> uvs, 
+		map<const char*, vector<vec3>> &objectVertices,
+		map<const char*, vector<vec3>> &objectNormals,
+		map<const char*, vector<vec2>> &objectUVs,
+		map<const char *, mat4> &objectModels,
 		int verticeSkip);
 
-	void loadObjNoUVsToMap(map<const char*,
-		vector<vec3>> &objectVertices,
+	void loadObjNoUVsToMap(map<const char*,	vector<vec3>> &objectVertices,
 		map<const char*, vector<vec3>> &objectNormals,
 		map<const char*, vector<vec2>> &objectUVs,
 		map<const char *, mat4> &objectModels);
 
-	void loadObjToMap(map<const char*,
-		vector<vec3>> &objectVertices,
+	void loadObjToMap(map<const char*, vector<vec3>> &objectVertices,
 		map<const char*,vector<vec3>> &objectNormals,
 		map<const char*,vector<vec2>> &objectUVs,
 		map<const char *, mat4> &objectModels);
@@ -94,6 +108,8 @@ public:
 	
 	//Models for the transformations
 	glm::mat4 defaultObjectModel, objectModel;
+
+
 
 	
 };

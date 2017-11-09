@@ -366,6 +366,7 @@ void setVBOs()
 
 	setIndividualBuffers(VAOFloor, verticesFloor, normals_Floor, uvsFloor, FLOOR);
 
+	//Wall
 	glGenVertexArrays(1, &VAOWall);
 
 	glGenBuffers(1, &verticesWall);
@@ -463,6 +464,9 @@ int main()
 	loadObjToMap(FLOOR);
 	loadObjToMap(WALL);*/
 
+	bed->calculateLowPoly(2);
+	objectVertices[bed->name] = bed->lowPolyVertices;
+	//objectNormals[bed->name] = bed->lowPolyVerticesNormals; //not sure	
 	setVBOs();
 
 	triangle_scale = glm::vec3(1.0f);
