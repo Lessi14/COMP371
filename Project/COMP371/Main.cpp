@@ -15,6 +15,7 @@
 #include "objloader.hpp"  //include the object loader
 #include <map>;
 #include "camera.h"
+#include "Object.h"
 
 using namespace std;
 
@@ -191,27 +192,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-void loadObjNoUVsToMap(const char* objName)
-{
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec3> normals;
-	loadOBJNoUV(objName, vertices, normals);
-	objectVertices[objName] = vertices;
-	objectNormals[objName] = normals;
-	objectModels[objName] = glm::mat4(1.0f);
-}
 
-void loadObjToMap(const char* objName)
-{
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec3> normals;
-	std::vector<glm::vec2> UVs;
-	loadOBJ(objName, vertices, normals, UVs);
-	objectVertices[objName] = vertices;
-	objectNormals[objName] = normals;
-	objectUVs[objName] = UVs;
-	objectModels[objName] = glm::mat4(1.0f);
-}
 
 ///Read teh files and create the shaders. Create main  shader program.
 void setShaders()
@@ -332,7 +313,6 @@ int windowSetup()
 		return -1;
 	}
 }
-
 
 ///Extractedd the method which creates the vbos.
 void setIndividualBuffers(GLuint localVAO,GLuint verticesVBO , GLuint normalsVBO , GLuint uvsVBO, const char* path)
@@ -458,14 +438,30 @@ int main()
 	setShaders();
 	glUseProgram(shaderProgram);
 
+	Object *bed = new Object(BED1_NAME);
+	Object *cabinet = new Object(CABINET3_NAME);
+	Object *coffee = new Object(COFFEE_TABLE1_NAME);
+	Object *toilet = new Object(TOILET_NAME);
+	Object *torchere = new Object(TORCHERE1_NAME);
+	Object *floor = new Object(FLOOR);
+	Object *wall = new Object(WALL);
+
+	bed->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	cabinet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	coffee->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	toilet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	torchere->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	floor->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	wall->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+
 	//loadObjNoUVsToMap(INVERTED_CUBE_NAME); //Crashed due to an error with the uvs.
-	loadObjToMap(BED1_NAME);
+	/*loadObjToMap(BED1_NAME);
 	loadObjToMap(CABINET3_NAME);
 	loadObjToMap(COFFEE_TABLE1_NAME);
 	loadObjToMap(TOILET_NAME);
 	loadObjToMap(TORCHERE1_NAME);
 	loadObjToMap(FLOOR);
-	loadObjToMap(WALL);
+	loadObjToMap(WALL);*/
 
 	setVBOs();
 
@@ -473,10 +469,10 @@ int main()
 
 	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
 	
-	objectModels[WALL] *= glm::scale(objectModels[WALL], glm::vec3(1, 0.5, 1));
-	objectModels[WALL] *= glm::translate(objectModels[WALL], glm::vec3(0.5, 1, 5));
-	objectModels[FLOOR] *= glm::translate(objectModels[FLOOR], glm::vec3(0, 0, 0));	
-	objectModels[BED1_NAME] *= glm::translate(objectModels[BED1_NAME], glm::vec3(0, 0.5f, 0));
+	wall->scale(objectModels, vec3(1, 0.5, 1));
+	wall->translate(objectModels, vec3(0.5, 1, 5));
+	floor->translate(objectModels, vec3(0, 0, 0));
+	bed->translate(objectModels, vec3(0, 0.5, 0));	
 
 	GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	GLuint viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
