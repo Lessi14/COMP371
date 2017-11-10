@@ -15,6 +15,7 @@
 #include "objloader.hpp"  //include the object loader
 #include <map>;
 #include "camera.h"
+#include "Object.h"
 
 using namespace std;
 
@@ -48,12 +49,17 @@ GLuint vertexShader;
 GLuint fragmentShader;
 GLuint shaderProgram;
 
+GLuint projectionLoc;
+GLuint viewMatrixLoc;
+GLuint transformLoc;
+GLuint camera_pos_addr;
 
 //Global variable for the window
 GLFWwindow* window;
 
 const char* INVERTED_CUBE_NAME = "Objects/inverted_normal_cube1.obj";
 const char* BED1_NAME = "Objects/bed1.obj";
+const char* BED1BOX_NAME = "Objects/bed2.obj";
 const char* CABINET3_NAME = "Objects/cabinet3.obj";
 const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
 const char* TOILET_NAME = "Objects/toilet.obj";
@@ -65,6 +71,7 @@ GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
 GLuint VAOFloor, verticesFloor, normals_Floor, uvsFloor;
 GLuint VAOWall, verticesWall, normalsWall, uvsWall;
+GLuint VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO;
 
 // Camera from object class and attributes
 //Camera camera(glm::vec3(2.1f, 1.4f, -2.5f));
@@ -191,28 +198,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-void loadObjNoUVsToMap(const char* objName)
-{
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec3> normals;
-	loadOBJNoUV(objName, vertices, normals);
-	objectVertices[objName] = vertices;
-	objectNormals[objName] = normals;
-	objectModels[objName] = glm::mat4(1.0f);
-}
-
-void loadObjToMap(const char* objName)
-{
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec3> normals;
-	std::vector<glm::vec2> UVs;
-	loadOBJ(objName, vertices, normals, UVs);
-	objectVertices[objName] = vertices;
-	objectNormals[objName] = normals;
-	objectUVs[objName] = UVs;
-	objectModels[objName] = glm::mat4(1.0f);
-}
-
 ///Read teh files and create the shaders. Create main  shader program.
 void setShaders()
 {
@@ -333,7 +318,6 @@ int windowSetup()
 	}
 }
 
-
 ///Extractedd the method which creates the vbos.
 void setIndividualBuffers(GLuint localVAO,GLuint verticesVBO , GLuint normalsVBO , GLuint uvsVBO, const char* path)
 {
@@ -367,15 +351,21 @@ void setIndividualBuffers(GLuint localVAO,GLuint verticesVBO , GLuint normalsVBO
 void setVBOs()
 {
 	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
 
 	glGenBuffers(1, &vertices_VBO);
 	glGenBuffers(1, &normals_VBO);
 	glGenBuffers(1, &uvs_VBO);
-	
+		
 	//Bed
 	setIndividualBuffers(VAO, vertices_VBO, normals_VBO, uvs_VBO, BED1_NAME);
+
+	//bedbox
+	glGenVertexArrays(1, &VAOBEDBOX);
+
+	glGenBuffers(1, &vertices_BedBox_VBO);
+	glGenBuffers(1, &normals_BedBox_VBO);
+	glGenBuffers(1, &uvs_BedBox_VBO);
+	setIndividualBuffers(VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO, BED1BOX_NAME);
 
 	//Tentative for floor
 	glGenVertexArrays(1, &VAOFloor);
@@ -386,6 +376,7 @@ void setVBOs()
 
 	setIndividualBuffers(VAOFloor, verticesFloor, normals_Floor, uvsFloor, FLOOR);
 
+	//Wall
 	glGenVertexArrays(1, &VAOWall);
 
 	glGenBuffers(1, &verticesWall);
@@ -434,6 +425,19 @@ glm::vec3 getCameraRay()
 	return { 0.0f, 0.0f, 0.0f };
 }
 
+///Renders the objects inside the main loop.
+void render(const char* name, vec3 camera_pos, GLuint VAO)
+{
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[name]));
+	glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
+
+	glBindVertexArray(VAO);
+	glDrawArrays(objRenderMode, 0, objectVertices[name].size());
+	glBindVertexArray(0);
+}
+
 /// The MAIN function, from here we start the application and run the game loop
 int main()
 {
@@ -458,30 +462,54 @@ int main()
 	setShaders();
 	glUseProgram(shaderProgram);
 
+	auto *bedBox = new Object(BED1BOX_NAME);
+	Object *bed = new Object(BED1_NAME);	
+	Object *cabinet = new Object(CABINET3_NAME);
+	Object *coffee = new Object(COFFEE_TABLE1_NAME);
+	Object *toilet = new Object(TOILET_NAME);
+	Object *torchere = new Object(TORCHERE1_NAME);
+	Object *floor = new Object(FLOOR);
+	Object *wall = new Object(WALL);
+
+	bed->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);	
+	bedBox->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	cabinet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	coffee->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	toilet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	torchere->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	floor->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	wall->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+
+
+	//Kept this for reference.
 	//loadObjNoUVsToMap(INVERTED_CUBE_NAME); //Crashed due to an error with the uvs.
-	loadObjToMap(BED1_NAME);
+	/*loadObjToMap(BED1_NAME);
 	loadObjToMap(CABINET3_NAME);
 	loadObjToMap(COFFEE_TABLE1_NAME);
 	loadObjToMap(TOILET_NAME);
 	loadObjToMap(TORCHERE1_NAME);
 	loadObjToMap(FLOOR);
-	loadObjToMap(WALL);
+	loadObjToMap(WALL);*/
 
+	bedBox->calculateBounderyBox();
+	objectVertices[bedBox->name] = bedBox->lowPolyVertices;
+	
 	setVBOs();
 
 	triangle_scale = glm::vec3(1.0f);
 
 	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
 	
-	objectModels[WALL] *= glm::scale(objectModels[WALL], glm::vec3(1, 0.5, 1));
-	objectModels[WALL] *= glm::translate(objectModels[WALL], glm::vec3(0.5, 1, 5));
-	objectModels[FLOOR] *= glm::translate(objectModels[FLOOR], glm::vec3(0, 0, 0));	
-	objectModels[BED1_NAME] *= glm::translate(objectModels[BED1_NAME], glm::vec3(0, 0.5f, 0));
+	wall->scale(objectModels, vec3(1, 0.5, 1));
+	wall->translate(objectModels, vec3(0.5, 1, 5));
+	floor->translate(objectModels, vec3(0, 0, 0));
+	bed->translate(objectModels, vec3(0, 0.5, 0));
+	bedBox->translate(objectModels, vec3(-2.5, 0.5, 0));	
 
-	GLuint projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
-	GLuint viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
-	GLuint transformLoc = glGetUniformLocation(shaderProgram, "model_matrix");
-	GLuint camera_pos_addr = glGetUniformLocation(shaderProgram, "view_pos");
+	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
+	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
+	transformLoc = glGetUniformLocation(shaderProgram, "model_matrix");
+	camera_pos_addr = glGetUniformLocation(shaderProgram, "view_pos");
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -503,38 +531,47 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[BED1_NAME]));
+
+		//kept this for reference
+		/*glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[BED1_NAME]));
 		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 
 		glBindVertexArray(VAO);
 		glDrawArrays(objRenderMode, 0, objectVertices[BED1_NAME].size());
-		glBindVertexArray(0);
+		glBindVertexArray(0);*/
+
+		render(BED1_NAME, camera_pos, VAO);		
+
+		render(BED1BOX_NAME, camera_pos, VAOBEDBOX);
 
 		//Floor
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[FLOOR]));
-		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
-		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-
-		glBindVertexArray(VAOFloor);
-		glDrawArrays(objRenderMode, 0, objectVertices[FLOOR].size());
-		glBindVertexArray(0);
+		render(FLOOR, camera_pos, VAOFloor);
 
 		//Wall
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[WALL]));
-		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
-		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-
-		glBindVertexArray(VAOWall);
-		glDrawArrays(objRenderMode, 0, objectVertices[WALL].size());
-		glBindVertexArray(0);
+		render(WALL, camera_pos, VAOWall);
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}
+
+	bed = nullptr;
+	bedBox = nullptr;
+	cabinet = nullptr;
+	coffee = nullptr;
+	toilet = nullptr;
+	torchere = nullptr;
+	floor = nullptr;
+	wall = nullptr;
+	delete bedBox;
+	delete bed;
+	delete cabinet;
+	delete coffee;
+	delete toilet;
+	delete torchere;
+	delete floor;
+	delete wall;
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
 	glfwTerminate();
