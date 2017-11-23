@@ -90,26 +90,6 @@ Object::Object(const char * name,
 	this->verticeSkip = verticeSkip;
 }
 
-void Object::loadObjNoUVsToMap(map<const char*, vector<vec3>> &objectVertices,
-	map<const char*, vector<vec3>> &objectNormals,
-	map<const char*, vector<vec2>> &objectUVs,
-	map<const char *, mat4> &objectModels)
-{
-	loadOBJNoUV(name, vertices, normals);
-	objectVertices[name] = vertices;
-	objectNormals[name] = normals;
-}
-
-void Object::loadObjToMap(map<const char*, vector<vec3>>& objectVertices,
-	map<const char*, vector<vec3>>& objectNormals,
-	map<const char*, vector<vec2>>& objectUVs,
-	map<const char *, mat4> &objectModels)
-{
-	loadOBJ(name, vertices, normals, uvs);
-	objectVertices[name] = vertices;
-	objectNormals[name] = normals;
-	objectUVs[name] = uvs;
-}
 
 void Object::translate(map<const char*, mat4>& objectModels, vec3 changes)
 {
@@ -134,21 +114,21 @@ void Object::scale(map<const char*, mat4>& objectModels, vec3 changes)
 	objectModels[name] = this->objectModel;
 }
 
-Object::~Object()
+void Object::setIntersectionTriangle()
 {
-}
-
-void Object::calculateLowPoly(int verticeSkip)
-{
-	for (auto incr = 0; incr < vertices.size() - 3; incr += 3)
+	for (auto incr = 0; incr < vertices.size() - 3; incr+=3)
 	{
-		if (incr%verticeSkip == 0)
-		{
-			lowPolyVertices.push_back(vertices.at(incr));
-		}
+		auto vertex = vertices.at(incr);
+		auto vertex2 = vertices.at(incr+1);
+		auto vertex3 = vertices.at(incr+2);
+
+		triangles.push_back(Triangle(vertex, vertex2, vertex3));		
 	}
 }
 
+Object::~Object()
+{
+}
 
 ///Credit https://www.gamedev.net/forums/topic/373547-calculating-a-bounding-box-with-vertices-given/
 void Object::calculateBounderyBox()
@@ -168,41 +148,81 @@ void Object::calculateBounderyBox()
 		if (vertex.z < minVertex.z)	minVertex.z = vertex.z;
 	}	
 	//Forgive the hardcode, too tired to figure out a better way.
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	lowPolyVertices.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
-	lowPolyVertices.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
+	boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
+}
+
+
+void Object::loadObjNoUVsToMap(map<const char*, vector<vec3>> &objectVertices,
+	map<const char*, vector<vec3>> &objectNormals,
+	map<const char*, vector<vec2>> &objectUVs,
+	map<const char *, mat4> &objectModels)
+{
+	loadOBJNoUV(name, vertices, normals);
+	setIntersectionTriangle();
+	calculateBounderyBox();
+	objectVertices[name] = vertices;
+	objectNormals[name] = normals;
+}
+
+void Object::loadObjToMap(map<const char*, vector<vec3>>& objectVertices,
+	map<const char*, vector<vec3>>& objectNormals,
+	map<const char*, vector<vec2>>& objectUVs,
+	map<const char *, mat4> &objectModels)
+{
+	loadOBJ(name, vertices, normals, uvs);
+	setIntersectionTriangle();
+	calculateBounderyBox();
+	objectVertices[name] = vertices;
+	objectNormals[name] = normals;
+	objectUVs[name] = uvs;
+}
+
+
+void Object::loadObjBoxToMap(map<const char*, vector<vec3>>& objectVertices,
+	map<const char*, vector<vec3>>& objectNormals,
+	map<const char*, vector<vec2>>& objectUVs,
+	map<const char *, mat4> &objectModels)
+{
+	loadOBJ(name, vertices, normals, uvs);
+	setIntersectionTriangle();
+	calculateBounderyBox();
+	objectVertices[name] = boundingbox;
+	objectNormals[name] = normals;
+	objectUVs[name] = uvs;
 }
 

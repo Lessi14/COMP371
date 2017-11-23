@@ -31,6 +31,7 @@ glm::mat4 model_matrix;
 
 std::map<const char *, std::vector<glm::vec3>> objectVertices;
 std::map<const char *, std::vector<glm::vec3>> objectNormals;
+std::map<const char *, vector<Triangle>> objectTriangles;
 std::map<const char *, std::vector<glm::vec2>> objectUVs;
 std::map<const char *, glm::mat4> objectModels;
 
@@ -290,7 +291,7 @@ int windowSetup()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Load one cube", nullptr, nullptr);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "OTP means One trick pony, fight me.", nullptr, nullptr);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -471,14 +472,29 @@ int main()
 	Object *floor = new Object(FLOOR);
 	Object *wall = new Object(WALL);
 
-	bed->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);	
-	bedBox->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	bed->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	objectTriangles[bed->name] = bed->triangles;
+
+	bedBox->loadObjBoxToMap(objectVertices, objectNormals, objectUVs, objectModels); //This method has a slight variant which adds the box instead of the triangles.
+	objectTriangles[bedBox->name] = bedBox->triangles;
+
 	cabinet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	objectTriangles[cabinet->name] = cabinet->triangles;
+
 	coffee->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	objectTriangles[coffee->name] = coffee->triangles;
+
 	toilet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	objectTriangles[toilet->name] = toilet->triangles;
+
 	torchere->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	objectTriangles[torchere->name] = torchere->triangles;
+
 	floor->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	objectTriangles[floor->name] = floor->triangles;
+
 	wall->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
+	objectTriangles[wall->name] = wall->triangles;
 
 
 	//Kept this for reference.
@@ -491,9 +507,6 @@ int main()
 	loadObjToMap(FLOOR);
 	loadObjToMap(WALL);*/
 
-	bedBox->calculateBounderyBox();
-	objectVertices[bedBox->name] = bedBox->lowPolyVertices;
-	
 	setVBOs();
 
 	triangle_scale = glm::vec3(1.0f);

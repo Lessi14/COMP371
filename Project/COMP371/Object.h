@@ -11,6 +11,7 @@
 #include "objloader.hpp"  //include the object loader
 #include <map>;
 #include "camera.h"
+#include "Triangle.h"
 
 using namespace std;
 using namespace glm;
@@ -73,18 +74,20 @@ public:
 		map<const char*,vector<vec2>> &objectUVs,
 		map<const char *, mat4> &objectModels);
 
+	void loadObjBoxToMap(map<const char*, vector<vec3>>& objectVertices, map<const char*, vector<vec3>>& objectNormals, map<const char*, vector<vec2>>& objectUVs, map<const char*, mat4>& objectModels);
+
 	void translate(map<const char *, mat4> &objectModels, vec3 changes);
 
 	void rotate( map<const char *, mat4> &objectModels, float angle, vec3 rotationAxe);
 
 	void scale( map<const char *, mat4> &objectModels, vec3 changes);
 
-	~Object();
+	///fills the vectors with the triangle object which can be used for intersection and normals.
+	void setIntersectionTriangle();
 
-	///Calculate a rough version of the object for faster testing and comparison
-	void calculateLowPoly(int verticeSkip);
-	
-	///Calculate the square around the object
+	~Object();
+		
+	///Calculate the cube around the object
 	void calculateBounderyBox();
 	
 	//Basic Architecture
@@ -102,6 +105,7 @@ public:
 	//Attributes for collision, raytracing possibly lighting
 	int verticeSkip = 0;
 	vector<vec3> boundingbox, lowPolyVertices, lowPolyVerticesNormals;
+	vector<Triangle> triangles;
 	
 	//Models for the transformations
 	glm::mat4 defaultObjectModel, objectModel;	
