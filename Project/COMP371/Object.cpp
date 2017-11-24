@@ -27,29 +27,6 @@ Object::Object(const char * name,
 }
 
 Object::Object(const char * name,
-	vector<vec3> vertices,
-	vector<vec3> normals,
-	vector<vec2> uvs,
-	map<const char*, vector<vec3>> &objectVertices,
-	map<const char*, vector<vec3>> &objectNormals,
-	map<const char*, vector<vec2>> &objectUVs,
-	map<const char *, mat4> &objectModels,
-	vec3 worldCoordinates,
-	int verticeSkip)
-{
-	this->name = name;
-	this->vertices = vertices;
-	this->normals = normals;
-	this->uvs = uvs;
-	objectVertices[name] = vertices;
-	objectNormals[name] = normals;
-	objectUVs[name] = uvs;
-	objectModels[name] = mat4(1.0f);
-	this->worldCoordinates = worldCoordinates;
-	this->verticeSkip = verticeSkip;
-}
-
-Object::Object(const char * name,
 	std::vector<glm::vec3> vertices,
 	std::vector<glm::vec3> normals,
 	std::vector<glm::vec2> uvs,
@@ -68,33 +45,11 @@ Object::Object(const char * name,
 	objectModels[name] = mat4(1.0f);
 }
 
-
-Object::Object(const char * name,
-	std::vector<glm::vec3> vertices,
-	std::vector<glm::vec3> normals,
-	std::vector<glm::vec2> uvs,
-	map<const char*, vector<vec3>> &objectVertices,
-	map<const char*, vector<vec3>> &objectNormals,
-	map<const char*, vector<vec2>> &objectUVs,
-	map<const char *, mat4> &objectModels,
-	int verticeSkip)
-{
-	this->name = name;
-	this->vertices = vertices;
-	this->normals = normals;
-	this->uvs = uvs;
-	objectVertices[name] = vertices;
-	objectNormals[name] = normals;
-	objectUVs[name] = uvs;
-	objectModels[name] = mat4(1.0f);
-	this->verticeSkip = verticeSkip;
-}
-
-
 void Object::translate(map<const char*, mat4>& objectModels, vec3 changes)
 {
 	this->objectModel *= glm::translate(objectModels[name], changes);
 	objectModels[name] = this->objectModel;
+	UpdateVertices();
 }
 
 void Object::rotate(map<const char*, mat4>& objectModels, float angle, glm::vec3 rotationAxe)
@@ -105,6 +60,7 @@ void Object::rotate(map<const char*, mat4>& objectModels, float angle, glm::vec3
 	this->objectModel *= glm::translate(mat4(1.0f), this->worldCoordinates);
 	//rotate the object
 	this->objectModel = glm::rotate(mat4(1.0f), angle, rotationAxe);
+	UpdateVertices();
 }
 
 
@@ -112,10 +68,36 @@ void Object::scale(map<const char*, mat4>& objectModels, vec3 changes)
 {
 	this->objectModel *= glm::scale(this->objectModel, changes);
 	objectModels[name] = this->objectModel;
+	UpdateVertices();
+}
+
+//Apply a 3d transformation to a vertex.
+//https://gamedev.stackexchange.com/questions/28249/calculate-new-vertex-position-given-a-transform-matrix
+//We need to apply all transformation to the vector of vertices.
+//For translations for instance.
+void Object::UpdateVertices()
+{
+	vector<vec3> transFormedVertices;
+	float wComponent = 1.0f;
+	for (vec3 vertex: vertices)
+	{
+		//Expand the vector to 4d
+		vec4 expanded = vec4(vertex.x, vertex.y, vertex.z, wComponent);
+		//Multiply by the transformation matrix. Which is the object model right ?
+		vec4 result = expanded * this->objectModel;
+		//tranforma back to 3d
+		vec3 transformedVertex = vec3(result.x / wComponent, result.y / wComponent, result.z / wComponent);
+		transFormedVertices.push_back(transformedVertex);
+	}
+	vertices.clear();
+	vertices = transFormedVertices;
+	setIntersectionTriangle();
 }
 
 void Object::setIntersectionTriangle()
 {
+	triangles.clear();
+	boundingBoxTriangles.clear();
 	//Create the triangles using the vertices of the object.
 	for (auto incr = 0; incr < vertices.size() - 3; incr+=3)
 	{
@@ -126,6 +108,7 @@ void Object::setIntersectionTriangle()
 		triangles.push_back(Triangle(vertex, vertex2, vertex3));		
 	}
 
+	calculateBounderyBox();
 	//Create the triangles using the vertices of the bounding box.
 	for (auto incr = 0; incr < boundingbox.size() - 3; incr += 3)
 	{
@@ -233,6 +216,8 @@ Object::~Object()
 ///Credit https://www.gamedev.net/forums/topic/373547-calculating-a-bounding-box-with-vertices-given/
 void Object::calculateBounderyBox()
 {
+	boundingbox.clear();
+	boundingBoxTriangles.clear();
 	vec3 maxVertex(0, 0, 0), minVertex(0, 0, 0);
 	float maxX = 0, maxY = 0, maxZ = 0;
 	float minX = 0, minY = 0, minZ = 0;

@@ -29,19 +29,7 @@ public:
 		map<const char*, vector<vec3>> &objectNormals,
 		map<const char*, vector<vec2>> &objectUVs,
 		map<const char *, mat4> &objectModels,
-		vec3 worldCoordinates);		
-
-	///Specify the number of vertices to be skipped
-	Object(const char * name,
-		vector<vec3> vertices,
-		vector<vec3> normals,
-		vector<vec2> uvs,
-		map<const char*, vector<vec3>> &objectVertices,
-		map<const char*, vector<vec3>> &objectNormals,
-		map<const char*, vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels,
-		vec3 worldCoordinates,
-		int verticeSkip);
+		vec3 worldCoordinates);	
 
 	///Basic Construrctor
 	Object(const char * name,
@@ -52,17 +40,6 @@ public:
 		map<const char*, vector<vec3>> &objectNormals,
 		map<const char*, vector<vec2>> &objectUVs,
 		map<const char *, mat4> &objectModels);
-
-	///Basic constructor with verticeSkip
-	Object(const char * name,
-		vector<vec3> vertices,
-		vector<vec3> normals,
-		vector<vec2> uvs, 
-		map<const char*, vector<vec3>> &objectVertices,
-		map<const char*, vector<vec3>> &objectNormals,
-		map<const char*, vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels,
-		int verticeSkip);
 
 	void loadObjNoUVsToMap(map<const char*,	vector<vec3>> &objectVertices,
 		map<const char*, vector<vec3>> &objectNormals,
@@ -81,6 +58,7 @@ public:
 	void rotate( map<const char *, mat4> &objectModels, float angle, vec3 rotationAxe);
 
 	void scale( map<const char *, mat4> &objectModels, vec3 changes);
+	void UpdateVertices();
 
 	///fills the vectors with the triangle object which can be used for intersection and normals.
 	void setIntersectionTriangle();
@@ -105,7 +83,6 @@ public:
 	float shininess;
 
 	//Attributes for collision, raytracing possibly lighting
-	int verticeSkip = 0;
 	vector<vec3> boundingbox;
 	vector<Triangle> triangles, boundingBoxTriangles;
 	

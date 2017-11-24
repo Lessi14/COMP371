@@ -74,9 +74,15 @@ GLuint VAOFloor, verticesFloor, normals_Floor, uvsFloor;
 GLuint VAOWall, verticesWall, normalsWall, uvsWall;
 GLuint VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO;
 
+GLuint axes_VBO, axesColorsVBO;
+GLuint axes_VAO;
+
+std::vector<glm::vec3> axesVertices;
+std::vector<glm::vec3> axesColors;
+
 // Camera from object class and attributes
 //Camera camera(glm::vec3(2.1f, 1.4f, -2.5f));
-Camera camera(glm::vec3(0.0f, 0.0f, 0.0f));
+Camera camera(glm::vec3(2.25f, 3.29f, -4.01f));
 
 float lastX = WIDTH / 2.0f;
 float lastY = HEIGHT / 2.0f;
@@ -174,6 +180,10 @@ void processInput(GLFWwindow *window)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS)
 		camera.Reset();
+	//cout << camera.Position.x  << endl;
+	//cout << camera.Position.y << endl;
+	//cout << camera.Position.z << endl;
+	//cout << "New" << endl;
 }
 
 ///Key callabck
@@ -183,7 +193,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	//Pressed
 	if (1 == action) {
 		switch (key)
-		{	
+		{
 		case GLFW_KEY_C:
 			//Change the camera			
 			break;
@@ -192,7 +202,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			break;
 		case GLFW_KEY_F:
 			//Flying  or viewing camera
-			break;		
+			break;
 		default:
 			break;
 		}
@@ -320,7 +330,7 @@ int windowSetup()
 }
 
 ///Extractedd the method which creates the vbos.
-void setIndividualBuffers(GLuint localVAO,GLuint verticesVBO , GLuint normalsVBO , GLuint uvsVBO, const char* path)
+void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, const char* path)
 {
 	glGenBuffers(1, &verticesVBO);
 	glGenBuffers(1, &normalsVBO);
@@ -330,15 +340,16 @@ void setIndividualBuffers(GLuint localVAO,GLuint verticesVBO , GLuint normalsVBO
 
 	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
 	glBufferData(GL_ARRAY_BUFFER, objectVertices[path].size() * sizeof(glm::vec3), &objectVertices[path].front(),
-	             GL_STATIC_DRAW);
+		GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
 	glBufferData(GL_ARRAY_BUFFER, objectNormals[path].size() * sizeof(glm::vec3), &objectNormals[path].front(),
-	             GL_STATIC_DRAW);
+		GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
+
 
 	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
 	glBufferData(GL_ARRAY_BUFFER, objectUVs[path].size() * sizeof(glm::vec3), &objectUVs[path].front(), GL_STATIC_DRAW);
@@ -351,12 +362,47 @@ void setIndividualBuffers(GLuint localVAO,GLuint verticesVBO , GLuint normalsVBO
 ///Set the VAO, VBOS for the vertices, UVs and the normals.
 void setVBOs()
 {
+	//start axes
+	axesVertices.push_back({ 0.0f, 0.0f, 0.01f });
+	axesVertices.push_back({ 5.0f, 0.0f, 0.01f });
+	axesVertices.push_back({ 0.0f, 0.0f, 0.01f });
+	axesVertices.push_back({ 0.0f, 5.0f, 0.01f });
+	axesVertices.push_back({ 0.0f, 0.0f, 0.0f });
+	axesVertices.push_back({ 0.0f, 0.0f, 5.0f });
+
+	axesColors.push_back({ 0.0, 1.0, 0.0, });
+	axesColors.push_back({ 0.0, 1.0, 0.0, });
+	axesColors.push_back({ 1.0, 0.0, 0.0, });
+	axesColors.push_back({ 1.0, 0.0, 0.0, });
+	axesColors.push_back({ 0.0, 0.0, 1.0, });
+	axesColors.push_back({ 0.0, 0.0, 1.0, });
+
+
+	glGenVertexArrays(1, &axes_VAO);
+	glBindVertexArray(axes_VAO);
+
+	glGenBuffers(1, &axes_VBO);
+	glBindBuffer(GL_ARRAY_BUFFER, axes_VBO);
+	glBufferData(GL_ARRAY_BUFFER, axesVertices.size() * sizeof(glm::vec3), &axesVertices.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glGenBuffers(1, &axesColorsVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, axesColorsVBO);
+	glBufferData(GL_ARRAY_BUFFER, axesColors.size() * sizeof(glm::vec3), &axesColors.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+
 	glGenVertexArrays(1, &VAO);
 
 	glGenBuffers(1, &vertices_VBO);
 	glGenBuffers(1, &normals_VBO);
 	glGenBuffers(1, &uvs_VBO);
-		
+
 	//Bed
 	setIndividualBuffers(VAO, vertices_VBO, normals_VBO, uvs_VBO, BED1_NAME);
 
@@ -390,7 +436,7 @@ void setVBOs()
 }
 
 glm::vec3 getCameraRay()
-{	
+{
 	//Get the position of the Mouses
 	double mouseX = last_cursor_x;
 	double mouseY = last_cursor_y;
@@ -400,7 +446,7 @@ glm::vec3 getCameraRay()
 	float yNorm = ((2.0f*mouseY) / HEIGHT - 1.0f)*-1.0f; //--------------------------------
 
 	//Step 2 Get clipCoords
-	glm::vec4 clipCoord(xNorm,yNorm,-1.0f,1.0f);
+	glm::vec4 clipCoord(xNorm, yNorm, -1.0f, 1.0f);
 
 	//Step 3 Get Eye coordinates //get an inverse projection matrix
 	//Get the projection matrix
@@ -409,7 +455,7 @@ glm::vec3 getCameraRay()
 	glm::mat4 invertedMatrix = glm::inverse(local_projection_matrix);
 	//get the eye coordinates 4d ?
 	glm::vec4 temp = invertedMatrix * clipCoord;
-	glm::vec4 eyeCoord(temp.x,temp.y,-1.0f,0.0f);
+	glm::vec4 eyeCoord(temp.x, temp.y, -1.0f, 0.0f);
 
 	//Step 4 get world way
 	//get local view matrix
@@ -422,7 +468,7 @@ glm::vec3 getCameraRay()
 	//glm::vec3 worldRayNorm = glm::normalize(worldRay);
 	glm::vec3 worldRayNorm = (worldRay);
 
-	cout << "x: "  << worldRayNorm.x << "y: " << worldRayNorm.y <<  "z: " << worldRayNorm.z << endl;
+	//cout << "x: "  << worldRayNorm.x << "y: " << worldRayNorm.y <<  "z: " << worldRayNorm.z << endl;
 	return { 0.0f, 0.0f, 0.0f };
 }
 
@@ -441,8 +487,8 @@ void render(const char* name, vec3 camera_pos, GLuint VAO)
 
 /// The MAIN function, from here we start the application and run the game loop
 int main()
-{	
-	if (-1 ==  windowSetup()) {
+{
+	if (-1 == windowSetup()) {
 		return -1;
 	}
 
@@ -458,12 +504,14 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	//glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LESS);
-	
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_BACK);
+
 	setShaders();
 	glUseProgram(shaderProgram);
 
 	Object *bedBox = new Object(BED1BOX_NAME);
-	Object *bed = new Object(BED1_NAME);	
+	Object *bed = new Object(BED1_NAME);
 	Object *cabinet = new Object(CABINET3_NAME);
 	Object *coffee = new Object(COFFEE_TABLE1_NAME);
 	Object *toilet = new Object(TOILET_NAME);
@@ -511,12 +559,12 @@ int main()
 	triangle_scale = glm::vec3(1.0f);
 
 	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
-	
+
 	wall->scale(objectModels, vec3(1, 0.5, 1));
 	wall->translate(objectModels, vec3(0.5, 1, 5));
 	floor->translate(objectModels, vec3(0, 0, 0));
-	bed->translate(objectModels, vec3(0, 0.5, 0));
-	bedBox->translate(objectModels, vec3(-2.5, 0.5, 0));	
+	//bed->translate(objectModels, vec3(0, 0.5, 0));
+	bed->translate(objectModels, vec3(-2.5, 0.5, 0));
 
 	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
@@ -528,7 +576,7 @@ int main()
 	{
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;			
+		lastFrame = currentFrame;
 
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		processInput(window);
@@ -554,15 +602,28 @@ int main()
 		glDrawArrays(objRenderMode, 0, objectVertices[BED1_NAME].size());
 		glBindVertexArray(0);*/
 
-		render(BED1_NAME, camera_pos, VAO);		
+		render(BED1_NAME, camera_pos, VAO);
 
-		render(BED1BOX_NAME, camera_pos, VAOBEDBOX);
+		//render(BED1BOX_NAME, camera_pos, VAOBEDBOX);
+
+
+		//end axes	
 
 		//Floor
-		render(FLOOR, camera_pos, VAOFloor);
+		//render(FLOOR, camera_pos, VAOFloor);
 
 		//Wall
 		render(WALL, camera_pos, VAOWall);
+
+		//start axes
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(mat4(1.0f)));
+		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
+
+		glBindVertexArray(axes_VAO);
+		glDrawArrays(GL_LINES, 0, axesVertices.size());
+		glBindVertexArray(0);
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
