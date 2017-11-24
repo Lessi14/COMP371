@@ -441,8 +441,7 @@ void render(const char* name, vec3 camera_pos, GLuint VAO)
 
 /// The MAIN function, from here we start the application and run the game loop
 int main()
-{
-	
+{	
 	if (-1 ==  windowSetup()) {
 		return -1;
 	}
@@ -463,7 +462,7 @@ int main()
 	setShaders();
 	glUseProgram(shaderProgram);
 
-	auto *bedBox = new Object(BED1BOX_NAME);
+	Object *bedBox = new Object(BED1BOX_NAME);
 	Object *bed = new Object(BED1_NAME);	
 	Object *cabinet = new Object(CABINET3_NAME);
 	Object *coffee = new Object(COFFEE_TABLE1_NAME);

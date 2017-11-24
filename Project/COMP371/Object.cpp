@@ -116,6 +116,7 @@ void Object::scale(map<const char*, mat4>& objectModels, vec3 changes)
 
 void Object::setIntersectionTriangle()
 {
+	//Create the triangles using the vertices of the object.
 	for (auto incr = 0; incr < vertices.size() - 3; incr+=3)
 	{
 		auto vertex = vertices.at(incr);
@@ -124,6 +125,105 @@ void Object::setIntersectionTriangle()
 
 		triangles.push_back(Triangle(vertex, vertex2, vertex3));		
 	}
+
+	//Create the triangles using the vertices of the bounding box.
+	for (auto incr = 0; incr < boundingbox.size() - 3; incr += 3)
+	{
+		auto vertex = boundingbox.at(incr);
+		auto vertex2 = boundingbox.at(incr + 1);
+		auto vertex3 = boundingbox.at(incr + 2);
+
+		boundingBoxTriangles.push_back(Triangle(vertex, vertex2, vertex3));
+	}
+}
+
+
+///Method which test the intersection of a triangle and a ray.
+///Implementation of the Moller Trumbone algo.
+///https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
+bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri)
+{
+	const float EPSILON = 0.0000001;
+	float a, f, u, v;
+	const glm::vec3 edge1 = tri.vertex2 - tri.vertex1;
+	const glm::vec3 edge2 = tri.vertex3 - tri.vertex1;
+	//planeNormal = glm::cross(edge1, edge2);
+	const glm::vec3 h = glm::cross(rayDir, edge2);
+	a = glm::dot(edge1, h);
+	if (a > -EPSILON && a < EPSILON)
+		return false;
+	f = 1 / a;
+	glm::vec3 s = rayO - tri.vertex1;
+	u = f * (glm::dot(s, h));
+	if (u < 0.0 || u > 1.0)
+		return false;
+	const glm::vec3 q = glm::cross(s, edge1);
+	v = f * glm::dot(rayDir, q);
+	if (v < 0.0 || u + v > 1.0)
+		return false;
+	// At this stage we can compute t to find out where the intersection point is on the line.
+	float t = f *  glm::dot(edge2, q);
+	if (t > EPSILON) // ray intersection
+	{
+		//resultinPoint = rayO + rayDir * t;
+		return true;
+	}
+	else // This means that there is a line intersection but not a ray intersection.
+		return false;
+}
+
+///Given a a ray position and a direction. checks if the object is in the path of the ray.
+bool Object::intersect(vec3 rayPosition, vec3 rayDir)
+{
+	bool hitBoundaryBox = false;
+
+	///Check outer boundarybox first.	
+	///Cull the triangles that are backfacing.
+	vector<Triangle> reducedBoundaryBox;
+	for (Triangle boundTriangles : triangles)
+	{
+		if (!(dot(boundTriangles.getNormal(), rayDir)> 0))
+		{
+			reducedBoundaryBox.push_back(boundTriangles);
+		}
+	}
+
+	//check for intersection with each tringles of the boundary box
+	for (Triangle localTriangleBound : triangles)
+	{
+		if (ray_intersect_triangle(rayPosition, rayDir, localTriangleBound))
+		{
+			hitBoundaryBox= true;
+			break;
+		}
+	}
+
+	///Precise comparison.
+	/// if the outside box was hit then try expensive comparison.
+	if(hitBoundaryBox)
+	{
+		///backaface only
+		vector<Triangle> reduced;
+		///Cull the triangles that are backfacing.
+		for (Triangle element : triangles)
+		{
+			if (!(dot(element.getNormal(), rayDir)> 0))
+			{
+				reduced.push_back(element);
+			}
+		}
+
+		//check for intersection with each tringles.
+		for (Triangle localTriangle : triangles)
+		{
+			if (ray_intersect_triangle(rayPosition, rayDir, localTriangle))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 Object::~Object()

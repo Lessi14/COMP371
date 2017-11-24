@@ -85,6 +85,8 @@ public:
 	///fills the vectors with the triangle object which can be used for intersection and normals.
 	void setIntersectionTriangle();
 
+	bool intersect(vec3 position,vec3 ray);
+
 	~Object();
 		
 	///Calculate the cube around the object
@@ -104,8 +106,8 @@ public:
 
 	//Attributes for collision, raytracing possibly lighting
 	int verticeSkip = 0;
-	vector<vec3> boundingbox, lowPolyVertices, lowPolyVerticesNormals;
-	vector<Triangle> triangles;
+	vector<vec3> boundingbox;
+	vector<Triangle> triangles, boundingBoxTriangles;
 	
 	//Models for the transformations
 	glm::mat4 defaultObjectModel, objectModel;	
