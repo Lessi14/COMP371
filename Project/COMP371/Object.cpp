@@ -45,30 +45,33 @@ Object::Object(const char * name,
 	objectModels[name] = mat4(1.0f);
 }
 
-void Object::translate(map<const char*, mat4>& objectModels, vec3 changes)
+void Object::translate(map<const char*, mat4>& objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes)
 {
 	this->objectModel *= glm::translate(objectModels[name], changes);
-	objectModels[name] = this->objectModel;
+	objectModels[name] = this->objectModel;	
 	UpdateVertices();
+	objectTriangles[name] = this->triangles;
 }
 
-void Object::rotate(map<const char*, mat4>& objectModels, float angle, glm::vec3 rotationAxe)
+void Object::rotate(map<const char*, mat4>& objectModels, map<const char *, vector<Triangle>>& objectTriangles, float angle, glm::vec3 rotationAxe)
 {
 	//reset to center
 	this->objectModel = this->defaultObjectModel;
 	//translate back to center
 	this->objectModel *= glm::translate(mat4(1.0f), this->worldCoordinates);
 	//rotate the object
-	this->objectModel = glm::rotate(mat4(1.0f), angle, rotationAxe);
+	this->objectModel = glm::rotate(mat4(1.0f), angle, rotationAxe);	
 	UpdateVertices();
+	objectTriangles[name] = this->triangles;
 }
 
 
-void Object::scale(map<const char*, mat4>& objectModels, vec3 changes)
+void Object::scale(map<const char*, mat4>& objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes)
 {
 	this->objectModel *= glm::scale(this->objectModel, changes);
 	objectModels[name] = this->objectModel;
 	UpdateVertices();
+	objectTriangles[name] = this->triangles;
 }
 
 //Apply a 3d transformation to a vertex.
@@ -275,19 +278,22 @@ void Object::calculateBounderyBox()
 void Object::loadObjNoUVsToMap(map<const char*, vector<vec3>> &objectVertices,
 	map<const char*, vector<vec3>> &objectNormals,
 	map<const char*, vector<vec2>> &objectUVs,
-	map<const char *, mat4> &objectModels)
+	map<const char *, mat4> &objectModels,
+	map<const char *, vector<Triangle>>& objectTriangles)
 {
 	loadOBJNoUV(name, vertices, normals);
 	setIntersectionTriangle();
 	calculateBounderyBox();
 	objectVertices[name] = vertices;
 	objectNormals[name] = normals;
+	objectTriangles[name] = triangles;
 }
 
 void Object::loadObjToMap(map<const char*, vector<vec3>>& objectVertices,
 	map<const char*, vector<vec3>>& objectNormals,
 	map<const char*, vector<vec2>>& objectUVs,
-	map<const char *, mat4> &objectModels)
+	map<const char *, mat4> &objectModels,
+	map<const char *, vector<Triangle>>& objectTriangles)
 {
 	loadOBJ(name, vertices, normals, uvs);
 	setIntersectionTriangle();
@@ -295,13 +301,15 @@ void Object::loadObjToMap(map<const char*, vector<vec3>>& objectVertices,
 	objectVertices[name] = vertices;
 	objectNormals[name] = normals;
 	objectUVs[name] = uvs;
+	objectTriangles[name] = triangles;
 }
 
 
 void Object::loadObjBoxToMap(map<const char*, vector<vec3>>& objectVertices,
 	map<const char*, vector<vec3>>& objectNormals,
 	map<const char*, vector<vec2>>& objectUVs,
-	map<const char *, mat4> &objectModels)
+	map<const char *, mat4> &objectModels,
+	map<const char *, vector<Triangle>>& objectTriangles)
 {
 	loadOBJ(name, vertices, normals, uvs);
 	setIntersectionTriangle();
@@ -309,5 +317,6 @@ void Object::loadObjBoxToMap(map<const char*, vector<vec3>>& objectVertices,
 	objectVertices[name] = boundingbox;
 	objectNormals[name] = normals;
 	objectUVs[name] = uvs;
+	objectTriangles[name] = triangles;
 }
 

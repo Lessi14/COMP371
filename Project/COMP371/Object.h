@@ -44,20 +44,29 @@ public:
 	void loadObjNoUVsToMap(map<const char*,	vector<vec3>> &objectVertices,
 		map<const char*, vector<vec3>> &objectNormals,
 		map<const char*, vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels);
+		map<const char *, mat4> &objectModels,
+		map<const char *, vector<Triangle>>& objectTriangles);
 
 	void loadObjToMap(map<const char*, vector<vec3>> &objectVertices,
 		map<const char*,vector<vec3>> &objectNormals,
 		map<const char*,vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels);
+		map<const char *, mat4> &objectModels,
+		map<const char *, vector<Triangle>>& objectTriangles);
 
-	void loadObjBoxToMap(map<const char*, vector<vec3>>& objectVertices, map<const char*, vector<vec3>>& objectNormals, map<const char*, vector<vec2>>& objectUVs, map<const char*, mat4>& objectModels);
+	void loadObjBoxToMap(map<const char*, vector<vec3>>& objectVertices,
+		map<const char*, vector<vec3>>& objectNormals,
+		map<const char*, vector<vec2>>& objectUVs,
+		map<const char*, mat4>& objectModels,
+		map<const char *, vector<Triangle>>& objectTriangles);
 
-	void translate(map<const char *, mat4> &objectModels, vec3 changes);
+	//After each transformation update the object model.
+	void translate(map<const char *, mat4> &objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes);
 
-	void rotate( map<const char *, mat4> &objectModels, float angle, vec3 rotationAxe);
+	void rotate( map<const char *, mat4> &objectModels, map<const char *, vector<Triangle>>& objectTriangles, float angle, vec3 rotationAxe);
 
-	void scale( map<const char *, mat4> &objectModels, vec3 changes);
+	void scale( map<const char *, mat4> &objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes);
+
+	//Update the vertices after a transformation
 	void UpdateVertices();
 
 	///fills the vectors with the triangle object which can be used for intersection and normals.

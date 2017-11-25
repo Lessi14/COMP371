@@ -504,8 +504,8 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	//glDepthMask(GL_TRUE);
 	glDepthFunc(GL_LESS);
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_BACK);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	setShaders();
 	glUseProgram(shaderProgram);
@@ -519,52 +519,41 @@ int main()
 	Object *floor = new Object(FLOOR);
 	Object *wall = new Object(WALL);
 
-	bed->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
-	objectTriangles[bed->name] = bed->triangles;
+	bed->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	//objectTriangles[bed->name] = bed->triangles;
 
-	bedBox->loadObjBoxToMap(objectVertices, objectNormals, objectUVs, objectModels); //This method has a slight variant which adds the box instead of the triangles.
-	objectTriangles[bedBox->name] = bedBox->triangles;
+	bedBox->loadObjBoxToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);//This method has a slight variant which adds the box instead of the triangles.
+	//objectTriangles[bedBox->name] = bedBox->triangles;
 
-	cabinet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
-	objectTriangles[cabinet->name] = cabinet->triangles;
+	cabinet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	//objectTriangles[cabinet->name] = cabinet->triangles;
 
-	coffee->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
-	objectTriangles[coffee->name] = coffee->triangles;
+	coffee->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	//objectTriangles[coffee->name] = coffee->triangles;
 
-	toilet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
-	objectTriangles[toilet->name] = toilet->triangles;
+	toilet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	//objectTriangles[toilet->name] = toilet->triangles;
 
-	torchere->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
-	objectTriangles[torchere->name] = torchere->triangles;
+	torchere->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	//objectTriangles[torchere->name] = torchere->triangles;
 
-	floor->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
-	objectTriangles[floor->name] = floor->triangles;
+	floor->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	//objectTriangles[floor->name] = floor->triangles;
 
-	wall->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels);
-	objectTriangles[wall->name] = wall->triangles;
-
-
-	//Kept this for reference.
-	//loadObjNoUVsToMap(INVERTED_CUBE_NAME); //Crashed due to an error with the uvs.
-	/*loadObjToMap(BED1_NAME);
-	loadObjToMap(CABINET3_NAME);
-	loadObjToMap(COFFEE_TABLE1_NAME);
-	loadObjToMap(TOILET_NAME);
-	loadObjToMap(TORCHERE1_NAME);
-	loadObjToMap(FLOOR);
-	loadObjToMap(WALL);*/
-
+	wall->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	//objectTriangles[wall->name] = wall->triangles;
+	
 	setVBOs();
 
 	triangle_scale = glm::vec3(1.0f);
 
 	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
 
-	wall->scale(objectModels, vec3(1, 0.5, 1));
-	wall->translate(objectModels, vec3(0.5, 1, 5));
-	floor->translate(objectModels, vec3(0, 0, 0));
-	//bed->translate(objectModels, vec3(0, 0.5, 0));
-	bed->translate(objectModels, vec3(-2.5, 0.5, 0));
+	wall->scale(objectModels,objectTriangles, vec3(1, 0.5, 1));
+	wall->translate(objectModels, objectTriangles, vec3(0.5, 1, 5));
+	floor->translate(objectModels, objectTriangles, vec3(0, 0, 0));
+	//bed->translate(objectModels,objectTriangles, vec3(0, 0.5, 0));
+	bed->translate(objectModels, objectTriangles, vec3(-2.5, 0.5, 0));
 
 	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
