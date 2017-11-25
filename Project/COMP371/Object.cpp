@@ -168,7 +168,7 @@ bool Object::intersect(vec3 rayPosition, vec3 rayDir)
 	vector<Triangle> reducedBoundaryBox;
 	for (Triangle boundTriangles : triangles)
 	{
-		if (!(dot(boundTriangles.getNormal(), rayDir)> 0))
+		if (!(dot(boundTriangles.normal, rayDir)> 0))
 		{
 			reducedBoundaryBox.push_back(boundTriangles);
 		}
@@ -193,7 +193,7 @@ bool Object::intersect(vec3 rayPosition, vec3 rayDir)
 		///Cull the triangles that are backfacing.
 		for (Triangle element : triangles)
 		{
-			if (!(dot(element.getNormal(), rayDir)> 0))
+			if (!(dot(element.normal, rayDir)> 0))
 			{
 				reduced.push_back(element);
 			}
