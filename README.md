@@ -8,5 +8,5 @@ Comp 371 Group Assignment.
 * William Leclerc - 27424973
 
 ## Asset source(s)
-Furniture models obtained from: https://www.assetstore.unity3d.com/en/#!/content/7717
-Texture images obtained from Google Images
+* Furniture models obtained from: https://www.assetstore.unity3d.com/en/#!/content/7717
+* Texture images obtained from Google Images
