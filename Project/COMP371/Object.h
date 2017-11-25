@@ -1,17 +1,9 @@
 #pragma once
-#include "stdafx.h"
-#include "..\glew\glew.h"	// include GL Extension Wrangler
-#include "..\glfw\glfw3.h"	// include GLFW helper library
-#include <stdio.h>
-#include <iostream>
-#include <string>
-#include "glm.hpp"
-#include "gtc/matrix_transform.hpp"
 #include "gtc/type_ptr.hpp"
-#include "objloader.hpp"  //include the object loader
 #include <map>;
 #include "camera.h"
 #include "Triangle.h"
+#include "objloader.hpp"
 
 using namespace std;
 using namespace glm;

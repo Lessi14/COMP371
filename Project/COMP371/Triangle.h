@@ -1,10 +1,5 @@
 #pragma once
-#include "stdafx.h"
-#include <stdio.h>
-#include <iostream>
-#include <string>
-#include "glm.hpp"
-#include <map>;
+
 #include "camera.h"
 using namespace glm;
 class Triangle
