@@ -1,5 +1,5 @@
 # COMP371
-Our comp 371 project yo.
+Comp 371 Group Assignment.
 
 ## Members:
 * Bruce Edouard Brazier - 27419562
@@ -7,5 +7,6 @@ Our comp 371 project yo.
 * Sean Marcoux - 27511876
 * William Leclerc - 27424973
 
-
-Furniture assets obtained from: https://www.assetstore.unity3d.com/en/#!/content/7717
+## Asset source(s)
+Furniture models obtained from: https://www.assetstore.unity3d.com/en/#!/content/7717
+Texture images obtained from Google Images
