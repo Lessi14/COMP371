@@ -13,6 +13,7 @@
 #include "gtc/matrix_transform.hpp"
 #include "gtc/type_ptr.hpp"
 #include "objloader.hpp"  //include the object loader
+#include "stb_image.h"
 #include <map>;
 #include "camera.h"
 #include "Object.h"
@@ -292,6 +293,7 @@ void setShaders()
 	}
 	glDeleteShader(vertexShader); //free up memory
 	glDeleteShader(fragmentShader);
+	std::cout << "Shaders Set." << std::endl;
 }
 
 ///Set teh window component. Including height and width.
@@ -358,7 +360,7 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 
 	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
 	glBufferData(GL_ARRAY_BUFFER, objectUVs[path].size() * sizeof(glm::vec3), &objectUVs[path].front(), GL_STATIC_DRAW);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -513,7 +515,54 @@ int main()
 	glCullFace(GL_BACK);
 
 	setShaders();
+
+	//load and create a texture
+	unsigned int texture1, texture2;
+
+	//texture 1
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	int twidth, theight, tnrChannels;
+	//stbi_set_flip_vertically_on_load(true);
+	unsigned char *data = stbi_load("Textures/metal1.jpg", &twidth, &theight, &tnrChannels,0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture1" << std::endl;
+	}
+	stbi_image_free(data);
+
+	//texture 2
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/metal2.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture2" << std::endl;
+	}
+	stbi_image_free(data);
 	glUseProgram(shaderProgram);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1);
 
 	Object *bedBox = new Object(BED1BOX_NAME);
 	Object *bed = new Object(BED1_NAME);
@@ -595,6 +644,12 @@ int main()
 		glBindVertexArray(VAO);
 		glDrawArrays(objRenderMode, 0, objectVertices[BED1_NAME].size());
 		glBindVertexArray(0);*/
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+
 
 		render(BED1_NAME, camera_pos, VAO);
 

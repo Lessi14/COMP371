@@ -1,10 +1,16 @@
 #version 330 core
 
 out vec4 color;
+
 in vec3 col;
+in vec2 TexCoord;
 in vec3 norm;
 in vec3 fragPosition;
 in vec3 viewPos;
+
+uniform sampler2D texture1;
+uniform sampler2D texture2;
+
 
 void main()
 {
@@ -31,5 +37,10 @@ void main()
 	vec3 specular = specularStrength * spec * lightColour;
 
 	vec3 resultantColour = (ambient_contribution + diffuse_contribution + specular) * cubeColour;
-	color = vec4(resultantColour, 1.0f);
+	//color = vec4(resultantColour, 1.0f);
+	
+	//Different texturing modes
+	//Singular textures
+	color = texture(texture1, TexCoord) * vec4(resultantColour, 1.0f);
+	//color = texture(texture2, TexCoord);
 } 
