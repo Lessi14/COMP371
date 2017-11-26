@@ -1,10 +1,18 @@
 #version 330 core
 
 out vec4 color;
+
 in vec3 col;
+in vec2 TexCoord;
 in vec3 norm;
 in vec3 fragPosition;
 in vec3 viewPos;
+
+uniform int texture_number;
+
+uniform sampler2D texture0;
+uniform sampler2D texture1;
+
 
 void main()
 {
@@ -31,5 +39,16 @@ void main()
 	vec3 specular = specularStrength * spec * lightColour;
 
 	vec3 resultantColour = (ambient_contribution + diffuse_contribution + specular) * cubeColour;
-	color = vec4(resultantColour, 1.0f);
+
+	switch (texture_number) {
+		case 0: //metal1 texture
+			color = texture(texture0, TexCoord) * vec4(resultantColour, 1.0f);
+			break;
+		case 1: //metal2 texture
+			color = texture(texture1, TexCoord) * vec4(resultantColour, 1.0f);
+			break;
+		default:
+			color = vec4(resultantColour, 1.0f);
+			break;
+	}
 } 
