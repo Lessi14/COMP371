@@ -48,7 +48,7 @@ void main()
 			color = texture(texture1, TexCoord) * vec4(resultantColour, 1.0f);
 			break;
 		default:
-			color = vec4(col,1.0f);
+			color = vec4(resultantColor, 1.0f);
 			break;
 	}
 	//color = vec4(resultantColour, 1.0f);
