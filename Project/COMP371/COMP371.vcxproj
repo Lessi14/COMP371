@@ -122,6 +122,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Triangle.h" />
+    <ClInclude Include="UtilClass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
@@ -134,6 +135,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Triangle.cpp" />
+    <ClCompile Include="UtilClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment.shader" />

@@ -16,6 +16,7 @@
 #include <map>;
 #include "camera.h"
 #include "Object.h"
+#include "UtilClass.h"
 
 using namespace std;
 
@@ -29,6 +30,8 @@ glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
+
+std::map<const char *, Object*> objects;
 std::map<const char *, std::vector<glm::vec3>> objectVertices;
 std::map<const char *, std::vector<glm::vec3>> objectNormals;
 std::map<const char *, vector<Triangle>> objectTriangles;
@@ -65,8 +68,11 @@ const char* CABINET3_NAME = "Objects/cabinet3.obj";
 const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
 const char* TOILET_NAME = "Objects/toilet.obj";
 const char* TORCHERE1_NAME = "Objects/torchere1.obj";
-const char* FLOOR = "Objects/floorTemp.obj";
+//const char* FLOOR = "Objects/floorTemp.obj";
 const char* WALL = "Objects/wall.obj";
+
+
+const char* selectedObject = "";
 
 GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
@@ -91,6 +97,7 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
+
 
 //Is called whenever the mouse moves on the window
 ///While certain mouse buttons are pressed, this method makes it so that the camera will move
@@ -124,6 +131,46 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	//update last cursor position
 	last_cursor_x = xpos;
 	last_cursor_y = ypos;
+
+	double diffY = lastClickY - ypos;
+	double diffX = lastClickX - xpos;
+	double dempener = 0.00012;
+	double modifier = diffY * dempener;	
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		//objects[selectedObject]->translate(objectModels, objects, vec3(0.0001f, 0.0f, 0.0f));
+		cout << modifier << endl;
+	}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		//objects[selectedObject]->translate(objectModels, objects, vec3(0.0f, modifier, 0.0f));
+		cout << modifier << endl;
+	}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		//objects[selectedObject]->translate(objectModels, objects, vec3(0.0f, 0.0f, modifier));
+		cout << modifier << endl;
+	}
+
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{		
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{			
+		selectedObject = "";
+		lastClickX = last_cursor_x;
+		lastClickY = last_cursor_y;
+		vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
+		for (auto const &ent2 : objects) 
+		{
+			if (ent2.second->intersect(camera.Position, castedRay))
+			{
+				//Object Selected
+				selectedObject = ent2.second->name;
+				cout << selectedObject << endl;
+				objects[selectedObject]->translate(objectModels, objects, vec3(0.1f, 0.0f, 0.0f));				
+			}
+		}
+		
+	}	
 }
 
 ///Determines the position of the mouse.
@@ -156,7 +203,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 void window_resize_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
-
 	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
 }
 
@@ -189,29 +235,6 @@ void processInput(GLFWwindow *window)
 	//cout << camera.Position.y << endl;
 	//cout << camera.Position.z << endl;
 	//cout << "New" << endl;
-}
-
-///Key callabck
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
-{
-	std::cout << key << std::endl;
-	//Pressed
-	if (1 == action) {
-		switch (key)
-		{
-		case GLFW_KEY_C:
-			//Change the camera			
-			break;
-		case GLFW_KEY_S:
-			//Editing camera
-			break;
-		case GLFW_KEY_F:
-			//Flying  or viewing camera
-			break;
-		default:
-			break;
-		}
-	}
 }
 
 ///Read teh files and create the shaders. Create main  shader program.
@@ -315,9 +338,10 @@ int windowSetup()
 	}
 	glfwMakeContextCurrent(window);
 	// Set the required callback functions
-	glfwSetKeyCallback(window, key_callback);
+	//glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_motion_callback);
 	glfwSetFramebufferSizeCallback(window, window_resize_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 	// tell GLFW to capture our mouse
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); ----------------------------------------------------------------
@@ -426,7 +450,7 @@ void setVBOs()
 	glGenBuffers(1, &normals_Floor);
 	glGenBuffers(1, &uvsFloor);
 
-	setIndividualBuffers(VAOFloor, verticesFloor, normals_Floor, uvsFloor, FLOOR);
+	//setIndividualBuffers(VAOFloor, verticesFloor, normals_Floor, uvsFloor, FLOOR);
 
 	//Wall
 	glGenVertexArrays(1, &VAOWall);
@@ -438,43 +462,6 @@ void setVBOs()
 	setIndividualBuffers(VAOWall, verticesWall, normalsWall, uvsWall, WALL);
 
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
-}
-
-glm::vec3 getCameraRay()
-{
-	//Get the position of the Mouses
-	double mouseX = last_cursor_x;
-	double mouseY = last_cursor_y;
-
-	//Step 1 Get the normalizedCoordinates
-	float xNorm = (2.0f*mouseX) / WIDTH - 1.0f;
-	float yNorm = ((2.0f*mouseY) / HEIGHT - 1.0f)*-1.0f; //--------------------------------
-
-	//Step 2 Get clipCoords
-	glm::vec4 clipCoord(xNorm, yNorm, -1.0f, 1.0f);
-
-	//Step 3 Get Eye coordinates //get an inverse projection matrix
-	//Get the projection matrix
-	glm::mat4 local_projection_matrix = projection_matrix;
-	//Get the inverted matrix
-	glm::mat4 invertedMatrix = glm::inverse(local_projection_matrix);
-	//get the eye coordinates 4d ?
-	glm::vec4 temp = invertedMatrix * clipCoord;
-	glm::vec4 eyeCoord(temp.x, temp.y, -1.0f, 0.0f);
-
-	//Step 4 get world way
-	//get local view matrix
-	glm::mat4 local_view_matrix = view_matrix;
-	//get the inverse
-	glm::mat4 inverted_view_matrix = glm::inverse(local_view_matrix);
-	// get the ray
-	glm::vec4 temp2 = inverted_view_matrix * eyeCoord;
-	glm::vec3 worldRay(temp2.x, temp2.y, temp2.z);
-	//glm::vec3 worldRayNorm = glm::normalize(worldRay);
-	glm::vec3 worldRayNorm = (worldRay);
-
-	//cout << "x: "  << worldRayNorm.x << "y: " << worldRayNorm.y <<  "z: " << worldRayNorm.z << endl;
-	return { 0.0f, 0.0f, 0.0f };
 }
 
 ///Renders the objects inside the main loop.
@@ -521,44 +508,44 @@ int main()
 	Object *coffee = new Object(COFFEE_TABLE1_NAME);
 	Object *toilet = new Object(TOILET_NAME);
 	Object *torchere = new Object(TORCHERE1_NAME);
-	Object *floor = new Object(FLOOR);
+	//Object *floor = new Object(FLOOR);
 	Object *wall = new Object(WALL);
 
 	bed->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[bed->name] = bed->triangles;
+	objects[bed->name] = bed;
 
-	bedBox->loadObjBoxToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);//This method has a slight variant which adds the box instead of the triangles.
-	//objectTriangles[bedBox->name] = bedBox->triangles;
+	bedBox->loadObjBoxToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);//This method has a slight variant which adds the box instead of the triangles.	
+	objects[bedBox->name] = bedBox;
 
-	cabinet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[cabinet->name] = cabinet->triangles;
+	cabinet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);	
+	objects[cabinet->name] = cabinet;
 
-	coffee->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[coffee->name] = coffee->triangles;
+	coffee->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);	
+	objects[coffee->name] = coffee;
 
 	toilet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[toilet->name] = toilet->triangles;
+	objects[toilet->name] = toilet;
 
-	torchere->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[torchere->name] = torchere->triangles;
+	torchere->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);	
+	objects[torchere->name] = torchere;
 
-	floor->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[floor->name] = floor->triangles;
+	//floor->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);	
+	//objects[floor->name] = floor;
 
 	wall->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[wall->name] = wall->triangles;
-	
+	objects[wall->name] = wall;
+
 	setVBOs();
 
 	triangle_scale = glm::vec3(1.0f);
 
 	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
 
-	wall->scale(objectModels,objectTriangles, vec3(1, 0.5, 1));
-	wall->translate(objectModels, objectTriangles, vec3(0.5, 1, 5));
-	floor->translate(objectModels, objectTriangles, vec3(0, 0, 0));
-	//bed->translate(objectModels,objectTriangles, vec3(0, 0.5, 0));
-	bed->translate(objectModels, objectTriangles, vec3(-2.5, 0.5, 0));
+	wall->scale(objectModels,objects, vec3(1.0f, 0.5f, 1));
+	wall->translate(objectModels, objects, vec3(0.5, 1, 5));
+	//floor->translate(objectModels, objects, vec3(0, 0, 0));
+	//bed->translate(objectModels,objects, vec3(0, 0.5, 0));
+	bed->translate(objectModels, objects, vec3(-4.5f, 0.5f, 0.0f));
 
 	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
@@ -574,9 +561,7 @@ int main()
 
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		processInput(window);
-		glfwPollEvents();
-
-		getCameraRay();
+		glfwPollEvents();		
 
 		// Render
 		// Clear the colorbuffer
@@ -629,7 +614,7 @@ int main()
 	coffee = nullptr;
 	toilet = nullptr;
 	torchere = nullptr;
-	floor = nullptr;
+	//floor = nullptr;
 	wall = nullptr;
 	delete bedBox;
 	delete bed;
@@ -637,7 +622,7 @@ int main()
 	delete coffee;
 	delete toilet;
 	delete torchere;
-	delete floor;
+	//delete floor;
 	delete wall;
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.

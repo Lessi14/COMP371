@@ -45,15 +45,18 @@ Object::Object(const char * name,
 	objectModels[name] = mat4(1.0f);
 }
 
-void Object::translate(map<const char*, mat4>& objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes)
+void Object::translate(map<const char*, mat4>& objectModels, map<const char *, Object*>& objects, vec3 changes)
 {
-	this->objectModel *= glm::translate(objectModels[name], changes);
+	this->objectModel *= glm::translate(mat4(1.0f), changes);
 	objectModels[name] = this->objectModel;	
-	UpdateVertices();
-	objectTriangles[name] = this->triangles;
+	UpdateVertices();	
+	//objects[name] = this;
+	objects[name]->vertices = vertices;
+	objects[name]->triangles = triangles;
+	objects[name]->boundingBoxTriangles = boundingBoxTriangles;
 }
 
-void Object::rotate(map<const char*, mat4>& objectModels, map<const char *, vector<Triangle>>& objectTriangles, float angle, glm::vec3 rotationAxe)
+void Object::rotate(map<const char*, mat4>& objectModels, map<const char *, Object*>& objects, float angle, glm::vec3 rotationAxe)
 {
 	//reset to center
 	this->objectModel = this->defaultObjectModel;
@@ -61,17 +64,24 @@ void Object::rotate(map<const char*, mat4>& objectModels, map<const char *, vect
 	this->objectModel *= glm::translate(mat4(1.0f), this->worldCoordinates);
 	//rotate the object
 	this->objectModel = glm::rotate(mat4(1.0f), angle, rotationAxe);	
-	UpdateVertices();
-	objectTriangles[name] = this->triangles;
+	UpdateVertices();	
+	//objects[name] = this;
+	objectModels[name] = this->objectModel;
+	objects[name]->vertices = vertices;
+	objects[name]->triangles = triangles;
+	objects[name]->boundingBoxTriangles = boundingBoxTriangles;
 }
 
 
-void Object::scale(map<const char*, mat4>& objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes)
+void Object::scale(map<const char*, mat4>& objectModels, map<const char *, Object*>& objects, vec3 changes)
 {
 	this->objectModel *= glm::scale(this->objectModel, changes);
 	objectModels[name] = this->objectModel;
-	UpdateVertices();
-	objectTriangles[name] = this->triangles;
+	UpdateVertices();	
+	//objects[name] = this;
+	objects[name]->vertices = vertices;
+	objects[name]->triangles = triangles;
+	objects[name]->boundingBoxTriangles = boundingBoxTriangles;
 }
 
 //Apply a 3d transformation to a vertex.
@@ -86,8 +96,8 @@ void Object::UpdateVertices()
 	{
 		//Expand the vector to 4d
 		vec4 expanded = vec4(vertex.x, vertex.y, vertex.z, wComponent);
-		//Multiply by the transformation matrix. Which is the object model right ?
-		vec4 result = expanded * this->objectModel;
+		//Multiply by the transformation matrix. Which is the object model right ?	
+		vec4 result = this->objectModel * expanded;
 		//tranforma back to 3d
 		vec3 transformedVertex = vec3(result.x / wComponent, result.y / wComponent, result.z / wComponent);
 		transFormedVertices.push_back(transformedVertex);

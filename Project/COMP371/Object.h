@@ -52,11 +52,11 @@ public:
 		map<const char *, vector<Triangle>>& objectTriangles);
 
 	//After each transformation update the object model.
-	void translate(map<const char *, mat4> &objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes);
+	void translate(map<const char *, mat4> &objectModels, map<const char *, Object*>& objects, vec3 changes);
 
-	void rotate( map<const char *, mat4> &objectModels, map<const char *, vector<Triangle>>& objectTriangles, float angle, vec3 rotationAxe);
+	void rotate( map<const char *, mat4> &objectModels, map<const char *, Object*>& objects, float angle, vec3 rotationAxe);
 
-	void scale( map<const char *, mat4> &objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes);
+	void scale( map<const char *, mat4> &objectModels, map<const char *, Object*>& objects, vec3 changes);
 
 	//Update the vertices after a transformation
 	void UpdateVertices();
