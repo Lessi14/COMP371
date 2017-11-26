@@ -74,6 +74,10 @@ public:
 
 	bool intersect(vec3 position,vec3 ray);
 
+	bool collides(vector<float> collidingObjectMaxandMin);
+
+	void setBoxX(float translationOnX);
+
 	~Object();
 		
 	///Calculate the cube around the object
@@ -96,6 +100,13 @@ public:
 	vector<Triangle> triangles, boundingBoxTriangles;
 	
 	//Models for the transformations
-	glm::mat4 defaultObjectModel, objectModel;	
+	glm::mat4 defaultObjectModel, objectModel;
+
+	vector<float> getListOfMaxAndMin();
+
+private:
+	float maxX, maxY, maxZ, minX, minY, minZ;
+	vector<float> listOfMaxAndMin;
+
 };
 

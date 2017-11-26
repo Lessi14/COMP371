@@ -190,23 +190,23 @@ bool Object::intersect(vec3 rayPosition, vec3 rayDir)
 	{
 		///backaface only
 		vector<Triangle> reduced;
-		///Cull the triangles that are backfacing.
-		for (Triangle element : triangles)
-		{
-			if (!(dot(element.getNormal(), rayDir)> 0))
-			{
-				reduced.push_back(element);
-			}
-		}
+///Cull the triangles that are backfacing.
+for (Triangle element : triangles)
+{
+	if (!(dot(element.getNormal(), rayDir) > 0))
+	{
+		reduced.push_back(element);
+	}
+}
 
-		//check for intersection with each tringles.
-		for (Triangle localTriangle : triangles)
-		{
-			if (ray_intersect_triangle(rayPosition, rayDir, localTriangle))
-			{
-				return true;
-			}
-		}
+//check for intersection with each tringles.
+for (Triangle localTriangle : triangles)
+{
+	if (ray_intersect_triangle(rayPosition, rayDir, localTriangle))
+	{
+		return true;
+	}
+}
 	}
 
 	return false;
@@ -222,8 +222,8 @@ void Object::calculateBounderyBox()
 	boundingbox.clear();
 	boundingBoxTriangles.clear();
 	vec3 maxVertex(0, 0, 0), minVertex(0, 0, 0);
-	float maxX = 0, maxY = 0, maxZ = 0;
-	float minX = 0, minY = 0, minZ = 0;
+	maxX = 0, maxY = 0, maxZ = 0;
+	minX = 0, minY = 0, minZ = 0;
 	for (auto incr = 0; incr < vertices.size() - 1; incr++)
 	{
 		auto vertex = vertices.at(incr);
@@ -234,8 +234,18 @@ void Object::calculateBounderyBox()
 		if (vertex.x < minVertex.x)	minVertex.x = vertex.x;
 		if (vertex.y < minVertex.y)	minVertex.y = vertex.y;
 		if (vertex.z < minVertex.z)	minVertex.z = vertex.z;
-	}	
-	//Forgive the hardcode, too tired to figure out a better way.
+	}
+
+	maxX = maxVertex.x;
+	maxY = maxVertex.y;
+	maxZ = maxVertex.z;
+
+	minX = minVertex.x;
+	minY = minVertex.y;
+	minZ = minVertex.z;
+
+	listOfMaxAndMin = { minX, maxX, minY, maxY, minZ, maxZ };
+
 	boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
 	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
 	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
@@ -274,6 +284,30 @@ void Object::calculateBounderyBox()
 	boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
 }
 
+bool Object::collides(vector<float> collidingObjectMaxandMin)
+{
+	bool withinX = false, withinY = false, withinZ = false;
+
+	if ((minX <= collidingObjectMaxandMin.at(0) && collidingObjectMaxandMin.at(0) <= maxX) ||
+		(minX <= collidingObjectMaxandMin.at(1) && collidingObjectMaxandMin.at(1) <= maxX) ||
+		(collidingObjectMaxandMin.at(0) <= minX && minX <= collidingObjectMaxandMin.at(1)) ||
+		(collidingObjectMaxandMin.at(0) <= maxX && maxX <= collidingObjectMaxandMin.at(1)))
+		withinX = true;
+	if ((minY <= collidingObjectMaxandMin.at(2) && collidingObjectMaxandMin.at(2) <= maxY) ||
+		(minY <= collidingObjectMaxandMin.at(3) && collidingObjectMaxandMin.at(3) <= maxY) ||
+		(collidingObjectMaxandMin.at(2) <= minY && minY <= collidingObjectMaxandMin.at(3)) ||
+		(collidingObjectMaxandMin.at(2) <= maxY && maxY <= collidingObjectMaxandMin.at(3)))
+		withinY = true;
+	if ((minZ <= collidingObjectMaxandMin.at(4) && collidingObjectMaxandMin.at(4) <= maxZ) ||
+		(minZ <= collidingObjectMaxandMin.at(5) && collidingObjectMaxandMin.at(5) <= maxZ) ||
+		(collidingObjectMaxandMin.at(4) <= minZ && minZ <= collidingObjectMaxandMin.at(5)) ||
+		(collidingObjectMaxandMin.at(4) <= maxZ && maxZ <= collidingObjectMaxandMin.at(5)))
+		withinZ = true;
+	if (withinX && withinY && withinZ) return true;
+	
+	return false;
+	
+}
 
 void Object::loadObjNoUVsToMap(map<const char*, vector<vec3>> &objectVertices,
 	map<const char*, vector<vec3>> &objectNormals,
@@ -320,3 +354,13 @@ void Object::loadObjBoxToMap(map<const char*, vector<vec3>>& objectVertices,
 	objectTriangles[name] = triangles;
 }
 
+vector<float> Object::getListOfMaxAndMin() {
+	return listOfMaxAndMin;
+}
+
+void Object::setBoxX(float translationOnX) {
+	minX += translationOnX;
+	maxX += translationOnX;
+	listOfMaxAndMin.at(0) = minX;
+	listOfMaxAndMin.at(1) = maxX;
+}

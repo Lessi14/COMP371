@@ -63,6 +63,7 @@ const char* BED1_NAME = "Objects/bed1.obj";
 const char* BED1BOX_NAME = "Objects/bed2.obj";
 const char* CABINET3_NAME = "Objects/cabinet3.obj";
 const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
+const char* COFFEE_TABLEBOX_NAME = "Objects/coffee_table2.obj";
 const char* TOILET_NAME = "Objects/toilet.obj";
 const char* TORCHERE1_NAME = "Objects/torchere1.obj";
 const char* FLOOR = "Objects/floorTemp.obj";
@@ -76,6 +77,12 @@ GLuint VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO;
 
 GLuint axes_VBO, axesColorsVBO;
 GLuint axes_VAO;
+
+//Coffee Table
+GLuint VAO_CoffeeTable, VBO_CoffeeTable, EBO_CoffeeTable;
+GLuint vertices_VBO_CoffeeTable, normals_VBO_CoffeeTable, uvs_VBO_CoffeeTable;
+GLuint VAOCOFFEETABLEBOX, vertices_CoffeeTableBox_VBO, normals_CoffeeTableBox_VBO, uvs_CoffeeTableBox_VBO;
+
 
 std::vector<glm::vec3> axesVertices;
 std::vector<glm::vec3> axesColors;
@@ -414,6 +421,24 @@ void setVBOs()
 	glGenBuffers(1, &uvs_BedBox_VBO);
 	setIndividualBuffers(VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO, BED1BOX_NAME);
 
+	//Coffee Table
+	glGenVertexArrays(1, &VAO_CoffeeTable);
+
+	glGenBuffers(1, &vertices_VBO_CoffeeTable);
+	glGenBuffers(1, &normals_VBO_CoffeeTable);
+	glGenBuffers(1, &uvs_VBO_CoffeeTable);
+
+	
+	setIndividualBuffers(VAO_CoffeeTable, vertices_VBO_CoffeeTable, normals_VBO_CoffeeTable, uvs_VBO_CoffeeTable, COFFEE_TABLE1_NAME);
+
+	//Coffee Table Box
+	glGenVertexArrays(1, &VAOCOFFEETABLEBOX);
+
+	glGenBuffers(1, &vertices_CoffeeTableBox_VBO);
+	glGenBuffers(1, &normals_CoffeeTableBox_VBO);
+	glGenBuffers(1, &uvs_CoffeeTableBox_VBO);
+	setIndividualBuffers(VAOCOFFEETABLEBOX, vertices_CoffeeTableBox_VBO, normals_CoffeeTableBox_VBO, uvs_CoffeeTableBox_VBO, COFFEE_TABLEBOX_NAME);
+
 	//Tentative for floor
 	glGenVertexArrays(1, &VAOFloor);
 
@@ -513,6 +538,7 @@ int main()
 	Object *bedBox = new Object(BED1BOX_NAME);
 	Object *bed = new Object(BED1_NAME);
 	Object *cabinet = new Object(CABINET3_NAME);
+	Object *coffeeTableBox = new Object(COFFEE_TABLEBOX_NAME);
 	Object *coffee = new Object(COFFEE_TABLE1_NAME);
 	Object *toilet = new Object(TOILET_NAME);
 	Object *torchere = new Object(TORCHERE1_NAME);
@@ -530,6 +556,9 @@ int main()
 
 	coffee->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
 	//objectTriangles[coffee->name] = coffee->triangles;
+
+	coffeeTableBox->loadObjBoxToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	//objectTriangles[coffeeTableBox->name] = coffeeTableBox->triangles;
 
 	toilet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
 	//objectTriangles[toilet->name] = toilet->triangles;
@@ -553,7 +582,12 @@ int main()
 	wall->translate(objectModels, objectTriangles, vec3(0.5, 1, 5));
 	floor->translate(objectModels, objectTriangles, vec3(0, 0, 0));
 	//bed->translate(objectModels,objectTriangles, vec3(0, 0.5, 0));
-	bed->translate(objectModels, objectTriangles, vec3(-2.5, 0.5, 0));
+	bed->translate(objectModels, objectTriangles, vec3(-2.5, 0, 0));
+	bedBox->translate(objectModels, objectTriangles, vec3(-2.5, 0, 0));
+	bedBox->setBoxX(-2.5);
+	coffee->translate(objectModels, objectTriangles, vec3(-2.0, 0, 0));
+	coffeeTableBox->setBoxX(-2.0);
+	
 
 	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
@@ -592,6 +626,12 @@ int main()
 		glBindVertexArray(0);*/
 
 		render(BED1_NAME, camera_pos, VAO);
+		render(COFFEE_TABLE1_NAME, camera_pos, VAO_CoffeeTable);
+
+		bool isColliding = coffeeTableBox->collides(bedBox->getListOfMaxAndMin());
+
+		if (isColliding) cout << "IT IS COLLIDING BITCHES" << endl;
+		else cout << "AIN'T COLLIDING BABY" << endl;
 
 		//render(BED1BOX_NAME, camera_pos, VAOBEDBOX);
 
@@ -622,6 +662,7 @@ int main()
 	bedBox = nullptr;
 	cabinet = nullptr;
 	coffee = nullptr;
+	coffeeTableBox = nullptr;
 	toilet = nullptr;
 	torchere = nullptr;
 	floor = nullptr;
@@ -630,6 +671,7 @@ int main()
 	delete bed;
 	delete cabinet;
 	delete coffee;
+	delete coffeeTableBox;
 	delete toilet;
 	delete torchere;
 	delete floor;
