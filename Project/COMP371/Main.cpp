@@ -116,6 +116,11 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 
 		}
 	}
+	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
+		firstMouse = false;
+		lastX = xpos;
+		lastY = ypos;
+	}
 	//update last cursor position
 	last_cursor_x = xpos;
 	last_cursor_y = ypos;
@@ -212,7 +217,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 ///Read teh files and create the shaders. Create main  shader program.
 void setShaders()
 {
-
+	std::cout << "Setting Shaders..." << std::endl;
 	// Build and compile our shader program
 	// Vertex shader
 	// Read the Vertex Shader code from the file
@@ -301,7 +306,7 @@ int windowSetup()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
-	window = glfwCreateWindow(WIDTH, HEIGHT, "OTP means One trick pony, fight me.", nullptr, nullptr);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Interior Furniture Layout Design - Team Catchphrase", nullptr, nullptr);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
