@@ -37,6 +37,8 @@ glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
+std::vector<glm::vec3> menuVertices[3];
+std::vector<glm::vec2> menuUVs[3];
 
 //load and create a texture
 unsigned int texture0, texture1, texture2, texture3, texture_menu_back, texture_menu_furniture, texture_menu_wallpaper;
@@ -45,6 +47,10 @@ map<int, Object*> objects;
 
 //Which mode to render in between point, lines, and triangles
 int objRenderMode = GL_TRIANGLES;
+
+//If the menu is open
+bool menu_open = false;
+int menu_mode = 2;
 
 //Mouse
 double lastClickX = 0;
@@ -81,6 +87,7 @@ const char* TORCHERE1_NAME = "Objects/torchere1.obj";
 const char* WALL = "Objects/wall.obj";
 
 int selectedObject = -1;
+GLuint menuVAOs[3], menuVBOs[3], menuUVVBOs[3];
 
 GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
@@ -114,6 +121,8 @@ float lastFrame = 0.0f;
 void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+		cout << "x: " << xpos << endl;
+		cout << "y: " << ypos << endl;
 		if (last_cursor_x != NULL && last_cursor_y != NULL)
 		{
 			if (firstMouse)
@@ -130,7 +139,6 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 			lastY = ypos;
 
 			camera.ProcessMouseMovement(xoffset, yoffset);
-
 		}
 	}
 	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
@@ -249,7 +257,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
 	std::cout << key << std::endl;
 	//Pressed
-	if (1 == action) {
+	if (GLFW_PRESS == action) {
 		switch (key)
 		{
 		case GLFW_KEY_C:
@@ -261,6 +269,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		case GLFW_KEY_F:
 			//Flying  or viewing camera
 			break;
+		case GLFW_KEY_ENTER:
+			menu_open = !menu_open;
 		default:
 			break;
 		}
@@ -385,7 +395,7 @@ int windowSetup()
 	}
 	glfwMakeContextCurrent(window);
 	// Set the required callback functions
-	//glfwSetKeyCallback(window, key_callback);
+	glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_motion_callback);
 	glfwSetFramebufferSizeCallback(window, window_resize_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
@@ -432,6 +442,51 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs)
+{
+	(*vertices).push_back(glm::vec3(leftX, bottomY, 0.01f));
+	(*vertices).push_back(glm::vec3(rightX, topY, 0.01f));
+	(*vertices).push_back(glm::vec3(rightX, bottomY, 0.01f));
+	(*vertices).push_back(glm::vec3(leftX, bottomY, 0.01f));
+	(*vertices).push_back(glm::vec3(leftX, topY, 0.01f));
+	(*vertices).push_back(glm::vec3(rightX, topY, 0.01f));
+	(*uvs).push_back(glm::vec2(1.0f, 1.0f));
+	(*uvs).push_back(glm::vec2(0.0f, 0.0f));
+	(*uvs).push_back(glm::vec2(0.0f, 1.0f));
+	(*uvs).push_back(glm::vec2(1.0f, 1.0f));
+	(*uvs).push_back(glm::vec2(1.0f, 0.0f));
+	(*uvs).push_back(glm::vec2(0.0f, 0.0f));
+}
+
+void createMenuVertices()
+{
+	//First Menu
+	//Furniture
+	addButtonVertices(-3.0f, 3.0f, 2.0f, 4.0f, &menuVertices[0], &menuUVs[0]);
+	//Wallpaper
+	addButtonVertices(-3.0f, 3.0f, -1.0f, 1.0f, &menuVertices[0], &menuUVs[0]);
+	//Back
+	addButtonVertices(-3.0f, 3.0f, -4.0f, -2.0f, &menuVertices[0], &menuUVs[0]);
+
+	//Texture Menu
+	addButtonVertices(-5.0f, -1.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(1.0f, 5.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(-5.0f, -1.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(1.0f, 5.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(-5.0f, -1.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(1.0f, 5.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(-5.0f, -1.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(1.0f, 5.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1]);
+
+	//Furniture Menu
+	addButtonVertices(-5.0f, -1.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(1.0f, 5.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(-5.0f, -1.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(1.0f, 5.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(-5.0f, -1.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2]);
+}
+
 ///Set the VAO, VBOS for the vertices, UVs and the normals.
 void setVBOs()
 {
@@ -468,7 +523,45 @@ void setVBOs()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	///-----------
+	//Menus
+	createMenuVertices();
+	glGenVertexArrays(3, menuVAOs);
+	glGenBuffers(3, menuVBOs);
+	glGenBuffers(3, menuUVVBOs);
+
+	glBindVertexArray(menuVAOs[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, menuVBOs[0]);
+	glBufferData(GL_ARRAY_BUFFER, menuVertices[0].size() * sizeof(glm::vec3), &menuVertices[0].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, menuUVVBOs[0]);
+	glBufferData(GL_ARRAY_BUFFER, menuUVs[0].size() * sizeof(glm::vec3), &menuUVs[0].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+
+	glBindVertexArray(menuVAOs[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, menuVBOs[1]);
+	glBufferData(GL_ARRAY_BUFFER, menuVertices[1].size() * sizeof(glm::vec3), &menuVertices[1].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, menuUVVBOs[1]);
+	glBufferData(GL_ARRAY_BUFFER, menuUVs[1].size() * sizeof(glm::vec3), &menuUVs[1].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+
+	glBindVertexArray(menuVAOs[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, menuVBOs[2]);
+	glBufferData(GL_ARRAY_BUFFER, menuVertices[2].size() * sizeof(glm::vec3), &menuVertices[2].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, menuUVVBOs[2]);
+	glBufferData(GL_ARRAY_BUFFER, menuUVs[2].size() * sizeof(glm::vec3), &menuUVs[2].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+
 	glGenVertexArrays(1, &VAO);
 
 	glGenBuffers(1, &vertices_VBO);
@@ -641,7 +734,7 @@ void setTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/menu_wallpaper.jpg", &twidth, &theight, &tnrChannels, 0);
+	/*data = stbi_load("Textures/menu_wallpaper.jpg", &twidth, &theight, &tnrChannels, 0);
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -650,7 +743,7 @@ void setTexture()
 	else {
 		std::cout << "Failed to load texture_menu_wallpaper" << std::endl;
 	}
-	stbi_image_free(data);
+	stbi_image_free(data);*/
 }
 
 ///Renders the objects inside the main loop.
@@ -829,17 +922,96 @@ int main()
 		glActiveTexture(GL_TEXTURE22);
 		glBindTexture(GL_TEXTURE_2D, texture_menu_wallpaper);
 
+		if (!menu_open)
+		{
+			render(INVERTED_WALLS_NAME, camera_pos, VAOINVERTEDWALLS, 3);
+
+			render(BED1_NAME, camera_pos, VAO, 1);
 		render(0, camera_pos, VAOINVERTEDWALLS, 3);
 
 		//Bed
 		render(1, camera_pos, VAO, 1);
 
+			//Wall
+			//render(WALL, camera_pos, VAOWall, 0);
+
+			//start axes
+			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(mat4(1.0f)));
+			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 		//Wall
 		render(2, camera_pos, VAOWall, 0);
 
+			glBindVertexArray(axes_VAO);
+			glDrawArrays(GL_LINES, 0, axesVertices.size());
+			glBindVertexArray(0);
+		}
+		else
+		{
+			glm::mat4 inverseViewMatrix = glm::inverse(camera.GetViewMatrix());
+			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
+			glm::mat4 menu_model_matrix = mat4(1.0f);
+			menu_model_matrix = glm::translate(menu_model_matrix, cameraPositionWorldSpace);
+			menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(camera.Front) * glm::vec3(8));
+			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(menu_model_matrix));
+			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 		//axes		
 		render(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
 
+			switch(menu_mode)
+			{
+				//Main Menu
+				case 0:
+					glBindVertexArray(menuVAOs[0]);
+					glUniform1i(texture_number, 21);
+					glDrawArrays(GL_TRIANGLES, 0, 6);
+					glUniform1i(texture_number, 22);
+					glDrawArrays(GL_TRIANGLES, 6, 6);
+					glUniform1i(texture_number, 20);
+					glDrawArrays(GL_TRIANGLES, 12, 6);
+					break;
+				//Texture Menu
+				case 1:
+					glBindVertexArray(menuVAOs[1]);
+					glUniform1i(texture_number, 0);
+					glDrawArrays(GL_TRIANGLES, 0, 6);
+					glUniform1i(texture_number, 1);
+					glDrawArrays(GL_TRIANGLES, 6, 6);
+					glUniform1i(texture_number, 2);
+					glDrawArrays(GL_TRIANGLES, 12, 6);
+					glUniform1i(texture_number, 3);
+					glDrawArrays(GL_TRIANGLES, 18, 6);
+					glUniform1i(texture_number, 20);
+					glDrawArrays(GL_TRIANGLES, 24, 6);
+					glUniform1i(texture_number, 21);
+					glDrawArrays(GL_TRIANGLES, 30, 6);
+					glUniform1i(texture_number, 22);
+					glDrawArrays(GL_TRIANGLES, 36, 6);
+					glUniform1i(texture_number, 20);
+					glDrawArrays(GL_TRIANGLES, 42, 6);
+					break;
+				//Furniture Menu
+				case 2:
+					glBindVertexArray(menuVAOs[2]);
+					glUniform1i(texture_number, 0);
+					glDrawArrays(GL_TRIANGLES, 0, 6);
+					glUniform1i(texture_number, 1);
+					glDrawArrays(GL_TRIANGLES, 6, 6);
+					glUniform1i(texture_number, 2);
+					glDrawArrays(GL_TRIANGLES, 12, 6);
+					glUniform1i(texture_number, 3);
+					glDrawArrays(GL_TRIANGLES, 18, 6);
+					glUniform1i(texture_number, 20);
+					glDrawArrays(GL_TRIANGLES, 24, 6);
+					glUniform1i(texture_number, 21);
+					glDrawArrays(GL_TRIANGLES, 30, 6);
+					break;
+			}
+			glBindVertexArray(0);
+		}
 		// Swap the screen buffers
 		glfwSwapBuffers(window);
 	}

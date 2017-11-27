@@ -62,13 +62,13 @@ void main()
 			break;
 
 		case 20: //texture_menu_back
-			color = texture(texture_menu_back, TexCoord) * vec4(resultantColour, 1.0f);
+			color = texture(texture_menu_back, TexCoord);
 			break;
 		case 21: //texture_menu_furniture
-			color = texture(texture_menu_furniture, TexCoord) * vec4(resultantColour, 1.0f);
+			color = texture(texture_menu_furniture, TexCoord);
 			break;
 		case 22: //texture_menu_wallpaper
-			color = texture(texture_menu_wallpaper, TexCoord) * vec4(resultantColour, 1.0f);
+			color = texture(texture_menu_wallpaper, TexCoord);
 			break;
 		default:
 			color = vec4(resultantColour, 1.0f);
