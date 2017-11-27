@@ -67,6 +67,17 @@ void main()
 			color = texture(texture3, TexCoord) * vec4(resultantColour, 1.0f);
 			break;
 
+		case 4: //red
+			color = vec4(1,0,0,1) * vec4(resultantColour, 1.0f);
+			break;
+		case 5: //blue
+			color = vec4(0, 1, 0, 1) * vec4(resultantColour, 1.0f);
+			break;
+		case 6: //green
+			color = vec4(0, 0, 1, 1) * vec4(resultantColour, 1.0f);
+			break;
+
+
         case 14: //texture_menu_bed
 			color = texture(texture_menu_bed, TexCoord);
 			break;

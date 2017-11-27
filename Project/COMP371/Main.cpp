@@ -78,6 +78,8 @@ GLuint ambient_strength_loc;
 //Global variable for the window
 GLFWwindow* window;
 
+const char* INVERTED_FLOOR_NAME = "Objects/inverted_normal_floor.obj";
+const char* INVERTED_CEILING_NAME = "Objects/inverted_normal_ceiling.obj";
 const char* INVERTED_WALLS_NAME = "Objects/inverted_normal_walls.obj";
 const char* BED1_NAME = "Objects/bed1.obj";
 const char* BED1BOX_NAME = "Objects/bed2.obj";
@@ -782,7 +784,7 @@ void setTexture()
 	setIndividualTexture(&texture_menu_wall_item, "Textures/menu_wall_item.jpg");
 	setIndividualTexture(&texture_menu_back, "Textures/menu_back.jpg");
 	setIndividualTexture(&texture_menu_furniture, "Textures/menu_furniture.jpg");
-	//setIndividualTexture(&texture_menu_wallpaper, "Textures/menu_wallpaper.jpg");
+	setIndividualTexture(&texture_menu_wallpaper, "Textures/menu_wallpaper.jpg");
 
 	glUseProgram(shaderProgram);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
@@ -865,9 +867,20 @@ int main()
 	setShaders();
 	setTexture();
  
-	int tempCube = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[tempCube]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
-	objects[tempCube]->texture_number = 3;
+	
+	int tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
+	objects[tempFloor]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
+	objects[tempFloor]->texture_number = 1;
+	
+	
+	int tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
+	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
+	objects[tempCeiling]->texture_number = 4;
+	
+	
+	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
+	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
+	objects[tempExtWalls]->texture_number = 3;
 
 	int tempBed = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));	
 	objects[tempBed]->translate(objects, vec3(-3.5, 0.5, 0));
