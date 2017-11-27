@@ -774,7 +774,7 @@ void setTexture()
 	setIndividualTexture(&texture1, "Textures/metal2.jpg");
 	setIndividualTexture(&texture2, "Textures/wood1.jpg");
 	setIndividualTexture(&texture3, "Textures/wood2.jpg");
-	/*setIndividualTexture(&texture_menu_bed, "Textures/menu_bed.jpg");
+	setIndividualTexture(&texture_menu_bed, "Textures/menu_bed.jpg");
 	setIndividualTexture(&texture_menu_cabinet, "Textures/menu_cabinet.jpg");
 	setIndividualTexture(&texture_menu_coffee_table, "Textures/menu_coffee_table.jpg");
 	setIndividualTexture(&texture_menu_toilet, "Textures/menu_toilet.jpg");
@@ -782,7 +782,7 @@ void setTexture()
 	setIndividualTexture(&texture_menu_wall_item, "Textures/menu_wall_item.jpg");
 	setIndividualTexture(&texture_menu_back, "Textures/menu_back.jpg");
 	setIndividualTexture(&texture_menu_furniture, "Textures/menu_furniture.jpg");
-	setIndividualTexture(&texture_menu_wallpaper, "Textures/menu_wallpaper.jpg");*/
+	//setIndividualTexture(&texture_menu_wallpaper, "Textures/menu_wallpaper.jpg");
 
 	glUseProgram(shaderProgram);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
