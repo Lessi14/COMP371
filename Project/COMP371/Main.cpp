@@ -46,6 +46,7 @@ int objRenderMode = GL_TRIANGLES;
 
 //If the menu is open
 bool menu_open = false;
+int menu_mode = 2;
 
 //Mouse
 double lastClickX = 0;
@@ -450,12 +451,31 @@ void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vec
 
 void createMenuVertices()
 {
-	//Furtniture
+	//First Menu
+	//Furniture
 	addButtonVertices(-3.0f, 3.0f, 2.0f, 4.0f, &menuVertices[0], &menuUVs[0]);
 	//Wallpaper
 	addButtonVertices(-3.0f, 3.0f, -1.0f, 1.0f, &menuVertices[0], &menuUVs[0]);
 	//Back
 	addButtonVertices(-3.0f, 3.0f, -4.0f, -2.0f, &menuVertices[0], &menuUVs[0]);
+
+	//Texture Menu
+	addButtonVertices(-5.0f, -1.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(1.0f, 5.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(-5.0f, -1.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(1.0f, 5.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(-5.0f, -1.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(1.0f, 5.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(-5.0f, -1.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(1.0f, 5.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1]);
+
+	//Furniture Menu
+	addButtonVertices(-5.0f, -1.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(1.0f, 5.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(-5.0f, -1.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(1.0f, 5.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(-5.0f, -1.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2]);
 }
 
 ///Set the VAO, VBOS for the vertices, UVs and the normals.
@@ -497,10 +517,10 @@ void setVBOs()
 	//Menus
 	createMenuVertices();
 	glGenVertexArrays(3, menuVAOs);
-	glBindVertexArray(menuVAOs[0]);
-
 	glGenBuffers(3, menuVBOs);
 	glGenBuffers(3, menuUVVBOs);
+
+	glBindVertexArray(menuVAOs[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, menuVBOs[0]);
 	glBufferData(GL_ARRAY_BUFFER, menuVertices[0].size() * sizeof(glm::vec3), &menuVertices[0].front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
@@ -508,6 +528,28 @@ void setVBOs()
 
 	glBindBuffer(GL_ARRAY_BUFFER, menuUVVBOs[0]);
 	glBufferData(GL_ARRAY_BUFFER, menuUVs[0].size() * sizeof(glm::vec3), &menuUVs[0].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+
+	glBindVertexArray(menuVAOs[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, menuVBOs[1]);
+	glBufferData(GL_ARRAY_BUFFER, menuVertices[1].size() * sizeof(glm::vec3), &menuVertices[1].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, menuUVVBOs[1]);
+	glBufferData(GL_ARRAY_BUFFER, menuUVs[1].size() * sizeof(glm::vec3), &menuUVs[1].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+
+	glBindVertexArray(menuVAOs[2]);
+	glBindBuffer(GL_ARRAY_BUFFER, menuVBOs[2]);
+	glBufferData(GL_ARRAY_BUFFER, menuVertices[2].size() * sizeof(glm::vec3), &menuVertices[2].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, menuUVVBOs[2]);
+	glBufferData(GL_ARRAY_BUFFER, menuUVs[2].size() * sizeof(glm::vec3), &menuUVs[2].front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 
@@ -860,19 +902,61 @@ int main()
 			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
 			glm::mat4 menu_model_matrix = mat4(1.0f);
 			menu_model_matrix = glm::translate(menu_model_matrix, cameraPositionWorldSpace);
-			menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(camera.Front) * glm::vec3(10));
+			menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(camera.Front) * glm::vec3(8));
 			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(menu_model_matrix));
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 
-			glBindVertexArray(menuVAOs[0]);
-			glUniform1i(texture_number, 21);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-			glUniform1i(texture_number, 22);
-			glDrawArrays(GL_TRIANGLES, 6, 6);
-			glUniform1i(texture_number, 20);
-			glDrawArrays(GL_TRIANGLES, 12, 6);
+			switch(menu_mode)
+			{
+				//Main Menu
+				case 0:
+					glBindVertexArray(menuVAOs[0]);
+					glUniform1i(texture_number, 21);
+					glDrawArrays(GL_TRIANGLES, 0, 6);
+					glUniform1i(texture_number, 22);
+					glDrawArrays(GL_TRIANGLES, 6, 6);
+					glUniform1i(texture_number, 20);
+					glDrawArrays(GL_TRIANGLES, 12, 6);
+					break;
+				//Texture Menu
+				case 1:
+					glBindVertexArray(menuVAOs[1]);
+					glUniform1i(texture_number, 0);
+					glDrawArrays(GL_TRIANGLES, 0, 6);
+					glUniform1i(texture_number, 1);
+					glDrawArrays(GL_TRIANGLES, 6, 6);
+					glUniform1i(texture_number, 2);
+					glDrawArrays(GL_TRIANGLES, 12, 6);
+					glUniform1i(texture_number, 3);
+					glDrawArrays(GL_TRIANGLES, 18, 6);
+					glUniform1i(texture_number, 20);
+					glDrawArrays(GL_TRIANGLES, 24, 6);
+					glUniform1i(texture_number, 21);
+					glDrawArrays(GL_TRIANGLES, 30, 6);
+					glUniform1i(texture_number, 22);
+					glDrawArrays(GL_TRIANGLES, 36, 6);
+					glUniform1i(texture_number, 20);
+					glDrawArrays(GL_TRIANGLES, 42, 6);
+					break;
+				//Furniture Menu
+				case 2:
+					glBindVertexArray(menuVAOs[2]);
+					glUniform1i(texture_number, 0);
+					glDrawArrays(GL_TRIANGLES, 0, 6);
+					glUniform1i(texture_number, 1);
+					glDrawArrays(GL_TRIANGLES, 6, 6);
+					glUniform1i(texture_number, 2);
+					glDrawArrays(GL_TRIANGLES, 12, 6);
+					glUniform1i(texture_number, 3);
+					glDrawArrays(GL_TRIANGLES, 18, 6);
+					glUniform1i(texture_number, 20);
+					glDrawArrays(GL_TRIANGLES, 24, 6);
+					glUniform1i(texture_number, 21);
+					glDrawArrays(GL_TRIANGLES, 30, 6);
+					break;
+			}
 			glBindVertexArray(0);
 		}
 		// Swap the screen buffers
