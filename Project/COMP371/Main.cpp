@@ -41,8 +41,7 @@ glm::mat4 model_matrix;
 //load and create a texture
 unsigned int texture0, texture1, texture2, texture3, texture_menu_back, texture_menu_furniture, texture_menu_wallpaper;
 
-
-std::map<const char *, Object*> objects;
+map<int, Object*> objects;
 
 //Which mode to render in between point, lines, and triangles
 int objRenderMode = GL_TRIANGLES;
@@ -81,8 +80,7 @@ const char* TOILET_NAME = "Objects/toilet.obj";
 const char* TORCHERE1_NAME = "Objects/torchere1.obj";
 const char* WALL = "Objects/wall.obj";
 
-
-const char* selectedObject = "";
+int selectedObject = -1;
 
 GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
@@ -160,14 +158,13 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 		objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
 		cout << modifier << endl;
 	}
-
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 	{
-		selectedObject = "";
+		selectedObject = -1;
 		lastClickX = last_cursor_x;
 		lastClickY = last_cursor_y;
 		vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
@@ -179,7 +176,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 			{
 				//Object Selected
 				currentClosest = distanceT;
-				selectedObject = ent2.second->name;
+				selectedObject = ent2.second->id;
 				cout << selectedObject << endl;
 			}
 		}
@@ -409,7 +406,7 @@ int windowSetup()
 }
 
 ///Extractedd the method which creates the vbos.
-void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, const char* path)
+void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id)
 {
 	glGenBuffers(1, &verticesVBO);
 	glGenBuffers(1, &normalsVBO);
@@ -418,17 +415,17 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glBindVertexArray(localVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[path]->vertices.size() * sizeof(glm::vec3), &objects[path]->vertices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->vertices.size() * sizeof(glm::vec3), &objects[id]->vertices.front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[path]->normals.size() * sizeof(glm::vec3), &objects[path]->normals.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->normals.size() * sizeof(glm::vec3), &objects[id]->normals.front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[path]->uvs.size() * sizeof(glm::vec3), &objects[path]->uvs.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->uvs.size() * sizeof(glm::vec3), &objects[id]->uvs.front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 
@@ -453,7 +450,6 @@ void setVBOs()
 	axesColors.push_back({ 0.0, 0.0, 1.0, });
 	axesColors.push_back({ 0.0, 0.0, 1.0, });
 
-
 	glGenVertexArrays(1, &axes_VAO);
 	glBindVertexArray(axes_VAO);
 
@@ -472,6 +468,7 @@ void setVBOs()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
+	///-----------
 	glGenVertexArrays(1, &VAO);
 
 	glGenBuffers(1, &vertices_VBO);
@@ -479,15 +476,17 @@ void setVBOs()
 	glGenBuffers(1, &uvs_VBO);
 
 	//Bed
-	setIndividualBuffers(VAO, vertices_VBO, normals_VBO, uvs_VBO, BED1_NAME);
-		
+	setIndividualBuffers(VAO, vertices_VBO, normals_VBO, uvs_VBO, 1);
+	///--------	
+
+
 	//Inverted Cube
 	glGenVertexArrays(1, &VAOINVERTEDWALLS);
 
 	glGenBuffers(1, &vertices_inverted_walls_VBO);
 	glGenBuffers(1, &normals_inverted_walls_VBO);
 	glGenBuffers(1, &uvs_inverted_walls_VBO);
-	setIndividualBuffers(VAOINVERTEDWALLS, vertices_inverted_walls_VBO, normals_inverted_walls_VBO, uvs_inverted_walls_VBO, INVERTED_WALLS_NAME);
+	setIndividualBuffers(VAOINVERTEDWALLS, vertices_inverted_walls_VBO, normals_inverted_walls_VBO, uvs_inverted_walls_VBO, 0);
 	
 	//Wall
 	glGenVertexArrays(1, &VAOWall);
@@ -496,7 +495,7 @@ void setVBOs()
 	glGenBuffers(1, &normalsWall);
 	glGenBuffers(1, &uvsWall);
 
-	setIndividualBuffers(VAOWall, verticesWall, normalsWall, uvsWall, WALL);
+	setIndividualBuffers(VAOWall, verticesWall, normalsWall, uvsWall, 2);
 
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 }
@@ -655,9 +654,9 @@ void setTexture()
 }
 
 ///Renders the objects inside the main loop.
-void render(const char* name, vec3 camera_pos, GLuint VAO, GLuint tex_num)
+void render(int id, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 {
-	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objects[name]->objectModel));
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objects[id]->objectModel));
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
@@ -669,7 +668,7 @@ void render(const char* name, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 	glUniform1f(ambient_strength_loc, ambient_strength);	
 
 	glBindVertexArray(VAO);
-	glDrawArrays(objRenderMode, 0, objects[name]->vertices.size());
+	glDrawArrays(objRenderMode, 0, objects[id]->vertices.size());
 	glBindVertexArray(0);
 }
 
@@ -728,20 +727,24 @@ int main()
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_furniture"), 21);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_wallpaper"), 22);
 
-	Object *invWalls = new Object(INVERTED_WALLS_NAME);
-	Object *bedBox = new Object(BED1BOX_NAME);
-	Object *bed = new Object(BED1_NAME);
-	Object *cabinet = new Object(CABINET3_NAME);
-	Object *coffee = new Object(COFFEE_TABLE1_NAME);
-	Object *toilet = new Object(TOILET_NAME);
-	Object *torchere = new Object(TORCHERE1_NAME);
-	Object *wall = new Object(WALL);
+	Object *invWalls = new Object(0,INVERTED_WALLS_NAME);
+	Object *bed = new Object(1, BED1_NAME);
+	Object *wall = new Object(2, WALL);
+
+	/*Object *cabinet = new Object(3, CABINET3_NAME);
+	Object *coffee = new Object(4, COFFEE_TABLE1_NAME);
+	Object *toilet = new Object(5, TOILET_NAME);
+	Object *torchere = new Object(6, TORCHERE1_NAME);*/	
 
 	invWalls -> loadObjToMap(objects);
-	objects[invWalls->name] = invWalls;
+	objects[invWalls->id] = invWalls;
 
 	bed->loadObjToMap(objects);
-	objects[bed->name] = bed;
+	objects[bed->id] = bed;
+
+	wall->loadObjToMap(objects);
+	objects[wall->id] = wall;
+
 	//objectTriangles[bed->name] = bed->triangles;
 
 	//cabinet->loadObjToMap(objects);	
@@ -755,9 +758,6 @@ int main()
 
 	//torchere->loadObjToMap(objects);	
 	//objects[torchere->name] = torchere;
-
-	wall->loadObjToMap(objects);
-	objects[wall->name] = wall;
 	
 	setVBOs();
 
@@ -812,7 +812,7 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
-		objects[bed->name]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
+		objects[bed->id]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture0);
@@ -829,19 +829,15 @@ int main()
 		glActiveTexture(GL_TEXTURE22);
 		glBindTexture(GL_TEXTURE_2D, texture_menu_wallpaper);
 
+		render(0, camera_pos, VAOINVERTEDWALLS, 3);
 
-		render(INVERTED_WALLS_NAME, camera_pos, VAOINVERTEDWALLS, 3);
-
-		render(BED1_NAME, camera_pos, VAO, 1);
-
-		//Floor
-		//render(FLOOR, camera_pos, VAOFloor);
+		//Bed
+		render(1, camera_pos, VAO, 1);
 
 		//Wall
-		render(WALL, camera_pos, VAOWall, 0);
+		render(2, camera_pos, VAOWall, 0);
 
-		//start axes
-		
+		//axes		
 		render(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
 
 		// Swap the screen buffers
