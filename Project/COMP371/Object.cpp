@@ -47,10 +47,11 @@ Object::Object(const char * name,
 
 void Object::translate(map<const char*, mat4>& objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes)
 {
-	this->objectModel *= glm::translate(objectModels[name], changes);
+	this->objectModel *= glm::translate(mat4(1.0f), changes);
 	objectModels[name] = this->objectModel;	
 	UpdateVertices();
 	objectTriangles[name] = this->triangles;
+	//calculateBounderyBox();
 }
 
 void Object::rotate(map<const char*, mat4>& objectModels, map<const char *, vector<Triangle>>& objectTriangles, float angle, glm::vec3 rotationAxe)
@@ -63,6 +64,7 @@ void Object::rotate(map<const char*, mat4>& objectModels, map<const char *, vect
 	this->objectModel = glm::rotate(mat4(1.0f), angle, rotationAxe);	
 	UpdateVertices();
 	objectTriangles[name] = this->triangles;
+	//calculateBounderyBox();
 }
 
 
@@ -72,6 +74,7 @@ void Object::scale(map<const char*, mat4>& objectModels, map<const char *, vecto
 	objectModels[name] = this->objectModel;
 	UpdateVertices();
 	objectTriangles[name] = this->triangles;
+	//calculateBounderyBox();
 }
 
 //Apply a 3d transformation to a vertex.
@@ -87,7 +90,7 @@ void Object::UpdateVertices()
 		//Expand the vector to 4d
 		vec4 expanded = vec4(vertex.x, vertex.y, vertex.z, wComponent);
 		//Multiply by the transformation matrix. Which is the object model right ?
-		vec4 result = expanded * this->objectModel;
+		vec4 result = this->objectModel * expanded;
 		//tranforma back to 3d
 		vec3 transformedVertex = vec3(result.x / wComponent, result.y / wComponent, result.z / wComponent);
 		transFormedVertices.push_back(transformedVertex);
@@ -220,11 +223,10 @@ Object::~Object()
 void Object::calculateBounderyBox()
 {
 	boundingbox.clear();
-	boundingBoxTriangles.clear();
-	vec3 maxVertex(0, 0, 0), minVertex(0, 0, 0);
+	vec3 maxVertex(-1000, -1000, -1000), minVertex(1000, 1000, 1000);
 	maxX = 0, maxY = 0, maxZ = 0;
 	minX = 0, minY = 0, minZ = 0;
-	for (auto incr = 0; incr < vertices.size() - 1; incr++)
+	for (auto incr = 0; incr < vertices.size(); incr++)
 	{
 		auto vertex = vertices.at(incr);
 		if (vertex.x > maxVertex.x)	maxVertex.x = vertex.x;
@@ -305,8 +307,7 @@ bool Object::collides(vector<float> collidingObjectMaxandMin)
 		withinZ = true;
 	if (withinX && withinY && withinZ) return true;
 	
-	return false;
-	
+	return false;	
 }
 
 void Object::loadObjNoUVsToMap(map<const char*, vector<vec3>> &objectVertices,

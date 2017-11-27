@@ -83,6 +83,7 @@ GLuint VAO_CoffeeTable, VBO_CoffeeTable, EBO_CoffeeTable;
 GLuint vertices_VBO_CoffeeTable, normals_VBO_CoffeeTable, uvs_VBO_CoffeeTable;
 GLuint VAOCOFFEETABLEBOX, vertices_CoffeeTableBox_VBO, normals_CoffeeTableBox_VBO, uvs_CoffeeTableBox_VBO;
 
+bool translationOfObject = false;
 
 std::vector<glm::vec3> axesVertices;
 std::vector<glm::vec3> axesColors;
@@ -187,6 +188,7 @@ void processInput(GLFWwindow *window)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS)
 		camera.Reset();
+		
 	//cout << camera.Position.x  << endl;
 	//cout << camera.Position.y << endl;
 	//cout << camera.Position.z << endl;
@@ -198,7 +200,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 {
 	std::cout << key << std::endl;
 	//Pressed
-	if (1 == action) {
+	if (GLFW_PRESS == action) {
 		switch (key)
 		{
 		case GLFW_KEY_C:
@@ -209,6 +211,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			break;
 		case GLFW_KEY_F:
 			//Flying  or viewing camera
+			break;
+		case GLFW_KEY_N:
+			translationOfObject = true;
 			break;
 		default:
 			break;
@@ -576,30 +581,31 @@ int main()
 
 	triangle_scale = glm::vec3(1.0f);
 
-	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
+	glm::vec3 camera_pos = camera.Position;
 
 	wall->scale(objectModels,objectTriangles, vec3(1, 0.5, 1));
 	wall->translate(objectModels, objectTriangles, vec3(0.5, 1, 5));
 	floor->translate(objectModels, objectTriangles, vec3(0, 0, 0));
 	//bed->translate(objectModels,objectTriangles, vec3(0, 0.5, 0));
 	bed->translate(objectModels, objectTriangles, vec3(-2.5, 0, 0));
-	bedBox->translate(objectModels, objectTriangles, vec3(-2.5, 0, 0));
-	bedBox->setBoxX(-2.5);
-	coffee->translate(objectModels, objectTriangles, vec3(-2.0, 0, 0));
-	coffeeTableBox->setBoxX(-2.0);
+	//bedBox->translate(objectModels, objectTriangles, vec3(-2.5, 0, 0));
+	//bed->setBoxX(-2.5);
+	//coffee->translate(objectModels, objectTriangles, vec3(0, 0, 0));
+	//coffeeTableBox->setBoxX(-2.0);
 	
 
 	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
 	transformLoc = glGetUniformLocation(shaderProgram, "model_matrix");
 	camera_pos_addr = glGetUniformLocation(shaderProgram, "view_pos");
-
+	
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+		
 
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		processInput(window);
@@ -614,7 +620,11 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
-
+		if (translationOfObject) {
+			coffee->translate(objectModels, objectTriangles, vec3(-1, 0, 0));
+			//coffee->setBoxX(-1);
+			translationOfObject = false;
+		}
 		//kept this for reference
 		/*glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[BED1_NAME]));
 		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
@@ -625,10 +635,11 @@ int main()
 		glDrawArrays(objRenderMode, 0, objectVertices[BED1_NAME].size());
 		glBindVertexArray(0);*/
 
+
 		render(BED1_NAME, camera_pos, VAO);
 		render(COFFEE_TABLE1_NAME, camera_pos, VAO_CoffeeTable);
 
-		bool isColliding = coffeeTableBox->collides(bedBox->getListOfMaxAndMin());
+		bool isColliding = coffee->collides(bed->getListOfMaxAndMin());
 
 		if (isColliding) cout << "IT IS COLLIDING BITCHES" << endl;
 		else cout << "AIN'T COLLIDING BABY" << endl;
