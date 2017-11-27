@@ -60,7 +60,7 @@ GLuint texture_number;
 //Global variable for the window
 GLFWwindow* window;
 
-const char* INVERTED_CUBE_NAME = "Objects/inverted_normal_cube1.obj";
+const char* INVERTED_WALLS_NAME = "Objects/inverted_normal_walls.obj";
 const char* BED1_NAME = "Objects/bed1.obj";
 const char* BED1BOX_NAME = "Objects/bed2.obj";
 const char* CABINET3_NAME = "Objects/cabinet3.obj";
@@ -77,7 +77,7 @@ GLuint VAOWall, verticesWall, normalsWall, uvsWall;
 GLuint VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO;
 
 
-GLuint VAOINVERTEDCUBE, vertices_inverted_cube_VBO, normals_inverted_cube_VBO, uvs_inverted_cube_VBO;
+GLuint VAOINVERTEDWALLS, vertices_inverted_walls_VBO, normals_inverted_walls_VBO, uvs_inverted_walls_VBO;
 glm::vec2 roomDimensions;
 
 GLuint axes_VBO, axesColorsVBO;
@@ -443,12 +443,12 @@ void setVBOs()
 
 	
 	//Inverted Cube
-	glGenVertexArrays(1, &VAOINVERTEDCUBE);
+	glGenVertexArrays(1, &VAOINVERTEDWALLS);
 
-	glGenBuffers(1, &vertices_inverted_cube_VBO);
-	glGenBuffers(1, &normals_inverted_cube_VBO);
-	glGenBuffers(1, &uvs_inverted_cube_VBO);
-	setIndividualBuffers(VAOINVERTEDCUBE, vertices_inverted_cube_VBO, normals_inverted_cube_VBO, uvs_inverted_cube_VBO, INVERTED_CUBE_NAME);
+	glGenBuffers(1, &vertices_inverted_walls_VBO);
+	glGenBuffers(1, &normals_inverted_walls_VBO);
+	glGenBuffers(1, &uvs_inverted_walls_VBO);
+	setIndividualBuffers(VAOINVERTEDWALLS, vertices_inverted_walls_VBO, normals_inverted_walls_VBO, uvs_inverted_walls_VBO, INVERTED_WALLS_NAME);
 	
 
 	//Tentative for floor
@@ -600,7 +600,7 @@ int main()
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
 
-	Object *invCube = new Object(INVERTED_CUBE_NAME);
+	Object *invCube = new Object(INVERTED_WALLS_NAME);
 	Object *bedBox = new Object(BED1BOX_NAME);
 	Object *bed = new Object(BED1_NAME);
 	Object *cabinet = new Object(CABINET3_NAME);
@@ -693,7 +693,7 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture1);
 
 
-		render(INVERTED_CUBE_NAME, camera_pos, VAOINVERTEDCUBE, 0);
+		render(INVERTED_WALLS_NAME, camera_pos, VAOINVERTEDWALLS, 0);
 
 		render(BED1_NAME, camera_pos, VAO, 1);
 
