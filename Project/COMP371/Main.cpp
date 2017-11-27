@@ -27,6 +27,8 @@ const GLuint WIDTH = 800, HEIGHT = 600;
 glm::vec3 camera_position;
 glm::vec3 triangle_scale;
 
+glm::vec3 camera_pos = vec3(0, 0, 0);
+
 glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
@@ -160,14 +162,16 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		lastClickX = last_cursor_x;
 		lastClickY = last_cursor_y;
 		vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
+		float distanceT = 0;
+		float currentClosest = 1000;
 		for (auto const &ent2 : objects)
 		{
-			if (ent2.second->intersect(camera.Position, castedRay))
+			if (ent2.second->intersect(camera.Position, castedRay,distanceT) && distanceT< currentClosest)
 			{
 				//Object Selected
+				currentClosest = distanceT;
 				selectedObject = ent2.second->name;
 				cout << selectedObject << endl;
-				objects[selectedObject]->translate(objects, vec3(0.1f, 0.0f, 0.0f));				
 			}
 		}
 
@@ -681,7 +685,6 @@ int main()
 	glCullFace(GL_BACK);
 
 	setShaders();
-
 	setTexture();
 
 	glUseProgram(shaderProgram);
@@ -700,7 +703,6 @@ int main()
 	Object *coffee = new Object(COFFEE_TABLE1_NAME);
 	Object *toilet = new Object(TOILET_NAME);
 	Object *torchere = new Object(TORCHERE1_NAME);
-	//Object *floor = new Object(FLOOR);
 	Object *wall = new Object(WALL);
 
 	invWalls -> loadObjToMap(objects);
@@ -729,7 +731,7 @@ int main()
 
 	triangle_scale = glm::vec3(1.0f);
 
-	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
+	camera_pos = camera.Position;
 
 	invWalls->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	wall->scale(objects, vec3(1, 0.5, 1));
@@ -755,6 +757,8 @@ int main()
 		processInput(window);
 		glfwPollEvents();
 
+		camera_pos = camera.Position;
+
 		// Render
 		// Clear the colorbuffer
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -762,7 +766,7 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
-		//objects[bed->name]->translate(objectModels, objects, vec3(0.01f, 0.0f, 0.0f));
+		objects[bed->name]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture0);
@@ -783,7 +787,6 @@ int main()
 		render(INVERTED_WALLS_NAME, camera_pos, VAOINVERTEDWALLS, 3);
 
 		render(BED1_NAME, camera_pos, VAO, 1);
-
 
 		//Floor
 		//render(FLOOR, camera_pos, VAOFloor);

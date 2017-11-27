@@ -123,7 +123,7 @@ void Object::setIntersectionTriangle()
 ///Method which test the intersection of a triangle and a ray.
 ///Implementation of the Moller Trumbone algo.
 ///https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
-bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri)
+bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri, float &distanceT)
 {
 	const float EPSILON = 0.0000001;
 	float a, f, u, v;
@@ -147,7 +147,7 @@ bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri)
 	float t = f *  glm::dot(edge2, q);
 	if (t > EPSILON) // ray intersection
 	{
-		//resultinPoint = rayO + rayDir * t;
+		distanceT = t;
 		return true;
 	}
 	else // This means that there is a line intersection but not a ray intersection.
@@ -158,6 +158,7 @@ bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri)
 bool Object::intersect(vec3 rayPosition, vec3 rayDir, float &distanceT)
 {
 	bool hitBoundaryBox = false;
+	float collisionDistance = 1000;
 
 	///Check outer boundarybox first.	
 	///Cull the triangles that are backfacing.
@@ -173,7 +174,7 @@ bool Object::intersect(vec3 rayPosition, vec3 rayDir, float &distanceT)
 	//check for intersection with each tringles of the boundary box
 	for (Triangle localTriangleBound : triangles)
 	{
-		if (ray_intersect_triangle(rayPosition, rayDir, localTriangleBound))
+		if (ray_intersect_triangle(rayPosition, rayDir, localTriangleBound,collisionDistance))
 		{
 			hitBoundaryBox = true;
 			break;
@@ -198,8 +199,9 @@ bool Object::intersect(vec3 rayPosition, vec3 rayDir, float &distanceT)
 		//check for intersection with each tringles.
 		for (Triangle localTriangle : triangles)
 		{
-			if (ray_intersect_triangle(rayPosition, rayDir, localTriangle))
+			if (ray_intersect_triangle(rayPosition, rayDir, localTriangle,collisionDistance))
 			{
+				distanceT = collisionDistance;
 				return true;
 			}
 		}
