@@ -169,6 +169,69 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	}
 }
 
+void handle_button_click(int buttonId)
+{
+	switch (menu_mode)
+	{
+	case 0:
+		switch (buttonId)
+		{
+		//furniture button
+		case 0:
+			menu_mode = 2;
+			break;
+		//texture button
+		case 1:
+			menu_mode = 1;
+			break;
+		//back button
+		case 2:
+			menu_open = false;
+			menu_mode = 0;
+			break;
+		}
+		break;
+	case 1:
+		switch (buttonId)
+		{
+		case 0:
+			break;
+		case 1:
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+			break;
+		case 6:
+			break;
+		case 7:
+			break;
+		}
+		break;
+	case 2:
+		switch (buttonId)
+		{
+		case 0:
+			break;
+		case 1:
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+			break;
+		}
+		break;
+	}
+}
+
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
@@ -190,6 +253,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 					currentClosest = distanceT;
 					selectedButtonID = ent.second->id;
 					cout << selectedButtonID << endl;
+					handle_button_click(selectedButtonID);
 				}
 			}
 		}
@@ -294,6 +358,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			break;
 		case GLFW_KEY_ENTER:
 			menu_open = !menu_open;
+			menu_mode = 0;
 			if (menu_open)
 			{
 				glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
