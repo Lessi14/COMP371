@@ -1,54 +1,67 @@
 #include "Object.h"
 
-Object::Object(const char * name)
+Object::Object(int id, const char * type)
 {
-	this->name = name;
+	this->id = id;
+	this->type = type;
 }
 
-Object::Object(const char * name,
+Object::Object(int id,
+	const char * type,
 	vector<vec3> vertices,
 	vector<vec3> normals,
 	vector<vec2> uvs,
-	std::map<const char *, Object*> objects,
+	map<int, Object*> objects,
 	vec3 worldCoordinates)
 {
-	this->name = name;
+	this->type = type;
 	this->vertices = vertices;
 	this->defaultVertices = vertices;
 	this->defaultNormals = normals;
 	this->normals = normals;
 	this->uvs = uvs;
-	objects[name] = this;
+	objects[id] = this;
 	this->worldCoordinates = worldCoordinates;
 }
 
-Object::Object(const char * name,
+Object::Object(int id,
+	const char * type,
 	std::vector<glm::vec3> vertices,
 	std::vector<glm::vec3> normals,
 	std::vector<glm::vec2> uvs,
-	std::map<const char *, Object*> objects
+	std::map<int, Object*> objects
 )
 {
-	this->name = name;
+	this->type = type;
 	this->vertices = vertices;
 	this->defaultVertices = vertices;
 	this->defaultNormals = normals;
 	this->normals = normals;
 	this->uvs = uvs;
-	objects[name] = this;
+	objects[id] = this;
 
 }
 
-void Object::translate(map<const char *, Object*>& objects, vec3 changes)
+bool Object::checkIdAvailability(int id)
+{
+	for (int lId : ids)
+	{
+		if (lId == id)
+			return true;
+	}
+	return false;
+}
+
+void Object::translate(map<int, Object*>& objects, vec3 changes)
 {
 	this->objectModel *= glm::translate(mat4(1.0f), changes);	
 	UpdateVertices();
 	setIntersectionTriangle();
-	objects[name] = this;
+	objects[id] = this;
 
 }
 
-void Object::rotate(map<const char *, Object*>& objects, float angle, glm::vec3 rotationAxe)
+void Object::rotate(map<int, Object*>& objects, float angle, glm::vec3 rotationAxe)
 {
 	//reset to center
 	this->objectModel = this->defaultObjectModel;
@@ -58,16 +71,16 @@ void Object::rotate(map<const char *, Object*>& objects, float angle, glm::vec3 
 	this->objectModel = glm::rotate(mat4(1.0f), angle, rotationAxe);
 	UpdateVertices();
 	setIntersectionTriangle();
-	objects[name] = this;
+	objects[id] = this;
 }
 
 
-void Object::scale(map<const char *, Object*>& objects, vec3 changes)
+void Object::scale(map<int, Object*>& objects, vec3 changes)
 {
 	this->objectModel *= glm::scale(this->objectModel, changes);	
 	UpdateVertices();
 	setIntersectionTriangle();
-	objects[name] = this;
+	objects[id] = this;
 }
 
 //Apply a 3d transformation to a vertex.
@@ -274,34 +287,34 @@ void Object::calculateBounderyBox()
 }
 
 
-void Object::loadObjNoUVsToMap(std::map<const char *, Object*> objects)
+void Object::loadObjNoUVsToMap(std::map<int, Object*> objects)
 {
-	loadOBJNoUV(name, vertices, normals);
+	loadOBJNoUV(type, vertices, normals);
 	this->defaultVertices = vertices;
 	this->defaultNormals = normals;
 	setIntersectionTriangle();
 	calculateBounderyBox();
-	objects[name] = this;
+	objects[id] = this;
 }
 
-void Object::loadObjToMap(std::map<const char *, Object*> objects)
+void Object::loadObjToMap(std::map<int, Object*> objects)
 {
-	loadOBJ(name, vertices, normals, uvs);
+	loadOBJ(type, vertices, normals, uvs);
 	this->defaultVertices = vertices;
 	this->defaultNormals = normals;
 	setIntersectionTriangle();
 	calculateBounderyBox();
-	objects[name] = this;
+	objects[id] = this;
 }
 
 
-void Object::loadObjBoxToMap(std::map<const char *, Object*> objects)
+void Object::loadObjBoxToMap(std::map<int, Object*> objects)
 {
-	loadOBJ(name, vertices, normals, uvs);
+	loadOBJ(type, vertices, normals, uvs);
 	this->defaultVertices = vertices;
 	this->defaultNormals = normals;
 	setIntersectionTriangle();
 	calculateBounderyBox();
-	objects[name] = this;
+	objects[id] = this;
 }
 
