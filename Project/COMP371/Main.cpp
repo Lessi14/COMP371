@@ -89,15 +89,10 @@ const char* WALL = "Objects/wall.obj";
 int selectedObject = -1;
 GLuint menuVAOs[3], menuVBOs[3], menuUVVBOs[3];
 
-GLuint VAO, VBO, EBO;
-GLuint vertices_VBO, normals_VBO, uvs_VBO;
-
 glm::vec2 roomDimensions;
 
 GLuint axes_VBO, axesColorsVBO;
 GLuint axes_VAO;
-
-
 
 GLuint VAO_Coffee, vertices_VBO_Coffee, normals_VBO_Coffee, uvs_VBO_Coffee;
 
@@ -162,42 +157,43 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 
 	float diffY = lastClickY - ypos;
 	float diffX = lastClickX - xpos;
-	float dempener = 0.0012;
+	//cout << diffY << endl;
+	float dempener = 0.05;
 	float modifier = diffY * dempener;
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+	cout << modifier << endl;	
+	if (abs(modifier) < 0.15)
+	{
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(modifier, 0.0f, 0.0f), 0, 1); //0 and 1 stands for minX and maxX
 
+			if (!checkIfItCollides)
+			{
+				objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
+			}
 
-		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(modifier, 0.0f, 0.0f), 0, 1); //0 and 1 stands for minX and maxX
-
-		if (!checkIfItCollides)
-		{
-			objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
 		}
-		cout << modifier << endl;
-	}
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, modifier, 0.0f), 2, 3); //2 and 3 stands for minY and maxY
 
-		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, modifier, 0.0f), 2, 3); //2 and 3 stands for minY and maxY
-
-		if (!checkIfItCollides) {
-			objects[selectedObject]->translate(objects, vec3(0.0f, modifier, 0.0f));
+			if (!checkIfItCollides) {
+				objects[selectedObject]->translate(objects, vec3(0.0f, modifier, 0.0f));
+			}
 		}
-		cout << modifier << endl;
-	}
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, 0.0f, modifier), 4, 5); //4 and 5 stands for minZ and maxZ
 
-		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, 0.0f, modifier), 4, 5); //4 and 5 stands for minZ and maxZ
-
-		if (!checkIfItCollides) {
-			objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
+			if (!checkIfItCollides) {
+				objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
+			}
 		}
-		cout << modifier << endl;
 	}
+	lastClickX = xpos;
+	lastClickY = ypos;
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	if (action == GLFW_PRESS)
 	{
 		selectedObject = -1;
 		lastClickX = last_cursor_x;
@@ -212,9 +208,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 				//Object Selected
 				currentClosest = distanceT;
 				selectedObject = ent.second->id;
-				cout << selectedObject << endl;
+				
 			}
 		}
+		cout << selectedObject << endl;
 	}
 }
 
@@ -848,8 +845,7 @@ int main()
 	objects[tempCube]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempCube]->texture_number = 3;
 
-	int tempBed = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
-	//objects[tempBed]->translate(objectModels,objectTriangles, vec3(0, 0.5, 0));
+	int tempBed = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));	
 	objects[tempBed]->translate(objects, vec3(-3.5, 0.5, 0));
 	objects[tempBed]->texture_number = 1;
 
@@ -868,9 +864,6 @@ int main()
 
 	int torch = addFurniture(TORCHERE1_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[torch]->texture_number = 3;
-
-	//éécoffee->loadObjToMap(objects);
-	//objects[coffee->id] = coffee;
 
 	setVBOs();
 
@@ -934,21 +927,7 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture_menu_wallpaper);
 
 		if (!menu_open)
-		{
-			//objects[1]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
-			//walls
-			//render(0, camera_pos, VAOINVERTEDWALLS, 3);
-
-			//Coffee Table
-			//render(3, camera_pos, VAO_Coffee, 1);
-
-			//Bed
-			//render(1, camera_pos, VAO, 1);
-
-			//Wall
-			//render(2, camera_pos, VAOWall, 0);
-			//axes	
-
+		{			
 			for (auto const &ent : objects)
 			{
 				render(ent.second->id, camera_pos, ent.second->VAO, ent.second->texture_number);
@@ -959,9 +938,7 @@ int main()
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-
 			render(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
-
 		}
 		else
 		{
@@ -1031,26 +1008,12 @@ int main()
 		glfwSwapBuffers(window);
 	}
 
-	/*map<int, Object*>::iterator itr = objects.begin();
+
+	//Garbage collection
+	map<int, Object*>::iterator itr = objects.begin();
 	while (itr != objects.end()) {
 	itr = objects.erase(itr);
-	}*/
-
-
-	//bed = nullptr;
-	//cabinet = nullptr;
-	//coffee = nullptr;
-	//toilet = nullptr;
-	//torchere = nullptr;
-	//floor = nullptr;
-	//wall = nullptr;
-	//delete bed;
-	//delete cabinet;
-	//delete coffee;
-	//delete toilet;
-	//delete torchere;
-	//delete floor;
-	//delete wall;
+	}	
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
 	glfwTerminate();
