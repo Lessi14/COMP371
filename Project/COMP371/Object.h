@@ -64,6 +64,14 @@ public:
 	int id;
 	static vector<int> ids;
 
+	
+	bool collides(vector<float> collidingObjectMaxandMin);
+	bool isNextACollision(map<int, Object*> objects, vec3 potentialTranlation, int min, int max);
+
+	vector<float> getPostMaxMinBeforeTranslation(vec3 potentialNewPosition);
+
+	vector<float> getListOfMaxAndMin();
+
 	//Basic Architecture
 	vector<vec3> vertices, normals;
 	vector<vec3> defaultVertices, defaultNormals;
@@ -83,5 +91,9 @@ public:
 
 	//Models for the transformations
 	glm::mat4 defaultObjectModel, objectModel;
+
+private:
+	float maxX, maxY, maxZ, minX, minY, minZ;
+	vector<float> listOfMaxAndMin;
 };
 
