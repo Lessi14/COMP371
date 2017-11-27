@@ -1,17 +1,9 @@
 #pragma once
-#include "stdafx.h"
-#include "..\glew\glew.h"	// include GL Extension Wrangler
-#include "..\glfw\glfw3.h"	// include GLFW helper library
-#include <stdio.h>
-#include <iostream>
-#include <string>
-#include "glm.hpp"
-#include "gtc/matrix_transform.hpp"
 #include "gtc/type_ptr.hpp"
-#include "objloader.hpp"  //include the object loader
 #include <map>;
 #include "camera.h"
 #include "Triangle.h"
+#include "objloader.hpp"
 
 using namespace std;
 using namespace glm;
@@ -25,10 +17,7 @@ public:
 		vector<vec3> vertices,
 		vector<vec3> normals,
 		vector<vec2> uvs,
-		map<const char*, vector<vec3>> &objectVertices,
-		map<const char*, vector<vec3>> &objectNormals,
-		map<const char*, vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels,
+		std::map<const char *, Object*>,
 		vec3 worldCoordinates);	
 
 	///Basic Construrctor
@@ -36,35 +25,20 @@ public:
 		vector<vec3> vertices,
 		vector<vec3> normals,
 		vector<vec2> uvs,
-		map<const char*, vector<vec3>> &objectVertices,
-		map<const char*, vector<vec3>> &objectNormals,
-		map<const char*, vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels);
+		std::map<const char *, Object*>);
 
-	void loadObjNoUVsToMap(map<const char*,	vector<vec3>> &objectVertices,
-		map<const char*, vector<vec3>> &objectNormals,
-		map<const char*, vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels,
-		map<const char *, vector<Triangle>>& objectTriangles);
+	void loadObjNoUVsToMap(std::map<const char *, Object*>);
 
-	void loadObjToMap(map<const char*, vector<vec3>> &objectVertices,
-		map<const char*,vector<vec3>> &objectNormals,
-		map<const char*,vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels,
-		map<const char *, vector<Triangle>>& objectTriangles);
+	void loadObjToMap(std::map<const char *, Object*>);
 
-	void loadObjBoxToMap(map<const char*, vector<vec3>>& objectVertices,
-		map<const char*, vector<vec3>>& objectNormals,
-		map<const char*, vector<vec2>>& objectUVs,
-		map<const char*, mat4>& objectModels,
-		map<const char *, vector<Triangle>>& objectTriangles);
+	void loadObjBoxToMap(std::map<const char *, Object*>);
 
 	//After each transformation update the object model.
-	void translate(map<const char *, mat4> &objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes);
+	void translate(map<const char *, Object*>& objects, vec3 changes);
 
-	void rotate( map<const char *, mat4> &objectModels, map<const char *, vector<Triangle>>& objectTriangles, float angle, vec3 rotationAxe);
+	void rotate(map<const char *, Object*>& objects, float angle, vec3 rotationAxe);
 
-	void scale( map<const char *, mat4> &objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes);
+	void scale(map<const char *, Object*>& objects, vec3 changes);
 
 	//Update the vertices after a transformation
 	void UpdateVertices();
@@ -72,7 +46,7 @@ public:
 	///fills the vectors with the triangle object which can be used for intersection and normals.
 	void setIntersectionTriangle();
 
-	bool intersect(vec3 position,vec3 ray);
+	bool intersect(vec3 position,vec3 ray, float &distanceT);
 
 	bool collides(vector<float> collidingObjectMaxandMin);
 
@@ -85,6 +59,7 @@ public:
 	
 	//Basic Architecture
 	vector<vec3> vertices, normals;
+	vector<vec3> defaultVertices,defaultNormals;
 	vector<vec2> uvs;
 	const char* name;
 
