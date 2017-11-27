@@ -32,11 +32,11 @@ glm::mat4 model_matrix;
 
 
 std::map<const char *, Object*> objects;
-std::map<const char *, std::vector<glm::vec3>> objectVertices;
-std::map<const char *, std::vector<glm::vec3>> objectNormals;
-std::map<const char *, vector<Triangle>> objectTriangles;
-std::map<const char *, std::vector<glm::vec2>> objectUVs;
-std::map<const char *, glm::mat4> objectModels;
+//std::map<const char *, std::vector<glm::vec3>> objectVertices;
+//std::map<const char *, std::vector<glm::vec3>> objectNormals;
+//std::map<const char *, vector<Triangle>> objectTriangles;
+//std::map<const char *, std::vector<glm::vec2>> objectUVs;
+//std::map<const char *, glm::mat4> objectModels;
 
 
 //Which mode to render in between point, lines, and triangles
@@ -132,45 +132,45 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	last_cursor_x = xpos;
 	last_cursor_y = ypos;
 
-	double diffY = lastClickY - ypos;
-	double diffX = lastClickX - xpos;
-	double dempener = 0.00012;
-	double modifier = diffY * dempener;	
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window,GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		//objects[selectedObject]->translate(objectModels, objects, vec3(0.0001f, 0.0f, 0.0f));
+	float diffY = lastClickY - ypos;
+	float diffX = lastClickX - xpos;
+	float dempener = 0.0012;
+	float modifier = diffY * dempener;
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
 		cout << modifier << endl;
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		//objects[selectedObject]->translate(objectModels, objects, vec3(0.0f, modifier, 0.0f));
+		objects[selectedObject]->translate(objects, vec3(0.0f, modifier, 0.0f));
 		cout << modifier << endl;
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		//objects[selectedObject]->translate(objectModels, objects, vec3(0.0f, 0.0f, modifier));
+		objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
 		cout << modifier << endl;
 	}
 
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{		
+{
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-	{			
+	{
 		selectedObject = "";
 		lastClickX = last_cursor_x;
 		lastClickY = last_cursor_y;
 		vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
-		for (auto const &ent2 : objects) 
+		for (auto const &ent2 : objects)
 		{
 			if (ent2.second->intersect(camera.Position, castedRay))
 			{
 				//Object Selected
 				selectedObject = ent2.second->name;
 				cout << selectedObject << endl;
-				objects[selectedObject]->translate(objectModels, objects, vec3(0.1f, 0.0f, 0.0f));				
+				objects[selectedObject]->translate(objects, vec3(0.1f, 0.0f, 0.0f));				
 			}
 		}
-		
-	}	
+
+	}
 }
 
 ///Determines the position of the mouse.
@@ -368,20 +368,17 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glBindVertexArray(localVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
-	glBufferData(GL_ARRAY_BUFFER, objectVertices[path].size() * sizeof(glm::vec3), &objectVertices[path].front(),
-		GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[path]->vertices.size() * sizeof(glm::vec3), &objects[path]->vertices.front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objectNormals[path].size() * sizeof(glm::vec3), &objectNormals[path].front(),
-		GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[path]->normals.size() * sizeof(glm::vec3), &objects[path]->normals.front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
 
-
 	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objectUVs[path].size() * sizeof(glm::vec3), &objectUVs[path].front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[path]->uvs.size() * sizeof(glm::vec3), &objects[path]->uvs.front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 
@@ -435,22 +432,6 @@ void setVBOs()
 	//Bed
 	setIndividualBuffers(VAO, vertices_VBO, normals_VBO, uvs_VBO, BED1_NAME);
 
-	//bedbox
-	glGenVertexArrays(1, &VAOBEDBOX);
-
-	glGenBuffers(1, &vertices_BedBox_VBO);
-	glGenBuffers(1, &normals_BedBox_VBO);
-	glGenBuffers(1, &uvs_BedBox_VBO);
-	setIndividualBuffers(VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO, BED1BOX_NAME);
-
-	//Tentative for floor
-	glGenVertexArrays(1, &VAOFloor);
-
-	glGenBuffers(1, &verticesFloor);
-	glGenBuffers(1, &normals_Floor);
-	glGenBuffers(1, &uvsFloor);
-
-	//setIndividualBuffers(VAOFloor, verticesFloor, normals_Floor, uvsFloor, FLOOR);
 
 	//Wall
 	glGenVertexArrays(1, &VAOWall);
@@ -467,13 +448,13 @@ void setVBOs()
 ///Renders the objects inside the main loop.
 void render(const char* name, vec3 camera_pos, GLuint VAO)
 {
-	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[name]));
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objects[name]->objectModel));
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 
 	glBindVertexArray(VAO);
-	glDrawArrays(objRenderMode, 0, objectVertices[name].size());
+	glDrawArrays(objRenderMode, 0, objects[name]->vertices.size());
 	glBindVertexArray(0);
 }
 
@@ -502,37 +483,30 @@ int main()
 	setShaders();
 	glUseProgram(shaderProgram);
 
-	Object *bedBox = new Object(BED1BOX_NAME);
 	Object *bed = new Object(BED1_NAME);
-	Object *cabinet = new Object(CABINET3_NAME);
+	/*Object *cabinet = new Object(CABINET3_NAME);
 	Object *coffee = new Object(COFFEE_TABLE1_NAME);
 	Object *toilet = new Object(TOILET_NAME);
-	Object *torchere = new Object(TORCHERE1_NAME);
+	Object *torchere = new Object(TORCHERE1_NAME);*/
 	//Object *floor = new Object(FLOOR);
 	Object *wall = new Object(WALL);
 
-	bed->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	bed->loadObjToMap(objects);
 	objects[bed->name] = bed;
 
-	bedBox->loadObjBoxToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);//This method has a slight variant which adds the box instead of the triangles.	
-	objects[bedBox->name] = bedBox;
+	//cabinet->loadObjToMap(objects);	
+	//objects[cabinet->name] = cabinet;
 
-	cabinet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);	
-	objects[cabinet->name] = cabinet;
+	//coffee->loadObjToMap(objects);	
+	//objects[coffee->name] = coffee;
 
-	coffee->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);	
-	objects[coffee->name] = coffee;
+	//toilet->loadObjToMap(objects);
+	//objects[toilet->name] = toilet;
 
-	toilet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	objects[toilet->name] = toilet;
+	//torchere->loadObjToMap(objects);	
+	//objects[torchere->name] = torchere;
 
-	torchere->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);	
-	objects[torchere->name] = torchere;
-
-	//floor->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);	
-	//objects[floor->name] = floor;
-
-	wall->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	wall->loadObjToMap(objects);
 	objects[wall->name] = wall;
 
 	setVBOs();
@@ -541,11 +515,15 @@ int main()
 
 	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
 
-	wall->scale(objectModels,objects, vec3(1.0f, 0.5f, 1));
-	wall->translate(objectModels, objects, vec3(0.5, 1, 5));
-	//floor->translate(objectModels, objects, vec3(0, 0, 0));
-	//bed->translate(objectModels,objects, vec3(0, 0.5, 0));
-	bed->translate(objectModels, objects, vec3(-4.5f, 0.5f, 0.0f));
+	objects[wall->name]->scale(objects, vec3(1.0f, 0.5f, 1));
+	objects[wall->name]->translate(objects, vec3(0.5, 1, 5));
+	//floor->translate( objects, vec3(0, 0, 0));
+	//bed->translate(objects, vec3(0, 0.5, 0));
+	//objects[bed->name]->translate(objects, vec3(-1.5f, 0.5f, 0.0f));
+	//objects[bed->name]->translate(objects, vec3(-1.5f, 0.5f, 0.0f));
+	objects[bed->name]->translate(objects, vec3(-1.5f, 0.5f, 0.0f));
+	objects[bed->name]->translate(objects, vec3(-1.5f, 0.5f, 0.0f));
+
 
 	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
@@ -561,7 +539,7 @@ int main()
 
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		processInput(window);
-		glfwPollEvents();		
+		glfwPollEvents();
 
 		// Render
 		// Clear the colorbuffer
@@ -570,23 +548,9 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
-
-		//kept this for reference
-		/*glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[BED1_NAME]));
-		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
-		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-
-		glBindVertexArray(VAO);
-		glDrawArrays(objRenderMode, 0, objectVertices[BED1_NAME].size());
-		glBindVertexArray(0);*/
-
+		//objects[bed->name]->translate(objectModels, objects, vec3(0.01f, 0.0f, 0.0f));
 		render(BED1_NAME, camera_pos, VAO);
 
-		//render(BED1BOX_NAME, camera_pos, VAOBEDBOX);
-
-
-		//end axes	
 
 		//Floor
 		//render(FLOOR, camera_pos, VAOFloor);
@@ -609,19 +573,17 @@ int main()
 	}
 
 	bed = nullptr;
-	bedBox = nullptr;
-	cabinet = nullptr;
-	coffee = nullptr;
-	toilet = nullptr;
-	torchere = nullptr;
+	//cabinet = nullptr;
+	//coffee = nullptr;
+	//toilet = nullptr;
+	//torchere = nullptr;
 	//floor = nullptr;
 	wall = nullptr;
-	delete bedBox;
 	delete bed;
-	delete cabinet;
-	delete coffee;
-	delete toilet;
-	delete torchere;
+	//delete cabinet;
+	//delete coffee;
+	//delete toilet;
+	//delete torchere;
 	//delete floor;
 	delete wall;
 

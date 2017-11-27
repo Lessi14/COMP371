@@ -17,10 +17,7 @@ public:
 		vector<vec3> vertices,
 		vector<vec3> normals,
 		vector<vec2> uvs,
-		map<const char*, vector<vec3>> &objectVertices,
-		map<const char*, vector<vec3>> &objectNormals,
-		map<const char*, vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels,
+		std::map<const char *, Object*>,
 		vec3 worldCoordinates);	
 
 	///Basic Construrctor
@@ -28,35 +25,20 @@ public:
 		vector<vec3> vertices,
 		vector<vec3> normals,
 		vector<vec2> uvs,
-		map<const char*, vector<vec3>> &objectVertices,
-		map<const char*, vector<vec3>> &objectNormals,
-		map<const char*, vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels);
+		std::map<const char *, Object*>);
 
-	void loadObjNoUVsToMap(map<const char*,	vector<vec3>> &objectVertices,
-		map<const char*, vector<vec3>> &objectNormals,
-		map<const char*, vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels,
-		map<const char *, vector<Triangle>>& objectTriangles);
+	void loadObjNoUVsToMap(std::map<const char *, Object*>);
 
-	void loadObjToMap(map<const char*, vector<vec3>> &objectVertices,
-		map<const char*,vector<vec3>> &objectNormals,
-		map<const char*,vector<vec2>> &objectUVs,
-		map<const char *, mat4> &objectModels,
-		map<const char *, vector<Triangle>>& objectTriangles);
+	void loadObjToMap(std::map<const char *, Object*>);
 
-	void loadObjBoxToMap(map<const char*, vector<vec3>>& objectVertices,
-		map<const char*, vector<vec3>>& objectNormals,
-		map<const char*, vector<vec2>>& objectUVs,
-		map<const char*, mat4>& objectModels,
-		map<const char *, vector<Triangle>>& objectTriangles);
+	void loadObjBoxToMap(std::map<const char *, Object*>);
 
 	//After each transformation update the object model.
-	void translate(map<const char *, mat4> &objectModels, map<const char *, Object*>& objects, vec3 changes);
+	void translate(map<const char *, Object*>& objects, vec3 changes);
 
-	void rotate( map<const char *, mat4> &objectModels, map<const char *, Object*>& objects, float angle, vec3 rotationAxe);
+	void rotate(map<const char *, Object*>& objects, float angle, vec3 rotationAxe);
 
-	void scale( map<const char *, mat4> &objectModels, map<const char *, Object*>& objects, vec3 changes);
+	void scale(map<const char *, Object*>& objects, vec3 changes);
 
 	//Update the vertices after a transformation
 	void UpdateVertices();
@@ -73,6 +55,7 @@ public:
 	
 	//Basic Architecture
 	vector<vec3> vertices, normals;
+	vector<vec3> defaultVertices,defaultNormals;
 	vector<vec2> uvs;
 	const char* name;
 
