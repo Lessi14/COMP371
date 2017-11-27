@@ -28,6 +28,10 @@ glm::vec3 camera_position;
 glm::vec3 triangle_scale;
 
 glm::vec3 camera_pos = vec3(0, 0, 0);
+glm::vec3 light_color = vec3(0, 0, 0);
+float specular_strength = 0.0f;
+glm::vec3 light_position = vec3(0, 0, 0);
+float ambient_strength = 0.0f;
 
 glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
@@ -59,6 +63,11 @@ GLuint viewMatrixLoc;
 GLuint transformLoc;
 GLuint camera_pos_addr;
 GLuint texture_number;
+
+GLuint light_colour_loc;
+GLuint specular_strength_loc;
+GLuint light_position_loc;
+GLuint ambient_strength_loc;
 
 //Global variable for the window
 GLFWwindow* window;
@@ -261,6 +270,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
+///Set the size of the room.
 void setRoomSize() {
 	while (roomDimensions.x < 4) {
 		std::cout << "Enter room width(x): " << std::endl;
@@ -653,8 +663,30 @@ void render(const char* name, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 	glUniform1i(texture_number, tex_num);
 
+	glUniform3fv(light_colour_loc, 1, glm::value_ptr(light_color));
+	glUniform1f(specular_strength_loc, specular_strength);
+	glUniform3fv(light_position_loc, 1, glm::value_ptr(light_position));
+	glUniform1f(ambient_strength_loc, ambient_strength);	
+
 	glBindVertexArray(VAO);
 	glDrawArrays(objRenderMode, 0, objects[name]->vertices.size());
+	glBindVertexArray(0);
+}
+
+//Second version of the render button for the axes.
+void render(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
+{
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model));
+	glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
+	glUniform3fv(light_colour_loc, 1, glm::value_ptr(light_color));
+	glUniform1f(specular_strength_loc, specular_strength);
+	glUniform3fv(light_position_loc, 1, glm::value_ptr(light_position));
+	glUniform1f(ambient_strength_loc, ambient_strength);
+
+	glBindVertexArray(VAO);
+	glDrawArrays(GL_LINES, 0, vertices.size());
 	glBindVertexArray(0);
 }
 
@@ -731,7 +763,11 @@ int main()
 
 	triangle_scale = glm::vec3(1.0f);
 
-	camera_pos = camera.Position;
+	camera_pos = camera.Position;	
+	light_color = vec3(1.0f, 1.0f, 1.0f);
+	specular_strength = 0.5f;
+	light_position = vec3(0.0f, 3.0f, 0.0f);
+	ambient_strength = 0.15f;
 
 	invWalls->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	wall->scale(objects, vec3(1, 0.5, 1));
@@ -746,6 +782,12 @@ int main()
 	camera_pos_addr = glGetUniformLocation(shaderProgram, "view_pos");
 	texture_number = glGetUniformLocation(shaderProgram, "texture_number");
 
+	//Necessary for lighthing
+	light_colour_loc = glGetUniformLocation(shaderProgram, "light_colour");
+	specular_strength_loc = glGetUniformLocation(shaderProgram, "specular_strength");
+	light_position_loc = glGetUniformLocation(shaderProgram, "light_position");
+	ambient_strength_loc = glGetUniformLocation(shaderProgram, "ambient_strength");
+
 	// Game loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -758,6 +800,10 @@ int main()
 		glfwPollEvents();
 
 		camera_pos = camera.Position;
+		light_color = vec3(1.0f, 1.0f, 1.0f);
+		specular_strength = 0.5f;
+		light_position = vec3(0.0f, 3.0f, 0.0f);
+		ambient_strength = 0.15f;
 
 		// Render
 		// Clear the colorbuffer
@@ -795,14 +841,8 @@ int main()
 		render(WALL, camera_pos, VAOWall, 0);
 
 		//start axes
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(mat4(1.0f)));
-		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
-		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-
-		glBindVertexArray(axes_VAO);
-		glDrawArrays(GL_LINES, 0, axesVertices.size());
-		glBindVertexArray(0);
+		
+		render(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
 
 		// Swap the screen buffers
 		glfwSwapBuffers(window);

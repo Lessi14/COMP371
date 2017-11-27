@@ -8,6 +8,11 @@ in vec3 norm;
 in vec3 fragPosition;
 in vec3 viewPos;
 
+in vec3 lightColour;
+in float specularStrength;
+in vec3 lightPosition;
+in float ambientStrength;
+
 uniform int texture_number;
 
 uniform sampler2D texture0;
@@ -18,30 +23,27 @@ uniform sampler2D texture_menu_back;
 uniform sampler2D texture_menu_furniture;
 uniform sampler2D texture_menu_wallpaper;
 
-
 void main()
-{
-	vec3 lightColour = vec3(1.0f, 1.0f, 1.0f);
-	vec3 cubeColour = col;
-	//vec3 cubeColour = vec3(1.0f, 0.0f, 0.0f);
-	float specularStrength = 0.5;
-
-	//light position
-	vec3 light_position = vec3(0.0f, 5.0f, 0.0f); //world coords
-												  //ambient lighting
-	float ambientStrength = 0.15f;
-	vec3 ambient_contribution = ambientStrength * lightColour;
+{	
+	vec3 localLightColour = lightColour;
+	vec3 cubeColour = col;	
+	float localSpecularStrength = specularStrength;
+	
+	vec3 light_position = lightPosition;												  
+	
+	float localAmbientStrength = ambientStrength;
+	vec3 ambient_contribution = localAmbientStrength * localLightColour;
 
 	vec3 norm = normalize(norm);
 	vec3 light_direction = normalize(light_position - fragPosition);
 	float incident_degree = max(dot(norm, light_direction), 0.0f);
-	vec3 diffuse_contribution = incident_degree * lightColour;
+	vec3 diffuse_contribution = incident_degree * localLightColour;
 
 	vec3 viewDir = normalize(viewPos - fragPosition);
 	vec3 reflectDir = reflect(-light_direction, norm);
 
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 128);
-	vec3 specular = specularStrength * spec * lightColour;
+	vec3 specular = localSpecularStrength * spec * localLightColour;
 
 	vec3 resultantColour = (ambient_contribution + diffuse_contribution + specular) * cubeColour;
 
@@ -58,8 +60,6 @@ void main()
 		case 3: //wood2 texture
 			color = texture(texture3, TexCoord) * vec4(resultantColour, 1.0f);
 			break;
-
-
 
 		case 20: //texture_menu_back
 			color = texture(texture_menu_back, TexCoord) * vec4(resultantColour, 1.0f);
