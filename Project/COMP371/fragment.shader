@@ -13,6 +13,7 @@ uniform int texture_number;
 uniform sampler2D texture0;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
+uniform sampler2D texture3;
 
 
 void main()
@@ -50,6 +51,12 @@ void main()
 			break;
 		case 2: //wood1 texture
 			color = texture(texture2, TexCoord) * vec4(resultantColour, 1.0f);
+			break;
+		case 3: //wood2 texture
+			color = texture(texture3, TexCoord) * vec4(resultantColour, 1.0f);
+			break;
+		case 4: //wood3 texture
+			color = texture(texture4, TexCoord) * vec4(resultantColour, 1.0f);
 			break;
 		default:
 			color = vec4(resultantColour, 1.0f);
