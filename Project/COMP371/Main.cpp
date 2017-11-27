@@ -184,7 +184,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 			float currentClosest = 1000;
 			for (auto const &ent : buttonObjects[menu_mode])
 			{
-				if (ent.second->intersect(camera.Position, castedRay, distanceT) && distanceT < currentClosest)
+				if (ent.second->intersect(glm::vec3(0, 0, 0), castedRay, distanceT) && distanceT < currentClosest)
 				{
 					//Ray Interacted with button vertices
 					currentClosest = distanceT;

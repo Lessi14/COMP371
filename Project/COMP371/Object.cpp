@@ -14,6 +14,7 @@ Object::Object(int id,
 	map<int, Object*> objects,
 	vec3 worldCoordinates)
 {
+	this->id = id;
 	this->type = type;
 	this->vertices = vertices;
 	this->defaultVertices = vertices;
@@ -36,6 +37,7 @@ Object::Object(int id,
 	std::map<int, Object*> objects
 )
 {
+	this->id = id;
 	this->type = type;
 	this->vertices = vertices;
 	this->defaultVertices = vertices;
