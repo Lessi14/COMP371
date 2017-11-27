@@ -161,7 +161,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	//cout << diffY << endl;
 	float dempener = 0.05;
 	float modifier = diffY * dempener;
-	cout << modifier << endl;	
+	//cout << modifier << endl;	
 	if (abs(modifier) < 0.15)
 	{
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
@@ -265,6 +265,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	{
 		if (menu_open)
 		{
+			cout << "here" << endl;
 			int selectedButtonID = -1;
 			lastClickX = last_cursor_x;
 			lastClickY = last_cursor_y;
@@ -287,22 +288,22 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		else
 		{
 			selectedObject = -1;
-      lastClickX = last_cursor_x;
-      lastClickY = last_cursor_y;
-      vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
-      float distanceT = 0;
-      float currentClosest = 1000;
-      for (auto const &ent : objects)
-      {
-        if (ent.second->intersect(camera.Position, castedRay, distanceT) && distanceT < currentClosest)
-        {
-          //Object Selected
-          currentClosest = distanceT;
-          selectedObject = ent.second->id;
+			lastClickX = last_cursor_x;
+			lastClickY = last_cursor_y;
+			vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
+			float distanceT = 0;
+			float currentClosest = 1000;
+			for (auto const &ent : objects)
+			{
+				if (ent.second->intersect(camera.Position, castedRay, distanceT) && distanceT < currentClosest)
+				{
+					//Object Selected
+					currentClosest = distanceT;
+					selectedObject = ent.second->id;
 
-        }
-      }
-      cout << selectedObject << endl;
+				}
+			}
+			cout << selectedObject << endl;
 		}
 	}
 }
@@ -605,8 +606,7 @@ void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vec
 	for (int i = 0; i<tempUVs.size(); i++)
 		(*uvs).push_back(tempUVs[i]);
 	const char *temp = "";
-	vector<glm::vec3> normals;
-	Object *newButton = new Object(id, temp, tempVertices, normals, tempUVs, *buttonObjects);
+	Object *newButton = new Object(id, temp, tempVertices, tempUVs, *buttonObjects);
 	(*buttonObjects)[id] = newButton;
 }
 
@@ -774,8 +774,8 @@ void setTexture()
 	setIndividualTexture(&texture1, "Textures/metal2.jpg");
 	setIndividualTexture(&texture2, "Textures/wood1.jpg");
 	setIndividualTexture(&texture3, "Textures/wood2.jpg");
-	setIndividualTexture(&texture_menu_bed, "Textures/menu_bed.jpg");
-	/*setIndividualTexture(&texture_menu_cabinet, "Textures/menu_cabinet.jpg");
+	/*setIndividualTexture(&texture_menu_bed, "Textures/menu_bed.jpg");
+	setIndividualTexture(&texture_menu_cabinet, "Textures/menu_cabinet.jpg");
 	setIndividualTexture(&texture_menu_coffee_table, "Textures/menu_coffee_table.jpg");
 	setIndividualTexture(&texture_menu_toilet, "Textures/menu_toilet.jpg");
 	setIndividualTexture(&texture_menu_torchere, "Textures/menu_torchere.jpg");

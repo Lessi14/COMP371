@@ -30,6 +30,13 @@ public:
 		vector<vec2> uvs,
 		map<int, Object*>);
 
+	Object::Object(int id,
+		const char * type,
+		std::vector<glm::vec3> vertices,
+		std::vector<glm::vec2> uvs,
+		std::map<int, Object*> objects
+	);
+
 	void loadObjNoUVsToMap(map<int, Object*> obj);
 
 	void loadObjToMap(map<int, Object*> obj);

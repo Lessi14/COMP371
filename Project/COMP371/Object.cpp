@@ -30,7 +30,7 @@ Object::Object(int id,
 	calculateBounderyBox();
 	this->id = ++counter;
 	texture_number = 1;
-  objects[id] = this;
+	objects[id] = this;
 }
 
 Object::Object(int id,
@@ -52,7 +52,27 @@ Object::Object(int id,
 
 	setIntersectionTriangle();
 	calculateBounderyBox();
-  this->id = ++counter;
+	this->id = ++counter;
+	texture_number = 1;
+	objects[id] = this;
+}
+
+Object::Object(int id,
+	const char * type,
+	std::vector<glm::vec3> vertices,
+	std::vector<glm::vec2> uvs,
+	std::map<int, Object*> objects
+)
+{
+	this->id = id;
+	this->type = type;
+	this->vertices = vertices;
+	this->defaultVertices = vertices;
+	this->uvs = uvs;
+	objects[id] = this;
+
+	setIntersectionTriangle();
+	calculateBounderyBox();
 	texture_number = 1;
 	objects[id] = this;
 }
