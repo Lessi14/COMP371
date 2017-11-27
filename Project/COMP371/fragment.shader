@@ -54,6 +54,7 @@ void main()
 	vec3 resultantColour = (ambient_contribution + diffuse_contribution + specular) * cubeColour;
 
 	switch (texture_number) {
+		//DIFFUSE TEXTURES
 		case 0: //metal1 texture
 			color = texture(texture0, TexCoord) * vec4(resultantColour, 1.0f);
 			break;
@@ -66,7 +67,6 @@ void main()
 		case 3: //wood2 texture
 			color = texture(texture3, TexCoord) * vec4(resultantColour, 1.0f);
 			break;
-
 		case 4: //red
 			color = vec4(1,0,0,1) * vec4(resultantColour, 1.0f);
 			break;
@@ -78,6 +78,7 @@ void main()
 			break;
 
 
+		//NON-DIFFUSE TEXTURES
         case 14: //texture_menu_bed
 			color = texture(texture_menu_bed, TexCoord);
 			break;
@@ -104,6 +105,20 @@ void main()
 			break;
 		case 22: //texture_menu_wallpaper
 			color = texture(texture_menu_wallpaper, TexCoord);
+			break;
+
+		//NON-DIFFUSE VERSIONS OF DIFFUSE TEXTURES
+		case 23: //metal1 texture
+			color = texture(texture0, TexCoord);
+			break;
+		case 24: //metal2 texture
+			color = texture(texture1, TexCoord);
+			break;
+		case 25: //wood1 texture
+			color = texture(texture2, TexCoord);
+			break;
+		case 26: //wood2 texture
+			color = texture(texture3, TexCoord);
 			break;
 		default:
 			color = vec4(resultantColour, 1.0f);
