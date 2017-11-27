@@ -1,9 +1,12 @@
 #include "Object.h"
-
+//Set the counter
+int Object::counter = -1;
 Object::Object(int id, const char * type)
 {
-	this->id = id;
+	this->id = ++counter;
 	this->type = type;
+	//counter++;
+	texture_number = 1;
 }
 
 Object::Object(int id,
@@ -23,10 +26,11 @@ Object::Object(int id,
 	this->uvs = uvs;
 	objects[id] = this;
 	this->worldCoordinates = worldCoordinates;
-
 	setIntersectionTriangle();
 	calculateBounderyBox();
-	objects[id] = this;
+	this->id = ++counter;
+	texture_number = 1;
+  objects[id] = this;
 }
 
 Object::Object(int id,
@@ -48,11 +52,12 @@ Object::Object(int id,
 
 	setIntersectionTriangle();
 	calculateBounderyBox();
+  this->id = ++counter;
+	texture_number = 1;
 	objects[id] = this;
 }
 
-bool Object::checkIdAvailability(int id)
-{
+bool Object::checkIdAvailability(int id){
 	for (int lId : ids)
 	{
 		if (lId == id)
@@ -67,7 +72,6 @@ void Object::translate(map<int, Object*>& objects, vec3 changes)
 	UpdateVertices();
 	setIntersectionTriangle();
 	objects[id] = this;
-
 }
 
 void Object::rotate(map<int, Object*>& objects, float angle, glm::vec3 rotationAxe)
@@ -150,7 +154,7 @@ void Object::setIntersectionTriangle()
 
 ///Method which test the intersection of a triangle and a ray.
 ///Implementation of the Moller Trumbone algo.
-///https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
+///https://en.wikipedia.org/wiki/MÃ¶llerâ€“Trumbore_intersection_algorithm
 bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri, float &distanceT)
 {
 	const float EPSILON = 0.0000001;
@@ -334,12 +338,12 @@ bool Object::collides(vector<float> collidingObjectMaxandMin)
 	return false;
 }
 
-bool Object::isNextACollision(map<int, Object*> objects, vec3 potentialTranlation, int min, int max)
+bool Object::isNextACollision(map<int, Object*> &objects, vec3 potentialTranlation, int min, int max)
 {
 	bool willItCollide = false;
 	for (auto const &ent2 : objects)
 	{
-		if (ent2.first != 0 && ent2.first != id) //0 stands for inverted walls
+		if (ent2.first != 0 && ent2.first != this->id) //0 stands for inverted walls
 		{
 			willItCollide = objects[ent2.second->id]->collides(objects[id]->getPostMaxMinBeforeTranslation(potentialTranlation));
 			if (willItCollide)
