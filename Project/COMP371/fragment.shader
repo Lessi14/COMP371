@@ -136,7 +136,7 @@ void main()
 			color = vec4(1, 1, 0, 1);
 			break;
 		default:
-			color = vec4(resultantColour, 1.0f);
+			color = vec4(0.5f,0.0f,1.0f, 1.0f);
 			break;
 	}
 } 
