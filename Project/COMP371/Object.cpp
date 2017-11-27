@@ -219,8 +219,8 @@ void Object::calculateBounderyBox()
 {
 	this->boundingbox.clear();
 	vec3 maxVertex(-1000, -1000, -1000), minVertex(1000, 1000, 1000);
-	float maxX = 0, maxY = 0, maxZ = 0;
-	float minX = 0, minY = 0, minZ = 0;
+	maxX = 0, maxY = 0, maxZ = 0;
+	minX = 0, minY = 0, minZ = 0;
 	for (auto incr = 0; incr < this->vertices.size() - 1; incr++)
 	{
 		auto vertex = this->vertices.at(incr);
@@ -233,6 +233,15 @@ void Object::calculateBounderyBox()
 		if (vertex.z < minVertex.z)	minVertex.z = vertex.z;
 	}
 
+	maxX = maxVertex.x;
+	maxY = maxVertex.y;
+	maxZ = maxVertex.z;
+
+	minX = minVertex.x;
+	minY = minVertex.y;
+	minZ = minVertex.z;
+
+	listOfMaxAndMin = { minX, maxX, minY, maxY, minZ, maxZ };
 
 	//Forgive the hardcode, too tired to figure out a better way.
 	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
@@ -273,6 +282,29 @@ void Object::calculateBounderyBox()
 	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
 }
 
+bool Object::collides(vector<float> collidingObjectMaxandMin)
+{
+	bool withinX = false, withinY = false, withinZ = false;
+
+	if ((minX <= collidingObjectMaxandMin.at(0) && collidingObjectMaxandMin.at(0) <= maxX) ||
+		(minX <= collidingObjectMaxandMin.at(1) && collidingObjectMaxandMin.at(1) <= maxX) ||
+		(collidingObjectMaxandMin.at(0) <= minX && minX <= collidingObjectMaxandMin.at(1)) ||
+		(collidingObjectMaxandMin.at(0) <= maxX && maxX <= collidingObjectMaxandMin.at(1)))
+		withinX = true;
+	if ((minY <= collidingObjectMaxandMin.at(2) && collidingObjectMaxandMin.at(2) <= maxY) ||
+		(minY <= collidingObjectMaxandMin.at(3) && collidingObjectMaxandMin.at(3) <= maxY) ||
+		(collidingObjectMaxandMin.at(2) <= minY && minY <= collidingObjectMaxandMin.at(3)) ||
+		(collidingObjectMaxandMin.at(2) <= maxY && maxY <= collidingObjectMaxandMin.at(3)))
+		withinY = true;
+	if ((minZ <= collidingObjectMaxandMin.at(4) && collidingObjectMaxandMin.at(4) <= maxZ) ||
+		(minZ <= collidingObjectMaxandMin.at(5) && collidingObjectMaxandMin.at(5) <= maxZ) ||
+		(collidingObjectMaxandMin.at(4) <= minZ && minZ <= collidingObjectMaxandMin.at(5)) ||
+		(collidingObjectMaxandMin.at(4) <= maxZ && maxZ <= collidingObjectMaxandMin.at(5)))
+		withinZ = true;
+	if (withinX && withinY && withinZ) return true;
+
+	return false;
+}
 
 void Object::loadObjNoUVsToMap(std::map<const char *, Object*> objects)
 {
@@ -305,3 +337,27 @@ void Object::loadObjBoxToMap(std::map<const char *, Object*> objects)
 	objects[name] = this;
 }
 
+vector<float> Object::getListOfMaxAndMin()
+{
+	return listOfMaxAndMin;
+}
+
+vector<float> Object::getPostMaxMinBeforeTranslation(vec3 potentialNewPosition)
+{
+	vector<float> tempList;
+
+	float tempMinX = minX, tempMaxX = maxX;
+	float tempMinY = minY, tempMaxY = maxY;
+	float tempMinZ = minZ, tempMaxZ = maxZ;
+
+	tempMinX += potentialNewPosition.x;
+	tempMaxX += potentialNewPosition.x;
+	tempMinY += potentialNewPosition.y;
+	tempMaxY += potentialNewPosition.y;
+	tempMinZ += potentialNewPosition.z;
+	tempMaxZ += potentialNewPosition.z;
+
+	tempList = {tempMinX, tempMaxX, tempMinY, tempMaxY, tempMinZ, tempMaxZ};
+
+	return tempList;
+}

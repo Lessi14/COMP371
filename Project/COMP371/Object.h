@@ -53,6 +53,12 @@ public:
 	///Calculate the cube around the object
 	void calculateBounderyBox();
 	
+	bool collides(vector<float> collidingObjectMaxandMin);
+
+	vector<float> getPostMaxMinBeforeTranslation(vec3 potentialNewPosition);
+
+	vector<float> getListOfMaxAndMin();
+
 	//Basic Architecture
 	vector<vec3> vertices, normals;
 	vector<vec3> defaultVertices,defaultNormals;
@@ -72,5 +78,9 @@ public:
 	
 	//Models for the transformations
 	glm::mat4 defaultObjectModel, objectModel;	
+
+private:
+	float maxX, maxY, maxZ, minX, minY, minZ;
+	vector<float> listOfMaxAndMin;
 };
 
