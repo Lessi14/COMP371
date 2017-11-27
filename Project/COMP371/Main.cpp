@@ -97,6 +97,11 @@ glm::vec2 roomDimensions;
 GLuint axes_VBO, axesColorsVBO;
 GLuint axes_VAO;
 
+
+
+GLuint VAO_Coffee, vertices_VBO_Coffee, normals_VBO_Coffee, uvs_VBO_Coffee;
+
+
 std::vector<glm::vec3> axesVertices;
 std::vector<glm::vec3> axesColors;
 
@@ -112,6 +117,14 @@ bool firstMouse = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
+/*
+
+Object *invWalls = new Object(0, INVERTED_WALLS_NAME);
+Object *bed = new Object(1, BED1_NAME);
+Object *wall = new Object(2, WALL);
+Object *coffee = new Object(3, COFFEE_TABLE1_NAME);
+
+*/
 
 //Is called whenever the mouse moves on the window
 ///While certain mouse buttons are pressed, this method makes it so that the camera will move
@@ -152,16 +165,33 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	float dempener = 0.0012;
 	float modifier = diffY * dempener;
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
-		//cout << modifier << endl;
+		
+		
+		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(modifier, 0.0f, 0.0f), 0, 1); //0 and 1 stands for minX and maxX
+
+		if (!checkIfItCollides)
+		{
+			objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
+		}
+		cout << modifier << endl;
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		objects[selectedObject]->translate(objects, vec3(0.0f, modifier, 0.0f));
-		//cout << modifier << endl;
+		
+		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, modifier, 0.0f), 2, 3); //2 and 3 stands for minY and maxY
+
+		if (!checkIfItCollides) {
+			objects[selectedObject]->translate(objects, vec3(0.0f, modifier, 0.0f));
+		}
+		cout << modifier << endl;
 	}
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
-		//cout << modifier << endl;
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
+		
+		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, 0.0f, modifier), 4, 5); //4 and 5 stands for minZ and maxZ
+
+		if (!checkIfItCollides) {
+			objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
+		}
+		cout << modifier << endl;
 	}
 }
 
@@ -837,6 +867,9 @@ int main()
 	objects[tempWall]->texture_number = 0;
 
 
+	coffee->loadObjToMap(objects);
+	objects[coffee->id] = coffee;
+	
 	setVBOs();
 
 	triangle_scale = glm::vec3(1.0f);
@@ -883,7 +916,13 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
+		//objects[bed->name]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
 		
+
+		//bool isColliding = objects[bed->name]->collides(objects[coffee->name]->getListOfMaxAndMin());
+
+		//if (isColliding) cout << "IT IS COLLIDING BITCHES" << endl;
+		//else cout << "AIN'T COLLIDING BABY" << endl;
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture0);
@@ -905,6 +944,9 @@ int main()
 			objects[1]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
 			//walls
 			//render(0, camera_pos, VAOINVERTEDWALLS, 3);
+
+			//Coffee Table
+			render(3, camera_pos, VAO_Coffee, 1);
 
 			//Bed
 			//render(1, camera_pos, VAO, 1);
