@@ -155,7 +155,7 @@ bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri)
 }
 
 ///Given a a ray position and a direction. checks if the object is in the path of the ray.
-bool Object::intersect(vec3 rayPosition, vec3 rayDir)
+bool Object::intersect(vec3 rayPosition, vec3 rayDir, float &distanceT)
 {
 	bool hitBoundaryBox = false;
 
@@ -216,7 +216,7 @@ Object::~Object()
 void Object::calculateBounderyBox()
 {
 	this->boundingbox.clear();
-	vec3 maxVertex(0, 0, 0), minVertex(0, 0, 0);
+	vec3 maxVertex(-1000, -1000, -1000), minVertex(1000, 1000, 1000);
 	float maxX = 0, maxY = 0, maxZ = 0;
 	float minX = 0, minY = 0, minZ = 0;
 	for (auto incr = 0; incr < this->vertices.size() - 1; incr++)
@@ -230,6 +230,8 @@ void Object::calculateBounderyBox()
 		if (vertex.y < minVertex.y)	minVertex.y = vertex.y;
 		if (vertex.z < minVertex.z)	minVertex.z = vertex.z;
 	}
+
+
 	//Forgive the hardcode, too tired to figure out a better way.
 	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
 	this->boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));

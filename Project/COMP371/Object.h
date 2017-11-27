@@ -46,7 +46,7 @@ public:
 	///fills the vectors with the triangle object which can be used for intersection and normals.
 	void setIntersectionTriangle();
 
-	bool intersect(vec3 position,vec3 ray);
+	bool intersect(vec3 position,vec3 ray, float &distanceT);
 
 	~Object();
 		
