@@ -87,6 +87,7 @@ const char* CABINET3_NAME = "Objects/cabinet3.obj";
 const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
 const char* TOILET_NAME = "Objects/toilet.obj";
 const char* TORCHERE1_NAME = "Objects/torchere1.obj";
+const char* PAINTING_NAME = "Objects/painting.obj";
 const char* WALL = "Objects/wall.obj";
 
 int selectedObject = -1;
@@ -868,6 +869,10 @@ int main()
 	setTexture();
  
 	
+	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
+	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
+	objects[tempExtWalls]->texture_number = 3;
+
 	int tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempFloor]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempFloor]->texture_number = 1;
@@ -876,11 +881,10 @@ int main()
 	int tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempCeiling]->texture_number = 4;
-	
-	
-	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
-	objects[tempExtWalls]->texture_number = 3;
+
+	int tempPainting = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, 0.0f, 0.0f));
+	objects[tempPainting]->texture_number = 5;
+
 
 	int tempBed = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));	
 	objects[tempBed]->translate(objects, vec3(-3.5, 0.5, 0));
