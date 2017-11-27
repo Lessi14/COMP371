@@ -1,9 +1,12 @@
 #include "Object.h"
-
+//Set the counter
+int Object::counter = -1;
 Object::Object(int id, const char * type)
 {
-	this->id = id;
+	this->id = ++counter;
 	this->type = type;
+	//counter++;
+	texture_number = 1;
 }
 
 Object::Object(int id,
@@ -22,6 +25,8 @@ Object::Object(int id,
 	this->uvs = uvs;
 	objects[id] = this;
 	this->worldCoordinates = worldCoordinates;
+	this->id = ++counter;
+	texture_number = 1;
 }
 
 Object::Object(int id,
@@ -39,17 +44,8 @@ Object::Object(int id,
 	this->normals = normals;
 	this->uvs = uvs;
 	objects[id] = this;
-
-}
-
-bool Object::checkIdAvailability(int id)
-{
-	for (int lId : ids)
-	{
-		if (lId == id)
-			return true;
-	}
-	return false;
+	this->id = ++counter;
+	texture_number = 1;
 }
 
 void Object::translate(map<int, Object*>& objects, vec3 changes)
@@ -58,7 +54,6 @@ void Object::translate(map<int, Object*>& objects, vec3 changes)
 	UpdateVertices();
 	setIntersectionTriangle();
 	objects[id] = this;
-
 }
 
 void Object::rotate(map<int, Object*>& objects, float angle, glm::vec3 rotationAxe)

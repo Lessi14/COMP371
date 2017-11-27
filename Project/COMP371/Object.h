@@ -55,11 +55,13 @@ public:
 
 	///Calculate the cube around the object
 	void calculateBounderyBox();
-
+	static int counter;
 	static bool checkIdAvailability(int id);
 
 
-	GLuint VAO, vertices_VBO, normals_VBO, uvs_VBO;
+
+
+	GLuint VAO, vertices_VBO, normals_VBO, uvs_VBO, texture_number;
 
 	int id;
 	static vector<int> ids;

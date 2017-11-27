@@ -91,10 +91,7 @@ GLuint menuVAOs[3], menuVBOs[3], menuUVVBOs[3];
 
 GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
-GLuint VAOWall, verticesWall, normalsWall, uvsWall;
-GLuint VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO;
 
-GLuint VAOINVERTEDWALLS, vertices_inverted_walls_VBO, normals_inverted_walls_VBO, uvs_inverted_walls_VBO;
 glm::vec2 roomDimensions;
 
 GLuint axes_VBO, axesColorsVBO;
@@ -121,8 +118,8 @@ float lastFrame = 0.0f;
 void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-		cout << "x: " << xpos << endl;
-		cout << "y: " << ypos << endl;
+		//cout << "x: " << xpos << endl;c
+		//cout << "y: " << ypos << endl;
 		if (last_cursor_x != NULL && last_cursor_y != NULL)
 		{
 			if (firstMouse)
@@ -156,15 +153,15 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	float modifier = diffY * dempener;
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
-		cout << modifier << endl;
+		//cout << modifier << endl;
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		objects[selectedObject]->translate(objects, vec3(0.0f, modifier, 0.0f));
-		cout << modifier << endl;
+		//cout << modifier << endl;
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
-		cout << modifier << endl;
+		//cout << modifier << endl;
 	}
 }
 
@@ -178,17 +175,16 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
 		float distanceT = 0;
 		float currentClosest = 1000;
-		for (auto const &ent2 : objects)
+		for (auto const &ent : objects)
 		{
-			if (ent2.second->intersect(camera.Position, castedRay, distanceT) && distanceT < currentClosest)
+			if (ent.second->intersect(camera.Position, castedRay, distanceT) && distanceT < currentClosest)
 			{
 				//Object Selected
 				currentClosest = distanceT;
-				selectedObject = ent2.second->id;
+				selectedObject = ent.second->id;
 				cout << selectedObject << endl;
 			}
 		}
-
 	}
 }
 
@@ -255,7 +251,7 @@ void processInput(GLFWwindow *window)
 ///Key callabck
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
-	std::cout << key << std::endl;
+	//std::cout << key << std::endl;
 	//Pressed
 	if (GLFW_PRESS == action) {
 		switch (key)
@@ -487,8 +483,7 @@ void createMenuVertices()
 	addButtonVertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2]);
 }
 
-///Set the VAO, VBOS for the vertices, UVs and the normals.
-void setVBOs()
+void setAxes()
 {
 	//start axes
 	axesVertices.push_back({ 0.0f, 0.0f, 0.01f });
@@ -522,7 +517,12 @@ void setVBOs()
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+}
 
+///Set the VAO, VBOS for the vertices, UVs and the normals.
+void setVBOs()
+{
+	setAxes();	
 	//Menus
 	createMenuVertices();
 	glGenVertexArrays(3, menuVAOs);
@@ -562,36 +562,28 @@ void setVBOs()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 	glBindVertexArray(0);
+}
+
+int addFurniture(const char * type, vec3 position)
+{
+	Object *tempObject = new Object(0, type);	
+	tempObject->loadObjToMap(objects);
+	objects[tempObject->id] = tempObject;
 
 	///----------------
-	glGenVertexArrays(1, &VAO);
+	glGenVertexArrays(1, &objects[tempObject->id]->VAO);
 
-	glGenBuffers(1, &vertices_VBO);
-	glGenBuffers(1, &normals_VBO);
-	glGenBuffers(1, &uvs_VBO);
+	glGenBuffers(1, &objects[tempObject->id]->vertices_VBO);
+	glGenBuffers(1, &objects[tempObject->id]->normals_VBO);
+	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
 
-	//Bed
-	setIndividualBuffers(VAO, vertices_VBO, normals_VBO, uvs_VBO, 1);
-	///--------	
+	
+	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id);
+	glBindVertexArray(0);
 
-	//Inverted Cube
-	glGenVertexArrays(1, &VAOINVERTEDWALLS);
-
-	glGenBuffers(1, &vertices_inverted_walls_VBO);
-	glGenBuffers(1, &normals_inverted_walls_VBO);
-	glGenBuffers(1, &uvs_inverted_walls_VBO);
-	setIndividualBuffers(VAOINVERTEDWALLS, vertices_inverted_walls_VBO, normals_inverted_walls_VBO, uvs_inverted_walls_VBO, 0);
-
-	//Wall
-	glGenVertexArrays(1, &VAOWall);
-
-	glGenBuffers(1, &verticesWall);
-	glGenBuffers(1, &normalsWall);
-	glGenBuffers(1, &uvsWall);
-
-	setIndividualBuffers(VAOWall, verticesWall, normalsWall, uvsWall, 2);
-
-	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
+	objects[tempObject->id]->translate(objects, position);
+	
+	return tempObject->id;
 }
 
 //Set the textures
@@ -745,6 +737,16 @@ void setTexture()
 		std::cout << "Failed to load texture_menu_wallpaper" << std::endl;
 	}
 	stbi_image_free(data);*/
+
+	glUseProgram(shaderProgram);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 2);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture3"), 3);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_back"), 20);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_furniture"), 21);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_wallpaper"), 22);
+
 }
 
 ///Renders the objects inside the main loop.
@@ -812,46 +814,28 @@ int main()
 	setShaders();
 	setTexture();
 
-	glUseProgram(shaderProgram);
-	glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
-	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
-	glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 2);
-	glUniform1i(glGetUniformLocation(shaderProgram, "texture3"), 3);
-	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_back"), 20);
-	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_furniture"), 21);
-	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_wallpaper"), 22);
+	int tempCube = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
+	objects[tempCube]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
+	objects[tempCube]->texture_number = 3;
 
-	Object *invWalls = new Object(0, INVERTED_WALLS_NAME);
-	Object *bed = new Object(1, BED1_NAME);
-	Object *wall = new Object(2, WALL);
+	int tempBed = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
+	//objects[tempBed]->translate(objectModels,objectTriangles, vec3(0, 0.5, 0));
+	objects[tempBed]->translate(objects, vec3(-3.5, 0.5, 0));
+	objects[tempBed]->texture_number = 1;
 
-	/*Object *cabinet = new Object(3, CABINET3_NAME);
-	Object *coffee = new Object(4, COFFEE_TABLE1_NAME);
-	Object *toilet = new Object(5, TOILET_NAME);
-	Object *torchere = new Object(6, TORCHERE1_NAME);*/
+	int bed1 = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));	
+	objects[bed1]->translate(objects, vec3(3.0f, 0.5, 0));
+	objects[bed1]->texture_number = 3;
 
-	invWalls->loadObjToMap(objects);
-	objects[invWalls->id] = invWalls;
+	int bed2 = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
+	objects[bed2]->translate(objects, vec3(0.0f, 3.0f, 0));
+	objects[bed2]->texture_number = 0;
 
-	bed->loadObjToMap(objects);
-	objects[bed->id] = bed;
+	int tempWall = addFurniture(WALL, vec3(0.0f, 0.0f, 0.0f));
+	objects[tempWall]->scale(objects, vec3(1, 0.5, 1));
+	objects[tempWall]->translate(objects, vec3(0.5, 1, 5));
+	objects[tempWall]->texture_number = 0;
 
-	wall->loadObjToMap(objects);
-	objects[wall->id] = wall;
-
-	//objectTriangles[bed->name] = bed->triangles;
-
-	//cabinet->loadObjToMap(objects);	
-	//objects[cabinet->name] = cabinet;
-
-	//coffee->loadObjToMap(objects);	
-	//objects[coffee->name] = coffee;
-
-	//toilet->loadObjToMap(objects);
-	//objects[toilet->name] = toilet;
-
-	//torchere->loadObjToMap(objects);	
-	//objects[torchere->name] = torchere;
 
 	setVBOs();
 
@@ -859,16 +843,9 @@ int main()
 
 	camera_pos = camera.Position;
 	light_color = vec3(1.0f, 1.0f, 1.0f);
-	specular_strength = 0.5f;
-	light_position = vec3(0.0f, 3.0f, 0.0f);
+	specular_strength = 1.9f;
+	light_position = vec3(0.0f, 5.0f, 0.0f);
 	ambient_strength = 0.15f;
-
-	invWalls->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
-	wall->scale(objects, vec3(1, 0.5, 1));
-	wall->translate(objects, vec3(0.5, 1, 5));
-	//floor->translate(objectModels, objectTriangles, vec3(0, 0, 0));
-	//bed->translate(objectModels,objectTriangles, vec3(0, 0.5, 0));
-	bed->translate(objects, vec3(-2.5, 0.5, 0));
 
 	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
@@ -906,7 +883,7 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
-		objects[bed->id]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
+		
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture0);
@@ -925,20 +902,28 @@ int main()
 
 		if (!menu_open)
 		{
+			objects[1]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
 			//walls
-			render(0, camera_pos, VAOINVERTEDWALLS, 3);
+			//render(0, camera_pos, VAOINVERTEDWALLS, 3);
 
 			//Bed
-			render(1, camera_pos, VAO, 1);
+			//render(1, camera_pos, VAO, 1);
 
-			//start axes
+			//Wall
+			//render(2, camera_pos, VAOWall, 0);
+			//axes	
+
+			for (auto const &ent : objects)
+			{
+				render(ent.second->id, camera_pos, ent.second->VAO, ent.second -> texture_number);				
+			}
+
+			//axes
 			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(mat4(1.0f)));
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-			//Wall
-			render(2, camera_pos, VAOWall, 0);
-			//axes		
+				
 			render(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
 
 		}
@@ -1010,20 +995,26 @@ int main()
 		glfwSwapBuffers(window);
 	}
 
-	bed = nullptr;
+	map<int, Object*>::iterator itr = objects.begin();
+	while (itr != objects.end()) {
+	itr = objects.erase(itr);
+	}
+	
+
+	//bed = nullptr;
 	//cabinet = nullptr;
 	//coffee = nullptr;
 	//toilet = nullptr;
 	//torchere = nullptr;
 	//floor = nullptr;
-	wall = nullptr;
-	delete bed;
+	//wall = nullptr;
+	//delete bed;
 	//delete cabinet;
 	//delete coffee;
 	//delete toilet;
 	//delete torchere;
 	//delete floor;
-	delete wall;
+	//delete wall;
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
 	glfwTerminate();
