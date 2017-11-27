@@ -76,6 +76,10 @@ GLuint VAOFloor, verticesFloor, normals_Floor, uvsFloor;
 GLuint VAOWall, verticesWall, normalsWall, uvsWall;
 GLuint VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO;
 
+
+GLuint VAOINVERTEDCUBE, vertices_inverted_cube_VBO, normals_inverted_cube_VBO, uvs_inverted_cube_VBO;
+glm::vec2 roomDimensions;
+
 GLuint axes_VBO, axesColorsVBO;
 GLuint axes_VAO;
 
@@ -213,6 +217,21 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		default:
 			break;
 		}
+	}
+}
+
+void setRoomSize() {
+	while (roomDimensions.x < 4) {
+		std::cout << "Enter room width(x): " << std::endl;
+		std::cin >> roomDimensions.x;
+		if (roomDimensions.x < 4)
+			std::cout << "Minimum accepted value is 4.0" << std::endl;
+	}
+	while (roomDimensions.y < 4) {
+		std::cout << "Enter room length(z): " << std::endl;
+		std::cin >> roomDimensions.y;
+		if (roomDimensions.y < 4)
+			std::cout << "Minimum accepted value is 4.0" << std::endl;
 	}
 }
 
@@ -422,6 +441,16 @@ void setVBOs()
 	glGenBuffers(1, &uvs_BedBox_VBO);
 	setIndividualBuffers(VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO, BED1BOX_NAME);
 
+	
+	//Inverted Cube
+	glGenVertexArrays(1, &VAOINVERTEDCUBE);
+
+	glGenBuffers(1, &vertices_inverted_cube_VBO);
+	glGenBuffers(1, &normals_inverted_cube_VBO);
+	glGenBuffers(1, &uvs_inverted_cube_VBO);
+	setIndividualBuffers(VAOINVERTEDCUBE, vertices_inverted_cube_VBO, normals_inverted_cube_VBO, uvs_inverted_cube_VBO, INVERTED_CUBE_NAME);
+	
+
 	//Tentative for floor
 	glGenVertexArrays(1, &VAOFloor);
 
@@ -497,6 +526,11 @@ void render(const char* name, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 /// The MAIN function, from here we start the application and run the game loop
 int main()
 {
+	roomDimensions.x = 0;
+	roomDimensions.y = 0;
+	setRoomSize();
+	
+	
 	if (-1 == windowSetup()) {
 		return -1;
 	}
@@ -566,6 +600,7 @@ int main()
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
 
+	Object *invCube = new Object(INVERTED_CUBE_NAME);
 	Object *bedBox = new Object(BED1BOX_NAME);
 	Object *bed = new Object(BED1_NAME);
 	Object *cabinet = new Object(CABINET3_NAME);
@@ -574,6 +609,9 @@ int main()
 	Object *torchere = new Object(TORCHERE1_NAME);
 	Object *floor = new Object(FLOOR);
 	Object *wall = new Object(WALL);
+
+
+	invCube -> loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
 
 	bed->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
 	//objectTriangles[bed->name] = bed->triangles;
@@ -605,6 +643,7 @@ int main()
 
 	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
 
+	invCube->scale(objectModels, objectTriangles, vec3(roomDimensions.x, 2, roomDimensions.y));
 	wall->scale(objectModels,objectTriangles, vec3(1, 0.5, 1));
 	wall->translate(objectModels, objectTriangles, vec3(0.5, 1, 5));
 	floor->translate(objectModels, objectTriangles, vec3(0, 0, 0));
@@ -653,6 +692,8 @@ int main()
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture1);
 
+
+		render(INVERTED_CUBE_NAME, camera_pos, VAOINVERTEDCUBE, 0);
 
 		render(BED1_NAME, camera_pos, VAO, 1);
 
