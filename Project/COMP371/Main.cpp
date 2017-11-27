@@ -390,11 +390,11 @@ void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vec
 void createMenuVertices()
 {
 	//Furtniture
-	addButtonVertices(0.0f, 6.0f, 0.0f, 2.0f, &menuVertices[0], &menuUVs[0]);
+	addButtonVertices(-3.0f, 3.0f, 2.0f, 4.0f, &menuVertices[0], &menuUVs[0]);
 	//Wallpaper
-	addButtonVertices(0.0f, 6.0f, -3.0f, -1.0f, &menuVertices[0], &menuUVs[0]);
+	addButtonVertices(-3.0f, 3.0f, -1.0f, 1.0f, &menuVertices[0], &menuUVs[0]);
 	//Back
-	addButtonVertices(0.0f, 6.0f, -6.0f, -4.0f, &menuVertices[0], &menuUVs[0]);
+	addButtonVertices(-3.0f, 3.0f, -4.0f, -2.0f, &menuVertices[0], &menuUVs[0]);
 }
 
 ///Set the VAO, VBOS for the vertices, UVs and the normals.
@@ -723,6 +723,16 @@ int main()
 		glDrawArrays(GL_LINES, 0, axesVertices.size());
 		glBindVertexArray(0);*/
 
+		glm::mat4 inverseViewMatrix = glm::inverse(camera.GetViewMatrix());
+		glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
+		//glm::vec3 cameraPositionWorldSpace = camera.Position;
+		glm::mat4 menu_model_matrix = mat4(1.0f);
+		menu_model_matrix = glm::translate(menu_model_matrix, cameraPositionWorldSpace);
+		menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(camera.Front) * glm::vec3(10));
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(menu_model_matrix));
+		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 		glBindVertexArray(menuVAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, menuVertices[0].size());
 		glBindVertexArray(0);
