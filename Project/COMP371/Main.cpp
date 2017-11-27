@@ -35,6 +35,8 @@ std::map<const char *, std::vector<glm::vec3>> objectNormals;
 std::map<const char *, vector<Triangle>> objectTriangles;
 std::map<const char *, std::vector<glm::vec2>> objectUVs;
 std::map<const char *, glm::mat4> objectModels;
+std::vector<glm::vec3> menuVertices[3];
+std::vector<glm::vec2> menuUVs[3];
 
 
 //Which mode to render in between point, lines, and triangles
@@ -70,6 +72,7 @@ const char* TORCHERE1_NAME = "Objects/torchere1.obj";
 const char* FLOOR = "Objects/floorTemp.obj";
 const char* WALL = "Objects/wall.obj";
 
+GLuint menuVAOs[3], menuVBOs[3], menuUVVBOs[3];
 GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
 GLuint VAOFloor, verticesFloor, normals_Floor, uvsFloor;
@@ -99,6 +102,8 @@ float lastFrame = 0.0f;
 void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+		cout << "x: " << xpos << endl;
+		cout << "y: " << ypos << endl;
 		if (last_cursor_x != NULL && last_cursor_y != NULL)
 		{
 			if (firstMouse)
@@ -115,7 +120,6 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 			lastY = ypos;
 
 			camera.ProcessMouseMovement(xoffset, yoffset);
-
 		}
 	}
 	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
@@ -367,6 +371,32 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs)
+{
+	(*vertices).push_back(glm::vec3(leftX, bottomY, 0.01f));
+	(*vertices).push_back(glm::vec3(rightX, topY, 0.01f));
+	(*vertices).push_back(glm::vec3(rightX, bottomY, 0.01f));
+	(*vertices).push_back(glm::vec3(leftX, bottomY, 0.01f));
+	(*vertices).push_back(glm::vec3(leftX, topY, 0.01f));
+	(*vertices).push_back(glm::vec3(rightX, topY, 0.01f));
+	(*uvs).push_back(glm::vec2(0.0f, 0.0f));
+	(*uvs).push_back(glm::vec2(1.0f, 1.0f));
+	(*uvs).push_back(glm::vec2(1.0f, 0.0f));
+	(*uvs).push_back(glm::vec2(0.0f, 0.0f));
+	(*uvs).push_back(glm::vec2(0.0f, 1.0f));
+	(*uvs).push_back(glm::vec2(1.0f, 1.0f));
+}
+
+void createMenuVertices()
+{
+	//Furtniture
+	addButtonVertices(0.0f, 6.0f, 0.0f, 2.0f, &menuVertices[0], &menuUVs[0]);
+	//Wallpaper
+	addButtonVertices(0.0f, 6.0f, -3.0f, -1.0f, &menuVertices[0], &menuUVs[0]);
+	//Back
+	addButtonVertices(0.0f, 6.0f, -6.0f, -4.0f, &menuVertices[0], &menuUVs[0]);
+}
+
 ///Set the VAO, VBOS for the vertices, UVs and the normals.
 void setVBOs()
 {
@@ -385,7 +415,6 @@ void setVBOs()
 	axesColors.push_back({ 0.0, 0.0, 1.0, });
 	axesColors.push_back({ 0.0, 0.0, 1.0, });
 
-
 	glGenVertexArrays(1, &axes_VAO);
 	glBindVertexArray(axes_VAO);
 
@@ -403,6 +432,23 @@ void setVBOs()
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
+	//Menus
+	createMenuVertices();
+	glGenVertexArrays(3, menuVAOs);
+	glBindVertexArray(menuVAOs[0]);
+
+	glGenBuffers(3, menuVBOs);
+	glGenBuffers(3, menuUVVBOs);
+	glBindBuffer(GL_ARRAY_BUFFER, menuVBOs[0]);
+	glBufferData(GL_ARRAY_BUFFER, menuVertices[0].size() * sizeof(glm::vec3), &menuVertices[0].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, menuUVVBOs[0]);
+	glBufferData(GL_ARRAY_BUFFER, menuUVs[0].size() * sizeof(glm::vec3), &menuUVs[0].front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
 
 
 	glGenVertexArrays(1, &VAO);
@@ -654,7 +700,7 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture1);
 
 
-		render(BED1_NAME, camera_pos, VAO, 1);
+		//render(BED1_NAME, camera_pos, VAO, 1);
 
 		//render(BED1BOX_NAME, camera_pos, VAOBEDBOX);
 
@@ -665,7 +711,7 @@ int main()
 		//render(FLOOR, camera_pos, VAOFloor);
 
 		//Wall
-		render(WALL, camera_pos, VAOWall, 0);
+		//render(WALL, camera_pos, VAOWall, 0);
 
 		//start axes
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(mat4(1.0f)));
@@ -673,8 +719,12 @@ int main()
 		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 
-		glBindVertexArray(axes_VAO);
+		/*glBindVertexArray(axes_VAO);
 		glDrawArrays(GL_LINES, 0, axesVertices.size());
+		glBindVertexArray(0);*/
+
+		glBindVertexArray(menuVAOs[0]);
+		glDrawArrays(GL_TRIANGLES, 0, menuVertices[0].size());
 		glBindVertexArray(0);
 
 		// Swap the screen buffers
