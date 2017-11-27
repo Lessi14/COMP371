@@ -44,13 +44,14 @@ std::vector<glm::vec2> menuUVs[3];
 unsigned int texture0, texture1, texture2, texture3, texture_menu_back, texture_menu_furniture, texture_menu_wallpaper;
 
 map<int, Object*> objects;
+map<int, Object*> buttonObjects[3];
 
 //Which mode to render in between point, lines, and triangles
 int objRenderMode = GL_TRIANGLES;
 
 //If the menu is open
 bool menu_open = false;
-int menu_mode = 2;
+int menu_mode = 0;
 
 //Mouse
 double lastClickX = 0;
@@ -172,23 +173,45 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
 	{
-		selectedObject = -1;
-		lastClickX = last_cursor_x;
-		lastClickY = last_cursor_y;
-		vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
-		float distanceT = 0;
-		float currentClosest = 1000;
-		for (auto const &ent2 : objects)
+		if (menu_open)
 		{
-			if (ent2.second->intersect(camera.Position, castedRay, distanceT) && distanceT < currentClosest)
+			int selectedButtonID = -1;
+			lastClickX = last_cursor_x;
+			lastClickY = last_cursor_y;
+			glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+			vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, menuViewMatrix);
+			float distanceT = 0;
+			float currentClosest = 1000;
+			for (auto const &ent : buttonObjects[menu_mode])
 			{
-				//Object Selected
-				currentClosest = distanceT;
-				selectedObject = ent2.second->id;
-				cout << selectedObject << endl;
+				if (ent.second->intersect(camera.Position, castedRay, distanceT) && distanceT < currentClosest)
+				{
+					//Ray Interacted with button vertices
+					currentClosest = distanceT;
+					selectedButtonID = ent.second->id;
+					cout << selectedButtonID << endl;
+				}
 			}
 		}
-
+		else
+		{
+			selectedObject = -1;
+			lastClickX = last_cursor_x;
+			lastClickY = last_cursor_y;
+			vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
+			float distanceT = 0;
+			float currentClosest = 1000;
+			for (auto const &ent2 : objects)
+			{
+				if (ent2.second->intersect(camera.Position, castedRay, distanceT) && distanceT < currentClosest)
+				{
+					//Object Selected
+					currentClosest = distanceT;
+					selectedObject = ent2.second->id;
+					cout << selectedObject << endl;
+				}
+			}
+		}
 	}
 }
 
@@ -271,6 +294,28 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			break;
 		case GLFW_KEY_ENTER:
 			menu_open = !menu_open;
+			if (menu_open)
+			{
+				glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+				glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
+				glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
+				//cameraPositionWorldSpace += glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8);
+				for (int i = 0; i < 3; i++)
+				{
+					buttonObjects[0][i]->translate(buttonObjects[0], cameraPositionWorldSpace);
+					buttonObjects[0][i]->translate(buttonObjects[0], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+				}
+				for (int i = 0; i < 8; i++)
+				{
+					buttonObjects[1][i]->translate(buttonObjects[1], cameraPositionWorldSpace);
+					buttonObjects[1][i]->translate(buttonObjects[1], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+				}
+				for (int i = 0; i < 6; i++)
+				{
+					buttonObjects[2][i]->translate(buttonObjects[2], cameraPositionWorldSpace);
+					buttonObjects[2][i]->translate(buttonObjects[2], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+				}
+			}
 		default:
 			break;
 		}
@@ -442,49 +487,60 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs)
+void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs, map<int, Object*> *buttonObjects, int id)
 {
-	(*vertices).push_back(glm::vec3(leftX, bottomY, 0.01f));
-	(*vertices).push_back(glm::vec3(rightX, topY, 0.01f));
-	(*vertices).push_back(glm::vec3(rightX, bottomY, 0.01f));
-	(*vertices).push_back(glm::vec3(leftX, bottomY, 0.01f));
-	(*vertices).push_back(glm::vec3(leftX, topY, 0.01f));
-	(*vertices).push_back(glm::vec3(rightX, topY, 0.01f));
-	(*uvs).push_back(glm::vec2(1.0f, 1.0f));
-	(*uvs).push_back(glm::vec2(0.0f, 0.0f));
-	(*uvs).push_back(glm::vec2(0.0f, 1.0f));
-	(*uvs).push_back(glm::vec2(1.0f, 1.0f));
-	(*uvs).push_back(glm::vec2(1.0f, 0.0f));
-	(*uvs).push_back(glm::vec2(0.0f, 0.0f));
+	vector<glm::vec3> tempVertices;
+	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
+	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
+	tempVertices.push_back(glm::vec3(rightX, bottomY, 0.01f));
+	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
+	tempVertices.push_back(glm::vec3(leftX, topY, 0.01f));
+	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
+	for (int i = 0; i<tempVertices.size(); i++)
+		(*vertices).push_back(tempVertices[i]);
+	
+	vector<glm::vec2> tempUVs;
+	tempUVs.push_back(glm::vec2(1.0f, 1.0f));
+	tempUVs.push_back(glm::vec2(0.0f, 0.0f));
+	tempUVs.push_back(glm::vec2(0.0f, 1.0f));
+	tempUVs.push_back(glm::vec2(1.0f, 1.0f));
+	tempUVs.push_back(glm::vec2(1.0f, 0.0f));
+	tempUVs.push_back(glm::vec2(0.0f, 0.0f));
+	for (int i = 0; i<tempUVs.size(); i++)
+		(*uvs).push_back(tempUVs[i]);
+	const char *temp = "";
+	vector<glm::vec3> normals;
+	Object *newButton = new Object(id, temp, tempVertices, normals, tempUVs, *buttonObjects);
+	(*buttonObjects)[id] = newButton;
 }
 
 void createMenuVertices()
 {
 	//First Menu
 	//Furniture
-	addButtonVertices(-3.0f, 3.0f, 2.0f, 4.0f, &menuVertices[0], &menuUVs[0]);
+	addButtonVertices(-3.0f, 3.0f, 2.0f, 4.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 0);
 	//Wallpaper
-	addButtonVertices(-3.0f, 3.0f, -1.0f, 1.0f, &menuVertices[0], &menuUVs[0]);
+	addButtonVertices(-3.0f, 3.0f, -1.0f, 1.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 1);
 	//Back
-	addButtonVertices(-3.0f, 3.0f, -4.0f, -2.0f, &menuVertices[0], &menuUVs[0]);
+	addButtonVertices(-3.0f, 3.0f, -4.0f, -2.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 2);
 
 	//Texture Menu
-	addButtonVertices(-5.0f, -1.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(1.0f, 5.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(-5.0f, -1.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(1.0f, 5.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(-5.0f, -1.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(1.0f, 5.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(-5.0f, -1.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(1.0f, 5.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(-5.0f, -1.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 0);
+	addButtonVertices(1.0f, 5.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 1);
+	addButtonVertices(-5.0f, -1.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 2);
+	addButtonVertices(1.0f, 5.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 3);
+	addButtonVertices(-5.0f, -1.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 4);
+	addButtonVertices(1.0f, 5.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 5);
+	addButtonVertices(-5.0f, -1.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 6);
+	addButtonVertices(1.0f, 5.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 7);
 
 	//Furniture Menu
-	addButtonVertices(-5.0f, -1.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2]);
-	addButtonVertices(1.0f, 5.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2]);
-	addButtonVertices(-5.0f, -1.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2]);
-	addButtonVertices(1.0f, 5.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2]);
-	addButtonVertices(-5.0f, -1.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2]);
-	addButtonVertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(-5.0f, -1.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 0);
+	addButtonVertices(1.0f, 5.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 1);
+	addButtonVertices(-5.0f, -1.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 2);
+	addButtonVertices(1.0f, 5.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 3);
+	addButtonVertices(-5.0f, -1.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 4);
+	addButtonVertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 5);
 }
 
 ///Set the VAO, VBOS for the vertices, UVs and the normals.

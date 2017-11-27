@@ -22,6 +22,10 @@ Object::Object(int id,
 	this->uvs = uvs;
 	objects[id] = this;
 	this->worldCoordinates = worldCoordinates;
+
+	setIntersectionTriangle();
+	calculateBounderyBox();
+	objects[id] = this;
 }
 
 Object::Object(int id,
@@ -40,6 +44,9 @@ Object::Object(int id,
 	this->uvs = uvs;
 	objects[id] = this;
 
+	setIntersectionTriangle();
+	calculateBounderyBox();
+	objects[id] = this;
 }
 
 bool Object::checkIdAvailability(int id)
