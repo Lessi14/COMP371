@@ -114,6 +114,12 @@ void Object::UpdateVertices()
 	this->vertices = transFormedVertices;
 }
 
+void Object::resetObjectModel(map<int, Object*>& objects)
+{
+	this->objectModel = mat4(1.0);
+	objects[id] = this;
+}
+
 /// Clears the trianglevector and the triangle and boundingbox
 void Object::setIntersectionTriangle()
 {

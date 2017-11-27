@@ -194,12 +194,16 @@ void handle_button_click(int buttonId)
 	case 1:
 		switch (buttonId)
 		{
+		//Metal 1
 		case 0:
 			break;
+		//Metal 2
 		case 1:
 			break;
+		//Wood 1
 		case 2:
 			break;
+		//Wood 2
 		case 3:
 			break;
 		case 4:
@@ -367,16 +371,19 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				//cameraPositionWorldSpace += glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8);
 				for (int i = 0; i < 3; i++)
 				{
+					buttonObjects[0][i]->resetObjectModel(buttonObjects[0]);
 					buttonObjects[0][i]->translate(buttonObjects[0], cameraPositionWorldSpace);
 					buttonObjects[0][i]->translate(buttonObjects[0], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
 				}
 				for (int i = 0; i < 8; i++)
 				{
+					buttonObjects[1][i]->resetObjectModel(buttonObjects[1]);
 					buttonObjects[1][i]->translate(buttonObjects[1], cameraPositionWorldSpace);
 					buttonObjects[1][i]->translate(buttonObjects[1], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
 				}
 				for (int i = 0; i < 6; i++)
 				{
+					buttonObjects[2][i]->resetObjectModel(buttonObjects[2]);
 					buttonObjects[2][i]->translate(buttonObjects[2], cameraPositionWorldSpace);
 					buttonObjects[2][i]->translate(buttonObjects[2], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
 				}

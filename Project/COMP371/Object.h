@@ -46,6 +46,9 @@ public:
 	//Update the vertices after a transformation
 	void UpdateVertices();
 
+	//Reset back to initial object model
+	void resetObjectModel(map<int, Object*>& objects);
+
 	///fills the vectors with the triangle object which can be used for intersection and normals.
 	void setIntersectionTriangle();
 
