@@ -41,7 +41,7 @@ std::vector<glm::vec3> menuVertices[3];
 std::vector<glm::vec2> menuUVs[3];
 
 //load and create a texture
-unsigned int texture0, texture1, texture2, texture3, texture_menu_back, texture_menu_furniture, texture_menu_wallpaper;
+unsigned int texture0, texture1, texture2, texture3, texture_menu_bed, texture_menu_back, texture_menu_cabinet, texture_menu_coffee_table, texture_menu_toilet, texture_menu_torchere, texture_menu_wall_item, texture_menu_furniture, texture_menu_wallpaper;
 
 map<int, Object*> objects;
 map<int, Object*> buttonObjects[3];
@@ -854,6 +854,132 @@ void setTexture()
 	}
 	stbi_image_free(data);
 
+	//texture_menu_bed
+	glGenTextures(1, &texture_menu_bed);
+	glBindTexture(GL_TEXTURE_2D, texture_menu_bed);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/menu_bed.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture_menu_bed" << std::endl;
+	}
+	else {
+		std::cout << "Failed to load texture_menu_bed" << std::endl;
+	}
+	stbi_image_free(data);
+
+	//texture_menu_cabinet
+	glGenTextures(1, &texture_menu_cabinet);
+	glBindTexture(GL_TEXTURE_2D, texture_menu_cabinet);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/menu_cabinet.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture_menu_cabinet" << std::endl;
+	}
+	else {
+		std::cout << "Failed to load texture_menu_cabinet" << std::endl;
+	}
+	stbi_image_free(data);
+
+	//texture_menu_coffee_table
+	/*glGenTextures(1, &texture_menu_coffee_table);
+	glBindTexture(GL_TEXTURE_2D, texture_menu_coffee_table);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/menu_coffee_table.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture_menu_coffee_table" << std::endl;
+	}
+	else {
+		std::cout << "Failed to load texture_menu_coffee_table" << std::endl;
+	}
+	stbi_image_free(data);*/
+
+	//texture_menu_toilet
+	/*glGenTextures(1, &texture_menu_toilet);
+	glBindTexture(GL_TEXTURE_2D, texture_menu_toilet);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/menu_toilet.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture_menu_toilet" << std::endl;
+	}
+	else {
+		std::cout << "Failed to load texture_menu_toilet" << std::endl;
+	}
+	stbi_image_free(data);*/
+
+	//texture_menu_torchere
+	/*glGenTextures(1, &texture_menu_torchere);
+	glBindTexture(GL_TEXTURE_2D, texture_menu_torchere);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/menu_torchere.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture_menu_torchere" << std::endl;
+	}
+	else {
+		std::cout << "Failed to load texture_menu_torchere" << std::endl;
+	}
+	stbi_image_free(data);*/
+
+	//texture_menu_wall_item
+	/*glGenTextures(1, &texture_menu_wall_item);
+	glBindTexture(GL_TEXTURE_2D, texture_menu_wall_item);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/menu_wall_item.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture_menu_wall_item" << std::endl;
+	}
+	else {
+		std::cout << "Failed to load texture_menu_wall_item" << std::endl;
+	}
+	stbi_image_free(data);*/
+
 	//texture_menu_back
 	glGenTextures(1, &texture_menu_back);
 	glBindTexture(GL_TEXTURE_2D, texture_menu_back);
@@ -864,7 +990,7 @@ void setTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/menu_back.jpg", &twidth, &theight, &tnrChannels, 0);
+	/*data = stbi_load("Textures/menu_back.jpg", &twidth, &theight, &tnrChannels, 0);
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -873,7 +999,7 @@ void setTexture()
 	else {
 		std::cout << "Failed to load texture_menu_back" << std::endl;
 	}
-	stbi_image_free(data);
+	stbi_image_free(data);*/
 
 	//texture_menu_furniture
 	glGenTextures(1, &texture_menu_furniture);
@@ -885,7 +1011,7 @@ void setTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/menu_furniture.jpg", &twidth, &theight, &tnrChannels, 0);
+	/*data = stbi_load("Textures/menu_furniture.jpg", &twidth, &theight, &tnrChannels, 0);
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -894,7 +1020,7 @@ void setTexture()
 	else {
 		std::cout << "Failed to load texture_menu_furniture" << std::endl;
 	}
-	stbi_image_free(data);
+	stbi_image_free(data);*/
 
 	//texture_menu_wallpaper
 	glGenTextures(1, &texture_menu_wallpaper);
@@ -988,6 +1114,12 @@ int main()
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 2);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture3"), 3);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_bed"), 14);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_cabinet"), 15);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_coffee_table"), 16);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_toilet"), 17);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_torchere"), 18);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_wall_item"), 19);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_back"), 20);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_furniture"), 21);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_wallpaper"), 22);
@@ -1098,6 +1230,18 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, texture3);
+		glActiveTexture(GL_TEXTURE14);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_bed);
+		glActiveTexture(GL_TEXTURE15);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_cabinet);
+		glActiveTexture(GL_TEXTURE16);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_coffee_table);
+		glActiveTexture(GL_TEXTURE17);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_toilet);
+		glActiveTexture(GL_TEXTURE18);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_torchere);
+		glActiveTexture(GL_TEXTURE19);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_wall_item);
 		glActiveTexture(GL_TEXTURE20);
 		glBindTexture(GL_TEXTURE_2D, texture_menu_back);
 		glActiveTexture(GL_TEXTURE21);
@@ -1176,17 +1320,17 @@ int main()
 				//Furniture Menu
 			case 2:
 				glBindVertexArray(menuVAOs[2]);
-				glUniform1i(texture_number, 0);
+				glUniform1i(texture_number, 14);
 				glDrawArrays(GL_TRIANGLES, 0, 6);
-				glUniform1i(texture_number, 1);
+				glUniform1i(texture_number, 15);
 				glDrawArrays(GL_TRIANGLES, 6, 6);
-				glUniform1i(texture_number, 2);
+				glUniform1i(texture_number, 16);
 				glDrawArrays(GL_TRIANGLES, 12, 6);
-				glUniform1i(texture_number, 3);
+				glUniform1i(texture_number, 17);
 				glDrawArrays(GL_TRIANGLES, 18, 6);
-				glUniform1i(texture_number, 20);
+				glUniform1i(texture_number, 18);
 				glDrawArrays(GL_TRIANGLES, 24, 6);
-				glUniform1i(texture_number, 21);
+				glUniform1i(texture_number, 19);
 				glDrawArrays(GL_TRIANGLES, 30, 6);
 				break;
 			}

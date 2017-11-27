@@ -19,6 +19,12 @@ uniform sampler2D texture0;
 uniform sampler2D texture1;
 uniform sampler2D texture2;
 uniform sampler2D texture3;
+uniform sampler2D texture_menu_bed;
+uniform sampler2D texture_menu_cabinet;
+uniform sampler2D texture_menu_coffee_table;
+uniform sampler2D texture_menu_toilet;
+uniform sampler2D texture_menu_torchere;
+uniform sampler2D texture_menu_wall_item;
 uniform sampler2D texture_menu_back;
 uniform sampler2D texture_menu_furniture;
 uniform sampler2D texture_menu_wallpaper;
@@ -61,7 +67,25 @@ void main()
 			color = texture(texture3, TexCoord) * vec4(resultantColour, 1.0f);
 			break;
 
-		case 20: //texture_menu_back
+        case 14: //texture_menu_bed
+			color = texture(texture_menu_bed, TexCoord);
+			break;
+        case 15: //texture_menu_cabinet
+			color = texture(texture_menu_cabinet, TexCoord);
+			break;
+        case 16: //texture_menu_coffee_table
+			color = texture(texture_menu_coffee_table, TexCoord);
+			break;
+        case 17: //texture_menu_toilet
+			color = texture(texture_menu_toilet, TexCoord);
+			break;
+        case 18: //texture_menu_torchere
+			color = texture(texture_menu_torchere, TexCoord);
+			break;
+        case 19: //texture_menu_wall_item
+			color = texture(texture_menu_wall_item, TexCoord);
+			break;
+        case 20: //texture_menu_back
 			color = texture(texture_menu_back, TexCoord);
 			break;
 		case 21: //texture_menu_furniture
