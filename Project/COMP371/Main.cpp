@@ -869,6 +869,10 @@ int main()
 	setTexture();
  
 	
+	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
+	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
+	objects[tempExtWalls]->texture_number = 3;
+
 	int tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempFloor]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempFloor]->texture_number = 1;
@@ -877,11 +881,6 @@ int main()
 	int tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempCeiling]->texture_number = 4;
-	
-	
-	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
-	objects[tempExtWalls]->texture_number = 3;
 
 	int tempPainting = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, 0.0f, 0.0f));
 	objects[tempPainting]->texture_number = 5;
