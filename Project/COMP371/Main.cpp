@@ -1022,21 +1022,21 @@ int main()
 				//Texture Menu
 			case 1:
 				glBindVertexArray(menuVAOs[1]);
-				glUniform1i(texture_number, 0);
+				glUniform1i(texture_number, 23); //non-diffuse metal1 texture
 				glDrawArrays(GL_TRIANGLES, 0, 6);
-				glUniform1i(texture_number, 1);
+				glUniform1i(texture_number, 24); //non-diffuse metal2 texture
 				glDrawArrays(GL_TRIANGLES, 6, 6);
-				glUniform1i(texture_number, 2);
+				glUniform1i(texture_number, 25); //non-diffuse wood1 texture
 				glDrawArrays(GL_TRIANGLES, 12, 6);
-				glUniform1i(texture_number, 3);
+				glUniform1i(texture_number, 26); //non-diffuse wood2 texture
 				glDrawArrays(GL_TRIANGLES, 18, 6);
-				glUniform1i(texture_number, 20);
+				glUniform1i(texture_number, 27); //non-diffuse red colour
 				glDrawArrays(GL_TRIANGLES, 24, 6);
-				glUniform1i(texture_number, 21);
+				glUniform1i(texture_number, 28); //non-diffuse blue colour
 				glDrawArrays(GL_TRIANGLES, 30, 6);
-				glUniform1i(texture_number, 22);
+				glUniform1i(texture_number, 29); //non-diffuse green colour
 				glDrawArrays(GL_TRIANGLES, 36, 6);
-				glUniform1i(texture_number, 20);
+				glUniform1i(texture_number, 30); //non-diffuse yellow colour
 				glDrawArrays(GL_TRIANGLES, 42, 6);
 				break;
 				//Furniture Menu

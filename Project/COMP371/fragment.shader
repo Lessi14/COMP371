@@ -76,6 +76,9 @@ void main()
 		case 6: //green
 			color = vec4(0, 0, 1, 1) * vec4(resultantColour, 1.0f);
 			break;
+		case 7: //yellow
+			color = vec4(1, 1, 0, 1) * vec4(resultantColour, 1.0f);
+			break;
 
 
 		//NON-DIFFUSE TEXTURES
@@ -119,6 +122,18 @@ void main()
 			break;
 		case 26: //wood2 texture
 			color = texture(texture3, TexCoord);
+			break;
+		case 27: //red
+			color = vec4(1, 0, 0, 1);
+			break;
+		case 28: //blue
+			color = vec4(0, 1, 0, 1);
+			break;
+		case 29: //green
+			color = vec4(0, 0, 1, 1);
+			break;
+		case 30: //yellow
+			color = vec4(1, 1, 0, 1);
 			break;
 		default:
 			color = vec4(resultantColour, 1.0f);
