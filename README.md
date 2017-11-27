@@ -8,10 +8,18 @@ Comp 371 Group Assignment.
 | Up, Down | Move the camera up and down |
 | Backspace | Reset camera |
 | T,P,L | Switch between Triangle(T), Point(P) and Line(L) render modes |
+| Enter | Open/Close Menu |
+| Escape | Quit Program |
 
 | Mouse Event | Effect |
 | ------ | ------ |
 | RMB | Hold and drag to rotate the camera |
+
+| Combined Elements| Effect |
+| ------ | ------ |
+|Control + LMB| Hold and Drag to move the object along the X axis|
+|Shift + LMB| Hold and Drag to move the object along the Z axis|
+|Control + MMB| Hold and Drag to move the object along the Y axis|
 
 
 ## Members:
