@@ -13,6 +13,7 @@
 #include "gtc/matrix_transform.hpp"
 #include "gtc/type_ptr.hpp"
 #include "objloader.hpp"  //include the object loader
+#include "stb_image.h"
 #include <map>;
 #include "camera.h"
 #include "Object.h"
@@ -57,6 +58,7 @@ GLuint projectionLoc;
 GLuint viewMatrixLoc;
 GLuint transformLoc;
 GLuint camera_pos_addr;
+GLuint texture_number;
 
 //Global variable for the window
 GLFWwindow* window;
@@ -237,6 +239,29 @@ void processInput(GLFWwindow *window)
 	//cout << "New" << endl;
 }
 
+///Key callabck
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+	std::cout << key << std::endl;
+	//Pressed
+	if (1 == action) {
+		switch (key)
+		{
+		case GLFW_KEY_C:
+			//Change the camera			
+			break;
+		case GLFW_KEY_S:
+			//Editing camera
+			break;
+		case GLFW_KEY_F:
+			//Flying  or viewing camera
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 ///Read teh files and create the shaders. Create main  shader program.
 void setShaders()
 {
@@ -315,6 +340,7 @@ void setShaders()
 	}
 	glDeleteShader(vertexShader); //free up memory
 	glDeleteShader(fragmentShader);
+	std::cout << "Shaders Set." << std::endl;
 }
 
 ///Set teh window component. Including height and width.
@@ -446,12 +472,13 @@ void setVBOs()
 }
 
 ///Renders the objects inside the main loop.
-void render(const char* name, vec3 camera_pos, GLuint VAO)
+void render(const char* name, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 {
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objects[name]->objectModel));
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
+	glUniform1i(texture_number, tex_num);
 
 	glBindVertexArray(VAO);
 	glDrawArrays(objRenderMode, 0, objects[name]->vertices.size());
@@ -481,7 +508,54 @@ int main()
 	glCullFace(GL_BACK);
 
 	setShaders();
+
+	//load and create a texture
+	unsigned int texture0, texture1;
+
+	//texture 1
+	glGenTextures(1, &texture0);
+	glBindTexture(GL_TEXTURE_2D, texture0);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	int twidth, theight, tnrChannels;
+	//stbi_set_flip_vertically_on_load(true);
+	unsigned char *data = stbi_load("Textures/metal1.jpg", &twidth, &theight, &tnrChannels,0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture0" << std::endl;
+	}
+	stbi_image_free(data);
+
+	//texture 2
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/metal2.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "Failed to load texture1" << std::endl;
+	}
+	stbi_image_free(data);
 	glUseProgram(shaderProgram);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
 
 	Object *bed = new Object(BED1_NAME);
 	/*Object *cabinet = new Object(CABINET3_NAME);
@@ -529,6 +603,7 @@ int main()
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
 	transformLoc = glGetUniformLocation(shaderProgram, "model_matrix");
 	camera_pos_addr = glGetUniformLocation(shaderProgram, "view_pos");
+	texture_number = glGetUniformLocation(shaderProgram, "texture_number");
 
 	// Game loop
 	while (!glfwWindowShouldClose(window))
@@ -548,7 +623,17 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
-		//objects[bed->name]->translate(objectModels, objects, vec3(0.01f, 0.0f, 0.0f));
+
+		//kept this for reference
+		/*glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[BED1_NAME]));
+		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
+
+		glBindVertexArray(VAO);
+		glDrawArrays(objRenderMode, 0, objectVertices[BED1_NAME].size());
+		glBindVertexArray(0);*/
+
 		render(BED1_NAME, camera_pos, VAO);
 
 
@@ -556,7 +641,7 @@ int main()
 		//render(FLOOR, camera_pos, VAOFloor);
 
 		//Wall
-		render(WALL, camera_pos, VAOWall);
+		render(WALL, camera_pos, VAOWall, 0);
 
 		//start axes
 		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(mat4(1.0f)));
