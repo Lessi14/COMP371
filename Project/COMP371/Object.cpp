@@ -254,7 +254,7 @@ void Object::calculateBounderyBox()
 	minY = minVertex.y;
 	minZ = minVertex.z;
 
-	listOfMaxAndMin = { minX, maxX, minY, maxY, minZ, maxZ };
+	listOfMaxAndMin = { minX, maxX, minY, maxY, minZ, maxZ }; //order matters!!!!!
 
 	//Forgive the hardcode, too tired to figure out a better way.
 	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
@@ -317,6 +317,37 @@ bool Object::collides(vector<float> collidingObjectMaxandMin)
 	if (withinX && withinY && withinZ) return true;
 
 	return false;
+}
+
+bool Object::isNextACollision(map<int, Object*> objects, vec3 potentialTranlation, int min, int max)
+{
+	bool willItCollide = false;
+	for (auto const &ent2 : objects)
+	{
+		if (ent2.first != 0 && ent2.first != id) //0 stands for inverted walls
+		{
+			willItCollide = objects[ent2.second->id]->collides(objects[id]->getPostMaxMinBeforeTranslation(potentialTranlation));
+			if (willItCollide)
+			{
+				break;
+			}
+
+		}
+	}
+
+	vector<float> maxAndMinOfWalls = objects[0]->getListOfMaxAndMin();
+	vector<float> maxAndMinOfCurrentObject = getPostMaxMinBeforeTranslation(potentialTranlation);
+
+	if (!willItCollide &&
+		maxAndMinOfWalls.at(min) < maxAndMinOfCurrentObject.at(min) &&
+		maxAndMinOfWalls.at(min) < maxAndMinOfCurrentObject.at(max) &&
+		maxAndMinOfCurrentObject.at(min) < maxAndMinOfWalls.at(max) &&
+		maxAndMinOfCurrentObject.at(max) < maxAndMinOfWalls.at(max))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void Object::loadObjNoUVsToMap(std::map<int, Object*> objects)

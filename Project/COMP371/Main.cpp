@@ -128,7 +128,7 @@ Object *wall = new Object(2, WALL);
 Object *coffee = new Object(3, COFFEE_TABLE1_NAME);
 
 */
-bool isNextACollision(Object * obj, vec3 potentialTranlation, int min, int max)
+/*bool isNextACollision(Object * obj, vec3 potentialTranlation, int min, int max)
 {
 	bool willItCollide = false;
 	for (auto const &ent2 : objects)
@@ -158,7 +158,7 @@ bool isNextACollision(Object * obj, vec3 potentialTranlation, int min, int max)
 	
 	return true;
 }
-
+*/
 //Is called whenever the mouse moves on the window
 ///While certain mouse buttons are pressed, this method makes it so that the camera will move
 void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
@@ -200,7 +200,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		
 		
-		bool checkIfItCollides = isNextACollision(objects[selectedObject], vec3(modifier, 0.0f, 0.0f), 0, 1);
+		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(modifier, 0.0f, 0.0f), 0, 1); //0 and 1 stands for minX and maxX
 
 		if (!checkIfItCollides)
 		{
@@ -210,7 +210,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 		
-		bool checkIfItCollides = isNextACollision(objects[selectedObject], vec3(0.0f, modifier, 0.0f), 2, 3);
+		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, modifier, 0.0f), 2, 3); //2 and 3 stands for minY and maxY
 
 		if (!checkIfItCollides) {
 			objects[selectedObject]->translate(objects, vec3(0.0f, modifier, 0.0f));
@@ -219,7 +219,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 		
-		bool checkIfItCollides = isNextACollision(objects[selectedObject], vec3(0.0f, 0.0f, modifier), 4, 5);
+		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, 0.0f, modifier), 4, 5); //4 and 5 stands for minZ and maxZ
 
 		if (!checkIfItCollides) {
 			objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
