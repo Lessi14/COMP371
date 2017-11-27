@@ -765,12 +765,11 @@ void setVBOs()
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 }
 
-//Set the textures
-void setTexture()
+void setIndividualTexture(unsigned int *texture, char* filename)
 {
 	//texture 1
-	glGenTextures(1, &texture0);
-	glBindTexture(GL_TEXTURE_2D, texture0);
+	glGenTextures(1, texture);
+	glBindTexture(GL_TEXTURE_2D, *texture);
 	//set the texture wrapping parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -779,269 +778,34 @@ void setTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//load image, create texture and generate mipmaps
 	int twidth, theight, tnrChannels;
-	//stbi_set_flip_vertically_on_load(true);
-	unsigned char *data = stbi_load("Textures/metal1.jpg", &twidth, &theight, &tnrChannels, 0);
+	unsigned char *data = stbi_load(filename, &twidth, &theight, &tnrChannels, 0);
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture0" << std::endl;
+		std::cout << "Loaded " << filename << std::endl;
 	}
 	else {
-		std::cout << "Failed to load texture0" << std::endl;
+		std::cout << "Failed to load " << filename << std::endl;
 	}
 	stbi_image_free(data);
+}
 
-	//texture 2
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/metal2.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture1" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture1" << std::endl;
-	}
-	stbi_image_free(data);
-
-	//texture 3
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/wood1.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture2" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture2" << std::endl;
-	}
-	stbi_image_free(data);
-
-	//texture 4
-	glGenTextures(1, &texture3);
-	glBindTexture(GL_TEXTURE_2D, texture3);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/wood2.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture3" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture3" << std::endl;
-	}
-	stbi_image_free(data);
-
-	//texture_menu_bed
-	glGenTextures(1, &texture_menu_bed);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_bed);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/menu_bed.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_bed" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_bed" << std::endl;
-	}
-	stbi_image_free(data);
-
-	//texture_menu_cabinet
-	glGenTextures(1, &texture_menu_cabinet);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_cabinet);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/menu_cabinet.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_cabinet" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_cabinet" << std::endl;
-	}
-	stbi_image_free(data);
-
-	//texture_menu_coffee_table
-	/*glGenTextures(1, &texture_menu_coffee_table);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_coffee_table);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/menu_coffee_table.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_coffee_table" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_coffee_table" << std::endl;
-	}
-	stbi_image_free(data);*/
-
-	//texture_menu_toilet
-	/*glGenTextures(1, &texture_menu_toilet);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_toilet);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/menu_toilet.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_toilet" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_toilet" << std::endl;
-	}
-	stbi_image_free(data);*/
-
-	//texture_menu_torchere
-	/*glGenTextures(1, &texture_menu_torchere);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_torchere);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/menu_torchere.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_torchere" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_torchere" << std::endl;
-	}
-	stbi_image_free(data);*/
-
-	//texture_menu_wall_item
-	/*glGenTextures(1, &texture_menu_wall_item);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_wall_item);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/menu_wall_item.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_wall_item" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_wall_item" << std::endl;
-	}
-	stbi_image_free(data);*/
-
-	//texture_menu_back
-	glGenTextures(1, &texture_menu_back);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_back);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	/*data = stbi_load("Textures/menu_back.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_back" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_back" << std::endl;
-	}
-	stbi_image_free(data);*/
-
-	//texture_menu_furniture
-	glGenTextures(1, &texture_menu_furniture);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_furniture);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	/*data = stbi_load("Textures/menu_furniture.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_furniture" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_furniture" << std::endl;
-	}
-	stbi_image_free(data);*/
-
-	//texture_menu_wallpaper
-	glGenTextures(1, &texture_menu_wallpaper);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_wallpaper);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	/*data = stbi_load("Textures/menu_wallpaper.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_wallpaper" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_wallpaper" << std::endl;
-	}
-	stbi_image_free(data);*/
+//Set the textures
+void setTexture()
+{
+	setIndividualTexture(&texture0, "Textures/metal1.jpg");
+	setIndividualTexture(&texture1, "Textures/metal2.jpg");
+	setIndividualTexture(&texture2, "Textures/wood1.jpg");
+	setIndividualTexture(&texture3, "Textures/wood2.jpg");
+	setIndividualTexture(&texture_menu_bed, "Textures/menu_bed.jpg");
+	/*setIndividualTexture(&texture_menu_cabinet, "Textures/menu_cabinet.jpg");
+	setIndividualTexture(&texture_menu_coffee_table, "Textures/menu_coffee_table.jpg");
+	setIndividualTexture(&texture_menu_toilet, "Textures/menu_toilet.jpg");
+	setIndividualTexture(&texture_menu_torchere, "Textures/menu_torchere.jpg");
+	setIndividualTexture(&texture_menu_wall_item, "Textures/menu_wall_item.jpg");
+	setIndividualTexture(&texture_menu_back, "Textures/menu_back.jpg");
+	setIndividualTexture(&texture_menu_furniture, "Textures/menu_furniture.jpg");
+	setIndividualTexture(&texture_menu_wallpaper, "Textures/menu_wallpaper.jpg");*/
 }
 
 ///Renders the objects inside the main loop.
