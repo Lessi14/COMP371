@@ -41,16 +41,17 @@ std::vector<glm::vec3> menuVertices[3];
 std::vector<glm::vec2> menuUVs[3];
 
 //load and create a texture
-unsigned int texture0, texture1, texture2, texture3, texture_menu_back, texture_menu_furniture, texture_menu_wallpaper;
+unsigned int texture0, texture1, texture2, texture3, texture_menu_bed, texture_menu_back, texture_menu_cabinet, texture_menu_coffee_table, texture_menu_toilet, texture_menu_torchere, texture_menu_wall_item, texture_menu_furniture, texture_menu_wallpaper;
 
 map<int, Object*> objects;
+map<int, Object*> buttonObjects[3];
 
 //Which mode to render in between point, lines, and triangles
 int objRenderMode = GL_TRIANGLES;
 
 //If the menu is open
 bool menu_open = false;
-int menu_mode = 2;
+int menu_mode = 0;
 
 //Mouse
 double lastClickX = 0;
@@ -160,7 +161,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	//cout << diffY << endl;
 	float dempener = 0.05;
 	float modifier = diffY * dempener;
-	cout << modifier << endl;	
+	//cout << modifier << endl;	
 	if (abs(modifier) < 0.15)
 	{
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
@@ -191,27 +192,119 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	lastClickY = ypos;
 }
 
+void handle_button_click(int buttonId)
+{
+	switch (menu_mode)
+	{
+	case 0:
+		switch (buttonId)
+		{
+		//furniture button
+		case 0:
+			menu_mode = 2;
+			break;
+		//texture button
+		case 1:
+			menu_mode = 1;
+			break;
+		//back button
+		case 2:
+			menu_open = false;
+			menu_mode = 0;
+			break;
+		}
+		break;
+	case 1:
+		switch (buttonId)
+		{
+		//Metal 1
+		case 0:
+			break;
+		//Metal 2
+		case 1:
+			break;
+		//Wood 1
+		case 2:
+			break;
+		//Wood 2
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+			break;
+		case 6:
+			break;
+		case 7:
+			break;
+		}
+		break;
+	case 2:
+		switch (buttonId)
+		{
+		case 0:
+			break;
+		case 1:
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+			break;
+		}
+		break;
+	}
+}
+
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (action == GLFW_PRESS)
 	{
-		selectedObject = -1;
-		lastClickX = last_cursor_x;
-		lastClickY = last_cursor_y;
-		vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
-		float distanceT = 0;
-		float currentClosest = 1000;
-		for (auto const &ent : objects)
+		if (menu_open)
 		{
-			if (ent.second->intersect(camera.Position, castedRay, distanceT) && distanceT < currentClosest)
+			cout << "here" << endl;
+			int selectedButtonID = -1;
+			lastClickX = last_cursor_x;
+			lastClickY = last_cursor_y;
+			glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+			vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, menuViewMatrix);
+			float distanceT = 0;
+			float currentClosest = 1000;
+			for (auto const &ent : buttonObjects[menu_mode])
 			{
-				//Object Selected
-				currentClosest = distanceT;
-				selectedObject = ent.second->id;
-				
+				if (ent.second->intersect(glm::vec3(0, 0, 0), castedRay, distanceT) && distanceT < currentClosest)
+				{
+					//Ray Interacted with button vertices
+					currentClosest = distanceT;
+					selectedButtonID = ent.second->id;
+					cout << selectedButtonID << endl;
+					handle_button_click(selectedButtonID);
+				}
 			}
 		}
-		cout << selectedObject << endl;
+		else
+		{
+			selectedObject = -1;
+			lastClickX = last_cursor_x;
+			lastClickY = last_cursor_y;
+			vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
+			float distanceT = 0;
+			float currentClosest = 1000;
+			for (auto const &ent : objects)
+			{
+				if (ent.second->intersect(camera.Position, castedRay, distanceT) && distanceT < currentClosest)
+				{
+					//Object Selected
+					currentClosest = distanceT;
+					selectedObject = ent.second->id;
+
+				}
+			}
+			cout << selectedObject << endl;
+		}
 	}
 }
 
@@ -294,6 +387,32 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			break;
 		case GLFW_KEY_ENTER:
 			menu_open = !menu_open;
+			menu_mode = 0;
+			if (menu_open)
+			{
+				glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+				glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
+				glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
+				//cameraPositionWorldSpace += glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8);
+				for (int i = 0; i < 3; i++)
+				{
+					buttonObjects[0][i]->resetObjectModel(buttonObjects[0]);
+					buttonObjects[0][i]->translate(buttonObjects[0], cameraPositionWorldSpace);
+					buttonObjects[0][i]->translate(buttonObjects[0], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+				}
+				for (int i = 0; i < 8; i++)
+				{
+					buttonObjects[1][i]->resetObjectModel(buttonObjects[1]);
+					buttonObjects[1][i]->translate(buttonObjects[1], cameraPositionWorldSpace);
+					buttonObjects[1][i]->translate(buttonObjects[1], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+				}
+				for (int i = 0; i < 6; i++)
+				{
+					buttonObjects[2][i]->resetObjectModel(buttonObjects[2]);
+					buttonObjects[2][i]->translate(buttonObjects[2], cameraPositionWorldSpace);
+					buttonObjects[2][i]->translate(buttonObjects[2], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+				}
+			}
 		default:
 			break;
 		}
@@ -465,49 +584,59 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs)
+void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs, map<int, Object*> *buttonObjects, int id)
 {
-	(*vertices).push_back(glm::vec3(leftX, bottomY, 0.01f));
-	(*vertices).push_back(glm::vec3(rightX, topY, 0.01f));
-	(*vertices).push_back(glm::vec3(rightX, bottomY, 0.01f));
-	(*vertices).push_back(glm::vec3(leftX, bottomY, 0.01f));
-	(*vertices).push_back(glm::vec3(leftX, topY, 0.01f));
-	(*vertices).push_back(glm::vec3(rightX, topY, 0.01f));
-	(*uvs).push_back(glm::vec2(1.0f, 1.0f));
-	(*uvs).push_back(glm::vec2(0.0f, 0.0f));
-	(*uvs).push_back(glm::vec2(0.0f, 1.0f));
-	(*uvs).push_back(glm::vec2(1.0f, 1.0f));
-	(*uvs).push_back(glm::vec2(1.0f, 0.0f));
-	(*uvs).push_back(glm::vec2(0.0f, 0.0f));
+	vector<glm::vec3> tempVertices;
+	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
+	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
+	tempVertices.push_back(glm::vec3(rightX, bottomY, 0.01f));
+	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
+	tempVertices.push_back(glm::vec3(leftX, topY, 0.01f));
+	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
+	for (int i = 0; i<tempVertices.size(); i++)
+		(*vertices).push_back(tempVertices[i]);
+	
+	vector<glm::vec2> tempUVs;
+	tempUVs.push_back(glm::vec2(1.0f, 1.0f));
+	tempUVs.push_back(glm::vec2(0.0f, 0.0f));
+	tempUVs.push_back(glm::vec2(0.0f, 1.0f));
+	tempUVs.push_back(glm::vec2(1.0f, 1.0f));
+	tempUVs.push_back(glm::vec2(1.0f, 0.0f));
+	tempUVs.push_back(glm::vec2(0.0f, 0.0f));
+	for (int i = 0; i<tempUVs.size(); i++)
+		(*uvs).push_back(tempUVs[i]);
+	const char *temp = "";
+	Object *newButton = new Object(id, temp, tempVertices, tempUVs, *buttonObjects);
+	(*buttonObjects)[id] = newButton;
 }
 
 void createMenuVertices()
 {
 	//First Menu
 	//Furniture
-	addButtonVertices(-3.0f, 3.0f, 2.0f, 4.0f, &menuVertices[0], &menuUVs[0]);
+	addButtonVertices(-3.0f, 3.0f, 2.0f, 4.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 0);
 	//Wallpaper
-	addButtonVertices(-3.0f, 3.0f, -1.0f, 1.0f, &menuVertices[0], &menuUVs[0]);
+	addButtonVertices(-3.0f, 3.0f, -1.0f, 1.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 1);
 	//Back
-	addButtonVertices(-3.0f, 3.0f, -4.0f, -2.0f, &menuVertices[0], &menuUVs[0]);
+	addButtonVertices(-3.0f, 3.0f, -4.0f, -2.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 2);
 
 	//Texture Menu
-	addButtonVertices(-5.0f, -1.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(1.0f, 5.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(-5.0f, -1.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(1.0f, 5.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(-5.0f, -1.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(1.0f, 5.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(-5.0f, -1.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1]);
-	addButtonVertices(1.0f, 5.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1]);
+	addButtonVertices(-5.0f, -1.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 0);
+	addButtonVertices(1.0f, 5.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 1);
+	addButtonVertices(-5.0f, -1.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 2);
+	addButtonVertices(1.0f, 5.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 3);
+	addButtonVertices(-5.0f, -1.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 4);
+	addButtonVertices(1.0f, 5.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 5);
+	addButtonVertices(-5.0f, -1.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 6);
+	addButtonVertices(1.0f, 5.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 7);
 
 	//Furniture Menu
-	addButtonVertices(-5.0f, -1.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2]);
-	addButtonVertices(1.0f, 5.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2]);
-	addButtonVertices(-5.0f, -1.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2]);
-	addButtonVertices(1.0f, 5.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2]);
-	addButtonVertices(-5.0f, -1.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2]);
-	addButtonVertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2]);
+	addButtonVertices(-5.0f, -1.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 0);
+	addButtonVertices(1.0f, 5.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 1);
+	addButtonVertices(-5.0f, -1.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 2);
+	addButtonVertices(1.0f, 5.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 3);
+	addButtonVertices(-5.0f, -1.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 4);
+	addButtonVertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 5);
 }
 
 void setAxes()
@@ -613,12 +742,11 @@ int addFurniture(const char * type, vec3 position)
 	return tempObject->id;
 }
 
-//Set the textures
-void setTexture()
+void setIndividualTexture(unsigned int *texture, char* filename)
 {
 	//texture 1
-	glGenTextures(1, &texture0);
-	glBindTexture(GL_TEXTURE_2D, texture0);
+	glGenTextures(1, texture);
+	glBindTexture(GL_TEXTURE_2D, *texture);
 	//set the texture wrapping parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -627,153 +755,49 @@ void setTexture()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	//load image, create texture and generate mipmaps
 	int twidth, theight, tnrChannels;
-	//stbi_set_flip_vertically_on_load(true);
-	unsigned char *data = stbi_load("Textures/metal1.jpg", &twidth, &theight, &tnrChannels, 0);
+	unsigned char *data = stbi_load(filename, &twidth, &theight, &tnrChannels, 0);
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture0" << std::endl;
+		std::cout << "Loaded " << filename << std::endl;
 	}
 	else {
-		std::cout << "Failed to load texture0" << std::endl;
+		std::cout << "Failed to load " << filename << std::endl;
 	}
 	stbi_image_free(data);
+}
 
-	//texture 2
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/metal2.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture1" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture1" << std::endl;
-	}
-	stbi_image_free(data);
-
-	//texture 3
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/wood1.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture2" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture2" << std::endl;
-	}
-	stbi_image_free(data);
-
-	//texture 4
-	glGenTextures(1, &texture3);
-	glBindTexture(GL_TEXTURE_2D, texture3);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/wood2.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture3" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture3" << std::endl;
-	}
-	stbi_image_free(data);
-
-	//texture_menu_back
-	glGenTextures(1, &texture_menu_back);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_back);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/menu_back.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_back" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_back" << std::endl;
-	}
-	stbi_image_free(data);
-
-	//texture_menu_furniture
-	glGenTextures(1, &texture_menu_furniture);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_furniture);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	data = stbi_load("Textures/menu_furniture.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_furniture" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_furniture" << std::endl;
-	}
-	stbi_image_free(data);
-
-	//texture_menu_wallpaper
-	glGenTextures(1, &texture_menu_wallpaper);
-	glBindTexture(GL_TEXTURE_2D, texture_menu_wallpaper);
-	//set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//load image, create texture and generate mipmaps
-	/*data = stbi_load("Textures/menu_wallpaper.jpg", &twidth, &theight, &tnrChannels, 0);
-	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-		std::cout << "Loaded texture_menu_wallpaper" << std::endl;
-	}
-	else {
-		std::cout << "Failed to load texture_menu_wallpaper" << std::endl;
-	}
-	stbi_image_free(data);*/
+//Set the textures
+void setTexture()
+{
+	setIndividualTexture(&texture0, "Textures/metal1.jpg");
+	setIndividualTexture(&texture1, "Textures/metal2.jpg");
+	setIndividualTexture(&texture2, "Textures/wood1.jpg");
+	setIndividualTexture(&texture3, "Textures/wood2.jpg");
+	setIndividualTexture(&texture_menu_bed, "Textures/menu_bed.jpg");
+	setIndividualTexture(&texture_menu_cabinet, "Textures/menu_cabinet.jpg");
+	setIndividualTexture(&texture_menu_coffee_table, "Textures/menu_coffee_table.jpg");
+	setIndividualTexture(&texture_menu_toilet, "Textures/menu_toilet.jpg");
+	setIndividualTexture(&texture_menu_torchere, "Textures/menu_torchere.jpg");
+	setIndividualTexture(&texture_menu_wall_item, "Textures/menu_wall_item.jpg");
+	setIndividualTexture(&texture_menu_back, "Textures/menu_back.jpg");
+	setIndividualTexture(&texture_menu_furniture, "Textures/menu_furniture.jpg");
+	//setIndividualTexture(&texture_menu_wallpaper, "Textures/menu_wallpaper.jpg");
 
 	glUseProgram(shaderProgram);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 2);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture3"), 3);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_bed"), 14);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_cabinet"), 15);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_coffee_table"), 16);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_toilet"), 17);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_torchere"), 18);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_wall_item"), 19);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_back"), 20);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_furniture"), 21);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_wallpaper"), 22);
-
 }
 
 ///Renders the objects inside the main loop.
@@ -840,7 +864,7 @@ int main()
 
 	setShaders();
 	setTexture();
-
+ 
 	int tempCube = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempCube]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempCube]->texture_number = 3;
@@ -919,6 +943,18 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, texture3);
+		glActiveTexture(GL_TEXTURE14);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_bed);
+		glActiveTexture(GL_TEXTURE15);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_cabinet);
+		glActiveTexture(GL_TEXTURE16);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_coffee_table);
+		glActiveTexture(GL_TEXTURE17);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_toilet);
+		glActiveTexture(GL_TEXTURE18);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_torchere);
+		glActiveTexture(GL_TEXTURE19);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_wall_item);
 		glActiveTexture(GL_TEXTURE20);
 		glBindTexture(GL_TEXTURE_2D, texture_menu_back);
 		glActiveTexture(GL_TEXTURE21);
@@ -942,13 +978,14 @@ int main()
 		}
 		else
 		{
-			glm::mat4 inverseViewMatrix = glm::inverse(camera.GetViewMatrix());
+			glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+			glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
 			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
 			glm::mat4 menu_model_matrix = mat4(1.0f);
 			menu_model_matrix = glm::translate(menu_model_matrix, cameraPositionWorldSpace);
-			menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(camera.Front) * glm::vec3(8));
+			menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
 			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(menu_model_matrix));
-			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(menuViewMatrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 
@@ -988,17 +1025,17 @@ int main()
 				//Furniture Menu
 			case 2:
 				glBindVertexArray(menuVAOs[2]);
-				glUniform1i(texture_number, 0);
+				glUniform1i(texture_number, 14);
 				glDrawArrays(GL_TRIANGLES, 0, 6);
-				glUniform1i(texture_number, 1);
+				glUniform1i(texture_number, 15);
 				glDrawArrays(GL_TRIANGLES, 6, 6);
-				glUniform1i(texture_number, 2);
+				glUniform1i(texture_number, 16);
 				glDrawArrays(GL_TRIANGLES, 12, 6);
-				glUniform1i(texture_number, 3);
+				glUniform1i(texture_number, 17);
 				glDrawArrays(GL_TRIANGLES, 18, 6);
-				glUniform1i(texture_number, 20);
+				glUniform1i(texture_number, 18);
 				glDrawArrays(GL_TRIANGLES, 24, 6);
-				glUniform1i(texture_number, 21);
+				glUniform1i(texture_number, 19);
 				glDrawArrays(GL_TRIANGLES, 30, 6);
 				break;
 			}

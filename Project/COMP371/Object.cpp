@@ -17,6 +17,7 @@ Object::Object(int id,
 	map<int, Object*> objects,
 	vec3 worldCoordinates)
 {
+	this->id = id;
 	this->type = type;
 	this->vertices = vertices;
 	this->defaultVertices = vertices;
@@ -25,8 +26,11 @@ Object::Object(int id,
 	this->uvs = uvs;
 	objects[id] = this;
 	this->worldCoordinates = worldCoordinates;
+	setIntersectionTriangle();
+	calculateBounderyBox();
 	this->id = ++counter;
 	texture_number = 1;
+	objects[id] = this;
 }
 
 Object::Object(int id,
@@ -37,6 +41,7 @@ Object::Object(int id,
 	std::map<int, Object*> objects
 )
 {
+	this->id = id;
 	this->type = type;
 	this->vertices = vertices;
 	this->defaultVertices = vertices;
@@ -44,8 +49,41 @@ Object::Object(int id,
 	this->normals = normals;
 	this->uvs = uvs;
 	objects[id] = this;
+
+	setIntersectionTriangle();
+	calculateBounderyBox();
 	this->id = ++counter;
 	texture_number = 1;
+	objects[id] = this;
+}
+
+Object::Object(int id,
+	const char * type,
+	std::vector<glm::vec3> vertices,
+	std::vector<glm::vec2> uvs,
+	std::map<int, Object*> objects
+)
+{
+	this->id = id;
+	this->type = type;
+	this->vertices = vertices;
+	this->defaultVertices = vertices;
+	this->uvs = uvs;
+	objects[id] = this;
+
+	setIntersectionTriangle();
+	calculateBounderyBox();
+	texture_number = 1;
+	objects[id] = this;
+}
+
+bool Object::checkIdAvailability(int id){
+	for (int lId : ids)
+	{
+		if (lId == id)
+			return true;
+	}
+	return false;
 }
 
 void Object::translate(map<int, Object*>& objects, vec3 changes)
@@ -100,6 +138,12 @@ void Object::UpdateVertices()
 	this->vertices = transFormedVertices;
 }
 
+void Object::resetObjectModel(map<int, Object*>& objects)
+{
+	this->objectModel = mat4(1.0);
+	objects[id] = this;
+}
+
 /// Clears the trianglevector and the triangle and boundingbox
 void Object::setIntersectionTriangle()
 {
@@ -130,7 +174,7 @@ void Object::setIntersectionTriangle()
 
 ///Method which test the intersection of a triangle and a ray.
 ///Implementation of the Moller Trumbone algo.
-///https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
+///https://en.wikipedia.org/wiki/MÃ¶llerâ€“Trumbore_intersection_algorithm
 bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri, float &distanceT)
 {
 	const float EPSILON = 0.0000001;
