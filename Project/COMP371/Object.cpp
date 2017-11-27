@@ -314,12 +314,12 @@ bool Object::collides(vector<float> collidingObjectMaxandMin)
 	return false;
 }
 
-bool Object::isNextACollision(map<int, Object*> objects, vec3 potentialTranlation, int min, int max)
+bool Object::isNextACollision(map<int, Object*> &objects, vec3 potentialTranlation, int min, int max)
 {
 	bool willItCollide = false;
 	for (auto const &ent2 : objects)
 	{
-		if (ent2.first != 0 && ent2.first != id) //0 stands for inverted walls
+		if (ent2.first != 0 && ent2.first != this->id) //0 stands for inverted walls
 		{
 			willItCollide = objects[ent2.second->id]->collides(objects[id]->getPostMaxMinBeforeTranslation(potentialTranlation));
 			if (willItCollide)

@@ -123,7 +123,7 @@ Object *invWalls = new Object(0, INVERTED_WALLS_NAME);
 Object *bed = new Object(1, BED1_NAME);
 Object *wall = new Object(2, WALL);
 Object *coffee = new Object(3, COFFEE_TABLE1_NAME);
-
+c
 */
 
 //Is called whenever the mouse moves on the window
@@ -165,8 +165,8 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	float dempener = 0.0012;
 	float modifier = diffY * dempener;
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		
-		
+
+
 		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(modifier, 0.0f, 0.0f), 0, 1); //0 and 1 stands for minX and maxX
 
 		if (!checkIfItCollides)
@@ -176,7 +176,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 		cout << modifier << endl;
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-		
+
 		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, modifier, 0.0f), 2, 3); //2 and 3 stands for minY and maxY
 
 		if (!checkIfItCollides) {
@@ -185,7 +185,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 		cout << modifier << endl;
 	}
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
-		
+
 		bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, 0.0f, modifier), 4, 5); //4 and 5 stands for minZ and maxZ
 
 		if (!checkIfItCollides) {
@@ -552,7 +552,7 @@ void setAxes()
 ///Set the VAO, VBOS for the vertices, UVs and the normals.
 void setVBOs()
 {
-	setAxes();	
+	setAxes();
 	//Menus
 	createMenuVertices();
 	glGenVertexArrays(3, menuVAOs);
@@ -596,7 +596,7 @@ void setVBOs()
 
 int addFurniture(const char * type, vec3 position)
 {
-	Object *tempObject = new Object(0, type);	
+	Object *tempObject = new Object(0, type);
 	tempObject->loadObjToMap(objects);
 	objects[tempObject->id] = tempObject;
 
@@ -607,12 +607,12 @@ int addFurniture(const char * type, vec3 position)
 	glGenBuffers(1, &objects[tempObject->id]->normals_VBO);
 	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
 
-	
+
 	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id);
 	glBindVertexArray(0);
 
 	objects[tempObject->id]->translate(objects, position);
-	
+
 	return tempObject->id;
 }
 
@@ -853,7 +853,7 @@ int main()
 	objects[tempBed]->translate(objects, vec3(-3.5, 0.5, 0));
 	objects[tempBed]->texture_number = 1;
 
-	int bed1 = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));	
+	int bed1 = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[bed1]->translate(objects, vec3(3.0f, 0.5, 0));
 	objects[bed1]->texture_number = 3;
 
@@ -866,10 +866,12 @@ int main()
 	objects[tempWall]->translate(objects, vec3(0.5, 1, 5));
 	objects[tempWall]->texture_number = 0;
 
+	int torch = addFurniture(TORCHERE1_NAME, vec3(0.0f, 0.0f, 0.0f));
+	objects[torch]->texture_number = 3;
 
-	coffee->loadObjToMap(objects);
-	objects[coffee->id] = coffee;
-	
+	//éécoffee->loadObjToMap(objects);
+	//objects[coffee->id] = coffee;
+
 	setVBOs();
 
 	triangle_scale = glm::vec3(1.0f);
@@ -916,14 +918,6 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
-		//objects[bed->name]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
-		
-
-		//bool isColliding = objects[bed->name]->collides(objects[coffee->name]->getListOfMaxAndMin());
-
-		//if (isColliding) cout << "IT IS COLLIDING BITCHES" << endl;
-		//else cout << "AIN'T COLLIDING BABY" << endl;
-
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture0);
 		glActiveTexture(GL_TEXTURE1);
@@ -941,12 +935,12 @@ int main()
 
 		if (!menu_open)
 		{
-			objects[1]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
+			//objects[1]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
 			//walls
 			//render(0, camera_pos, VAOINVERTEDWALLS, 3);
 
 			//Coffee Table
-			render(3, camera_pos, VAO_Coffee, 1);
+			//render(3, camera_pos, VAO_Coffee, 1);
 
 			//Bed
 			//render(1, camera_pos, VAO, 1);
@@ -957,7 +951,7 @@ int main()
 
 			for (auto const &ent : objects)
 			{
-				render(ent.second->id, camera_pos, ent.second->VAO, ent.second -> texture_number);				
+				render(ent.second->id, camera_pos, ent.second->VAO, ent.second->texture_number);
 			}
 
 			//axes
@@ -965,7 +959,7 @@ int main()
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-				
+
 			render(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
 
 		}
@@ -1037,11 +1031,11 @@ int main()
 		glfwSwapBuffers(window);
 	}
 
-	map<int, Object*>::iterator itr = objects.begin();
+	/*map<int, Object*>::iterator itr = objects.begin();
 	while (itr != objects.end()) {
 	itr = objects.erase(itr);
-	}
-	
+	}*/
+
 
 	//bed = nullptr;
 	//cabinet = nullptr;

@@ -68,7 +68,7 @@ public:
 
 	
 	bool collides(vector<float> collidingObjectMaxandMin);
-	bool isNextACollision(map<int, Object*> objects, vec3 potentialTranlation, int min, int max);
+	bool isNextACollision(map<int, Object*> &objects, vec3 potentialTranlation, int min, int max);
 
 	vector<float> getPostMaxMinBeforeTranslation(vec3 potentialNewPosition);
 
