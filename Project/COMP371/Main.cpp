@@ -554,7 +554,7 @@ int main()
 	setShaders();
 
 	//load and create a texture
-	unsigned int texture0, texture1, texture2, texture3;
+	unsigned int texture0, texture1, texture2, texture3, texture_menu_back, texture_menu_furniture, texture_menu_wallpaper;
 
 	//texture 1
 	glGenTextures(1, &texture0);
@@ -642,6 +642,68 @@ int main()
 	}
 	stbi_image_free(data);
 
+	//texture_menu_back
+	glGenTextures(1, &texture_menu_back);
+	glBindTexture(GL_TEXTURE_2D, texture_menu_back);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/menu_back.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture_menu_back" << std::endl;
+	}
+	else {
+		std::cout << "Failed to load texture_menu_back" << std::endl;
+	}
+	stbi_image_free(data);
+
+	//texture_menu_furniture
+	glGenTextures(1, &texture_menu_furniture);
+	glBindTexture(GL_TEXTURE_2D, texture_menu_furniture);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/menu_furniture.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture_menu_furniture" << std::endl;
+	}
+	else {
+		std::cout << "Failed to load texture_menu_furniture" << std::endl;
+	}
+	stbi_image_free(data);
+
+	//texture_menu_wallpaper
+	glGenTextures(1, &texture_menu_wallpaper);
+	glBindTexture(GL_TEXTURE_2D, texture_menu_wallpaper);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/menu_wallpaper.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture_menu_wallpaper" << std::endl;
+	}
+	else {
+		std::cout << "Failed to load texture_menu_wallpaper" << std::endl;
+	}
+	stbi_image_free(data);
 
 
 
@@ -650,6 +712,9 @@ int main()
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 2);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture3"), 3);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_back"), 20);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_furniture"), 21);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_wallpaper"), 22);
 
 	Object *invWalls = new Object(INVERTED_WALLS_NAME);
 	Object *bedBox = new Object(BED1BOX_NAME);
@@ -746,6 +811,12 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture2);
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, texture3);
+		glActiveTexture(GL_TEXTURE20);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_back);
+		glActiveTexture(GL_TEXTURE21);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_furniture);
+		glActiveTexture(GL_TEXTURE22);
+		glBindTexture(GL_TEXTURE_2D, texture_menu_wallpaper);
 
 
 		render(INVERTED_WALLS_NAME, camera_pos, VAOINVERTEDWALLS, 3);
