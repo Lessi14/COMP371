@@ -128,37 +128,7 @@ Object *wall = new Object(2, WALL);
 Object *coffee = new Object(3, COFFEE_TABLE1_NAME);
 
 */
-/*bool isNextACollision(Object * obj, vec3 potentialTranlation, int min, int max)
-{
-	bool willItCollide = false;
-	for (auto const &ent2 : objects)
-	{
-		if (ent2.first != 0 && ent2.second != objects[obj->id])
-		{
-			willItCollide = objects[ent2.second->id]->collides(objects[obj->id]->getPostMaxMinBeforeTranslation(potentialTranlation));
-			if (willItCollide) 
-			{
-				break;
-			}
 
-		}
-	}
-
-	vector<float> maxAndMinOfWalls = objects[0]->getListOfMaxAndMin();
-	vector<float> maxAndMinOfCurrentObject = obj->getPostMaxMinBeforeTranslation(potentialTranlation);
-
-	if (!willItCollide &&
-		maxAndMinOfWalls.at(min) < maxAndMinOfCurrentObject.at(min) &&
-		maxAndMinOfWalls.at(min) < maxAndMinOfCurrentObject.at(max) &&
-		maxAndMinOfCurrentObject.at(min) < maxAndMinOfWalls.at(max) &&
-		maxAndMinOfCurrentObject.at(max) < maxAndMinOfWalls.at(max))
-	{
-		return false;
-	}
-	
-	return true;
-}
-*/
 //Is called whenever the mouse moves on the window
 ///While certain mouse buttons are pressed, this method makes it so that the camera will move
 void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
