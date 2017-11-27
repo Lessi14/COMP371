@@ -9,20 +9,16 @@ Object::Object(const char * name,
 	vector<vec3> vertices,
 	vector<vec3> normals,
 	vector<vec2> uvs,
-	map<const char*, vector<vec3>> &objectVertices,
-	map<const char*, vector<vec3>> &objectNormals,
-	map<const char*, vector<vec2>> &objectUVs,
-	map<const char *, mat4> &objectModels,
+	std::map<const char *, Object*> objects,
 	vec3 worldCoordinates)
 {
 	this->name = name;
 	this->vertices = vertices;
+	this->defaultVertices = vertices;
+	this->defaultNormals = normals;
 	this->normals = normals;
 	this->uvs = uvs;
-	objectVertices[name] = vertices;
-	objectNormals[name] = normals;
-	objectUVs[name] = uvs;
-	objectModels[name] = mat4(1.0f);
+	objects[name] = this;
 	this->worldCoordinates = worldCoordinates;
 }
 
@@ -30,48 +26,48 @@ Object::Object(const char * name,
 	std::vector<glm::vec3> vertices,
 	std::vector<glm::vec3> normals,
 	std::vector<glm::vec2> uvs,
-	map<const char*, vector<vec3>> &objectVertices,
-	map<const char*, vector<vec3>> &objectNormals,
-	map<const char*, vector<vec2>> &objectUVs,
-	map<const char *, mat4> &objectModels)
+	std::map<const char *, Object*> objects
+)
 {
 	this->name = name;
 	this->vertices = vertices;
+	this->defaultVertices = vertices;
+	this->defaultNormals = normals;
 	this->normals = normals;
 	this->uvs = uvs;
-	objectVertices[name] = vertices;
-	objectNormals[name] = normals;
-	objectUVs[name] = uvs;
-	objectModels[name] = mat4(1.0f);
+	objects[name] = this;
+
 }
 
-void Object::translate(map<const char*, mat4>& objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes)
+void Object::translate(map<const char *, Object*>& objects, vec3 changes)
 {
-	this->objectModel *= glm::translate(objectModels[name], changes);
-	objectModels[name] = this->objectModel;	
+	this->objectModel *= glm::translate(mat4(1.0f), changes);	
 	UpdateVertices();
-	objectTriangles[name] = this->triangles;
+	setIntersectionTriangle();
+	objects[name] = this;
+
 }
 
-void Object::rotate(map<const char*, mat4>& objectModels, map<const char *, vector<Triangle>>& objectTriangles, float angle, glm::vec3 rotationAxe)
+void Object::rotate(map<const char *, Object*>& objects, float angle, glm::vec3 rotationAxe)
 {
 	//reset to center
 	this->objectModel = this->defaultObjectModel;
 	//translate back to center
 	this->objectModel *= glm::translate(mat4(1.0f), this->worldCoordinates);
 	//rotate the object
-	this->objectModel = glm::rotate(mat4(1.0f), angle, rotationAxe);	
+	this->objectModel = glm::rotate(mat4(1.0f), angle, rotationAxe);
 	UpdateVertices();
-	objectTriangles[name] = this->triangles;
+	setIntersectionTriangle();
+	objects[name] = this;
 }
 
 
-void Object::scale(map<const char*, mat4>& objectModels, map<const char *, vector<Triangle>>& objectTriangles, vec3 changes)
+void Object::scale(map<const char *, Object*>& objects, vec3 changes)
 {
-	this->objectModel *= glm::scale(this->objectModel, changes);
-	objectModels[name] = this->objectModel;
+	this->objectModel *= glm::scale(this->objectModel, changes);	
 	UpdateVertices();
-	objectTriangles[name] = this->triangles;
+	setIntersectionTriangle();
+	objects[name] = this;
 }
 
 //Apply a 3d transformation to a vertex.
@@ -82,44 +78,44 @@ void Object::UpdateVertices()
 {
 	vector<vec3> transFormedVertices;
 	float wComponent = 1.0f;
-	for (vec3 vertex: vertices)
+	for (vec3 vertex : this->defaultVertices)
 	{
 		//Expand the vector to 4d
 		vec4 expanded = vec4(vertex.x, vertex.y, vertex.z, wComponent);
-		//Multiply by the transformation matrix. Which is the object model right ?
-		vec4 result = expanded * this->objectModel;
+		//Multiply by the transformation matrix. Which is the object model right ?			
+		vec4 result = this->objectModel * expanded;
 		//tranforma back to 3d
 		vec3 transformedVertex = vec3(result.x / wComponent, result.y / wComponent, result.z / wComponent);
 		transFormedVertices.push_back(transformedVertex);
 	}
-	vertices.clear();
-	vertices = transFormedVertices;
-	setIntersectionTriangle();
+	this->vertices.clear();
+	this->vertices = transFormedVertices;
 }
 
+/// Clears the trianglevector and the triangle and boundingbox
 void Object::setIntersectionTriangle()
 {
-	triangles.clear();
-	boundingBoxTriangles.clear();
+	this->triangles.clear();
+	this->boundingBoxTriangles.clear();
 	//Create the triangles using the vertices of the object.
-	for (auto incr = 0; incr < vertices.size() - 3; incr+=3)
+	for (auto incr = 0; incr < this->vertices.size() - 3; incr += 3)
 	{
-		auto vertex = vertices.at(incr);
-		auto vertex2 = vertices.at(incr+1);
-		auto vertex3 = vertices.at(incr+2);
+		auto vertex = this->vertices.at(incr);
+		auto vertex2 = this->vertices.at(incr + 1);
+		auto vertex3 = this->vertices.at(incr + 2);
 
-		triangles.push_back(Triangle(vertex, vertex2, vertex3));		
+		this->triangles.push_back(Triangle(vertex, vertex2, vertex3));
 	}
 
 	calculateBounderyBox();
 	//Create the triangles using the vertices of the bounding box.
-	for (auto incr = 0; incr < boundingbox.size() - 3; incr += 3)
+	for (auto incr = 0; incr < this->boundingbox.size() - 3; incr += 3)
 	{
-		auto vertex = boundingbox.at(incr);
-		auto vertex2 = boundingbox.at(incr + 1);
-		auto vertex3 = boundingbox.at(incr + 2);
+		auto vertex = this->boundingbox.at(incr);
+		auto vertex2 = this->boundingbox.at(incr + 1);
+		auto vertex3 = this->boundingbox.at(incr + 2);
 
-		boundingBoxTriangles.push_back(Triangle(vertex, vertex2, vertex3));
+		this->boundingBoxTriangles.push_back(Triangle(vertex, vertex2, vertex3));
 	}
 }
 
@@ -127,7 +123,7 @@ void Object::setIntersectionTriangle()
 ///Method which test the intersection of a triangle and a ray.
 ///Implementation of the Moller Trumbone algo.
 ///https://en.wikipedia.org/wiki/Möller–Trumbore_intersection_algorithm
-bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri)
+bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri, float &distanceT)
 {
 	const float EPSILON = 0.0000001;
 	float a, f, u, v;
@@ -151,7 +147,7 @@ bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri)
 	float t = f *  glm::dot(edge2, q);
 	if (t > EPSILON) // ray intersection
 	{
-		//resultinPoint = rayO + rayDir * t;
+		distanceT = t;
 		return true;
 	}
 	else // This means that there is a line intersection but not a ray intersection.
@@ -159,16 +155,17 @@ bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri)
 }
 
 ///Given a a ray position and a direction. checks if the object is in the path of the ray.
-bool Object::intersect(vec3 rayPosition, vec3 rayDir)
+bool Object::intersect(vec3 rayPosition, vec3 rayDir, float &distanceT)
 {
 	bool hitBoundaryBox = false;
+	float collisionDistance = 1000;
 
 	///Check outer boundarybox first.	
 	///Cull the triangles that are backfacing.
 	vector<Triangle> reducedBoundaryBox;
 	for (Triangle boundTriangles : triangles)
 	{
-		if (!(dot(boundTriangles.normal, rayDir)> 0))
+		if (!(dot(boundTriangles.normal, rayDir) > 0))
 		{
 			reducedBoundaryBox.push_back(boundTriangles);
 		}
@@ -177,23 +174,23 @@ bool Object::intersect(vec3 rayPosition, vec3 rayDir)
 	//check for intersection with each tringles of the boundary box
 	for (Triangle localTriangleBound : triangles)
 	{
-		if (ray_intersect_triangle(rayPosition, rayDir, localTriangleBound))
+		if (ray_intersect_triangle(rayPosition, rayDir, localTriangleBound,collisionDistance))
 		{
-			hitBoundaryBox= true;
+			hitBoundaryBox = true;
 			break;
 		}
 	}
 
 	///Precise comparison.
 	/// if the outside box was hit then try expensive comparison.
-	if(hitBoundaryBox)
+	if (hitBoundaryBox)
 	{
 		///backaface only
 		vector<Triangle> reduced;
 		///Cull the triangles that are backfacing.
 		for (Triangle element : triangles)
 		{
-			if (!(dot(element.normal, rayDir)> 0))
+			if (!(dot(element.normal, rayDir) > 0))
 			{
 				reduced.push_back(element);
 			}
@@ -202,8 +199,9 @@ bool Object::intersect(vec3 rayPosition, vec3 rayDir)
 		//check for intersection with each tringles.
 		for (Triangle localTriangle : triangles)
 		{
-			if (ray_intersect_triangle(rayPosition, rayDir, localTriangle))
+			if (ray_intersect_triangle(rayPosition, rayDir, localTriangle,collisionDistance))
 			{
+				distanceT = collisionDistance;
 				return true;
 			}
 		}
@@ -219,14 +217,13 @@ Object::~Object()
 ///Credit https://www.gamedev.net/forums/topic/373547-calculating-a-bounding-box-with-vertices-given/
 void Object::calculateBounderyBox()
 {
-	boundingbox.clear();
-	boundingBoxTriangles.clear();
-	vec3 maxVertex(0, 0, 0), minVertex(0, 0, 0);
+	this->boundingbox.clear();
+	vec3 maxVertex(-1000, -1000, -1000), minVertex(1000, 1000, 1000);
 	float maxX = 0, maxY = 0, maxZ = 0;
 	float minX = 0, minY = 0, minZ = 0;
-	for (auto incr = 0; incr < vertices.size() - 1; incr++)
+	for (auto incr = 0; incr < this->vertices.size() - 1; incr++)
 	{
-		auto vertex = vertices.at(incr);
+		auto vertex = this->vertices.at(incr);
 		if (vertex.x > maxVertex.x)	maxVertex.x = vertex.x;
 		if (vertex.y > maxVertex.y)	maxVertex.y = vertex.y;
 		if (vertex.z > maxVertex.z)	maxVertex.z = vertex.z;
@@ -234,89 +231,77 @@ void Object::calculateBounderyBox()
 		if (vertex.x < minVertex.x)	minVertex.x = vertex.x;
 		if (vertex.y < minVertex.y)	minVertex.y = vertex.y;
 		if (vertex.z < minVertex.z)	minVertex.z = vertex.z;
-	}	
+	}
+
+
 	//Forgive the hardcode, too tired to figure out a better way.
-	boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
-	boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
-	boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, maxVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, maxVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, maxVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, minVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, minVertex.z));
+	this->boundingbox.push_back(vec3(maxVertex.x, minVertex.y, maxVertex.z));
+	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
 }
 
 
-void Object::loadObjNoUVsToMap(map<const char*, vector<vec3>> &objectVertices,
-	map<const char*, vector<vec3>> &objectNormals,
-	map<const char*, vector<vec2>> &objectUVs,
-	map<const char *, mat4> &objectModels,
-	map<const char *, vector<Triangle>>& objectTriangles)
+void Object::loadObjNoUVsToMap(std::map<const char *, Object*> objects)
 {
 	loadOBJNoUV(name, vertices, normals);
+	this->defaultVertices = vertices;
+	this->defaultNormals = normals;
 	setIntersectionTriangle();
 	calculateBounderyBox();
-	objectVertices[name] = vertices;
-	objectNormals[name] = normals;
-	objectTriangles[name] = triangles;
+	objects[name] = this;
 }
 
-void Object::loadObjToMap(map<const char*, vector<vec3>>& objectVertices,
-	map<const char*, vector<vec3>>& objectNormals,
-	map<const char*, vector<vec2>>& objectUVs,
-	map<const char *, mat4> &objectModels,
-	map<const char *, vector<Triangle>>& objectTriangles)
+void Object::loadObjToMap(std::map<const char *, Object*> objects)
 {
 	loadOBJ(name, vertices, normals, uvs);
+	this->defaultVertices = vertices;
+	this->defaultNormals = normals;
 	setIntersectionTriangle();
 	calculateBounderyBox();
-	objectVertices[name] = vertices;
-	objectNormals[name] = normals;
-	objectUVs[name] = uvs;
-	objectTriangles[name] = triangles;
+	objects[name] = this;
 }
 
 
-void Object::loadObjBoxToMap(map<const char*, vector<vec3>>& objectVertices,
-	map<const char*, vector<vec3>>& objectNormals,
-	map<const char*, vector<vec2>>& objectUVs,
-	map<const char *, mat4> &objectModels,
-	map<const char *, vector<Triangle>>& objectTriangles)
+void Object::loadObjBoxToMap(std::map<const char *, Object*> objects)
 {
 	loadOBJ(name, vertices, normals, uvs);
+	this->defaultVertices = vertices;
+	this->defaultNormals = normals;
 	setIntersectionTriangle();
 	calculateBounderyBox();
-	objectVertices[name] = boundingbox;
-	objectNormals[name] = normals;
-	objectUVs[name] = uvs;
-	objectTriangles[name] = triangles;
+	objects[name] = this;
 }
 

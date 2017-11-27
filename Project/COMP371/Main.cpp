@@ -17,6 +17,7 @@
 #include <map>;
 #include "camera.h"
 #include "Object.h"
+#include "UtilClass.h"
 
 using namespace std;
 
@@ -26,16 +27,18 @@ const GLuint WIDTH = 800, HEIGHT = 600;
 glm::vec3 camera_position;
 glm::vec3 triangle_scale;
 
+glm::vec3 camera_pos = vec3(0, 0, 0);
+
 glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
-std::map<const char *, std::vector<glm::vec3>> objectVertices;
-std::map<const char *, std::vector<glm::vec3>> objectNormals;
-std::map<const char *, vector<Triangle>> objectTriangles;
-std::map<const char *, std::vector<glm::vec2>> objectUVs;
-std::map<const char *, glm::mat4> objectModels;
 
+//load and create a texture
+unsigned int texture0, texture1, texture2, texture3, texture_menu_back, texture_menu_furniture, texture_menu_wallpaper;
+
+
+std::map<const char *, Object*> objects;
 
 //Which mode to render in between point, lines, and triangles
 int objRenderMode = GL_TRIANGLES;
@@ -67,15 +70,15 @@ const char* CABINET3_NAME = "Objects/cabinet3.obj";
 const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
 const char* TOILET_NAME = "Objects/toilet.obj";
 const char* TORCHERE1_NAME = "Objects/torchere1.obj";
-//const char* FLOOR = "Objects/floorTemp.obj";
 const char* WALL = "Objects/wall.obj";
+
+
+const char* selectedObject = "";
 
 GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
-//GLuint VAOFloor, verticesFloor, normals_Floor, uvsFloor;
 GLuint VAOWall, verticesWall, normalsWall, uvsWall;
 GLuint VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO;
-
 
 GLuint VAOINVERTEDWALLS, vertices_inverted_walls_VBO, normals_inverted_walls_VBO, uvs_inverted_walls_VBO;
 glm::vec2 roomDimensions;
@@ -97,6 +100,7 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
+
 
 //Is called whenever the mouse moves on the window
 ///While certain mouse buttons are pressed, this method makes it so that the camera will move
@@ -130,6 +134,48 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	//update last cursor position
 	last_cursor_x = xpos;
 	last_cursor_y = ypos;
+
+	float diffY = lastClickY - ypos;
+	float diffX = lastClickX - xpos;
+	float dempener = 0.0012;
+	float modifier = diffY * dempener;
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
+		cout << modifier << endl;
+	}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		objects[selectedObject]->translate(objects, vec3(0.0f, modifier, 0.0f));
+		cout << modifier << endl;
+	}
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+		objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
+		cout << modifier << endl;
+	}
+
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{
+		selectedObject = "";
+		lastClickX = last_cursor_x;
+		lastClickY = last_cursor_y;
+		vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
+		float distanceT = 0;
+		float currentClosest = 1000;
+		for (auto const &ent2 : objects)
+		{
+			if (ent2.second->intersect(camera.Position, castedRay,distanceT) && distanceT< currentClosest)
+			{
+				//Object Selected
+				currentClosest = distanceT;
+				selectedObject = ent2.second->name;
+				cout << selectedObject << endl;
+			}
+		}
+
+	}
 }
 
 ///Determines the position of the mouse.
@@ -162,7 +208,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 void window_resize_callback(GLFWwindow* window, int width, int height)
 {
 	glViewport(0, 0, width, height);
-
 	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
 }
 
@@ -190,11 +235,7 @@ void processInput(GLFWwindow *window)
 	if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	if (glfwGetKey(window, GLFW_KEY_BACKSPACE) == GLFW_PRESS)
-		camera.Reset();
-	//cout << camera.Position.x  << endl;
-	//cout << camera.Position.y << endl;
-	//cout << camera.Position.z << endl;
-	//cout << "New" << endl;
+		camera.Reset();	
 }
 
 ///Key callabck
@@ -235,7 +276,7 @@ void setRoomSize() {
 	}
 }
 
-///Read teh files and create the shaders. Create main  shader program.
+///Read the files and create the shaders. Create main  shader program.
 void setShaders()
 {
 	std::cout << "Setting Shaders..." << std::endl;
@@ -337,9 +378,10 @@ int windowSetup()
 	}
 	glfwMakeContextCurrent(window);
 	// Set the required callback functions
-	glfwSetKeyCallback(window, key_callback);
+	//glfwSetKeyCallback(window, key_callback);
 	glfwSetCursorPosCallback(window, mouse_motion_callback);
 	glfwSetFramebufferSizeCallback(window, window_resize_callback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
 
 	// tell GLFW to capture our mouse
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); ----------------------------------------------------------------
@@ -366,20 +408,17 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glBindVertexArray(localVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
-	glBufferData(GL_ARRAY_BUFFER, objectVertices[path].size() * sizeof(glm::vec3), &objectVertices[path].front(),
-		GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[path]->vertices.size() * sizeof(glm::vec3), &objects[path]->vertices.front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objectNormals[path].size() * sizeof(glm::vec3), &objectNormals[path].front(),
-		GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[path]->normals.size() * sizeof(glm::vec3), &objects[path]->normals.front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
 
-
 	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objectUVs[path].size() * sizeof(glm::vec3), &objectUVs[path].front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[path]->uvs.size() * sizeof(glm::vec3), &objects[path]->uvs.front(), GL_STATIC_DRAW);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 
@@ -423,7 +462,6 @@ void setVBOs()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-
 	glGenVertexArrays(1, &VAO);
 
 	glGenBuffers(1, &vertices_VBO);
@@ -432,16 +470,7 @@ void setVBOs()
 
 	//Bed
 	setIndividualBuffers(VAO, vertices_VBO, normals_VBO, uvs_VBO, BED1_NAME);
-
-	//bedbox
-	glGenVertexArrays(1, &VAOBEDBOX);
-
-	glGenBuffers(1, &vertices_BedBox_VBO);
-	glGenBuffers(1, &normals_BedBox_VBO);
-	glGenBuffers(1, &uvs_BedBox_VBO);
-	setIndividualBuffers(VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO, BED1BOX_NAME);
-
-	
+		
 	//Inverted Cube
 	glGenVertexArrays(1, &VAOINVERTEDWALLS);
 
@@ -450,17 +479,6 @@ void setVBOs()
 	glGenBuffers(1, &uvs_inverted_walls_VBO);
 	setIndividualBuffers(VAOINVERTEDWALLS, vertices_inverted_walls_VBO, normals_inverted_walls_VBO, uvs_inverted_walls_VBO, INVERTED_WALLS_NAME);
 	
-	/*
-	//Tentative for floor
-	glGenVertexArrays(1, &VAOFloor);
-
-	glGenBuffers(1, &verticesFloor);
-	glGenBuffers(1, &normals_Floor);
-	glGenBuffers(1, &uvsFloor);
-
-	setIndividualBuffers(VAOFloor, verticesFloor, normals_Floor, uvsFloor, FLOOR);
-	*/
-
 	//Wall
 	glGenVertexArrays(1, &VAOWall);
 
@@ -473,89 +491,9 @@ void setVBOs()
 	glBindVertexArray(0); // Unbind VAO (it's always a good thing to unbind any buffer/array to prevent strange bugs), remember: do NOT unbind the EBO, keep it bound to this VAO
 }
 
-glm::vec3 getCameraRay()
+//Set the textures
+void setTexture()
 {
-	//Get the position of the Mouses
-	double mouseX = last_cursor_x;
-	double mouseY = last_cursor_y;
-
-	//Step 1 Get the normalizedCoordinates
-	float xNorm = (2.0f*mouseX) / WIDTH - 1.0f;
-	float yNorm = ((2.0f*mouseY) / HEIGHT - 1.0f)*-1.0f; //--------------------------------
-
-	//Step 2 Get clipCoords
-	glm::vec4 clipCoord(xNorm, yNorm, -1.0f, 1.0f);
-
-	//Step 3 Get Eye coordinates //get an inverse projection matrix
-	//Get the projection matrix
-	glm::mat4 local_projection_matrix = projection_matrix;
-	//Get the inverted matrix
-	glm::mat4 invertedMatrix = glm::inverse(local_projection_matrix);
-	//get the eye coordinates 4d ?
-	glm::vec4 temp = invertedMatrix * clipCoord;
-	glm::vec4 eyeCoord(temp.x, temp.y, -1.0f, 0.0f);
-
-	//Step 4 get world way
-	//get local view matrix
-	glm::mat4 local_view_matrix = view_matrix;
-	//get the inverse
-	glm::mat4 inverted_view_matrix = glm::inverse(local_view_matrix);
-	// get the ray
-	glm::vec4 temp2 = inverted_view_matrix * eyeCoord;
-	glm::vec3 worldRay(temp2.x, temp2.y, temp2.z);
-	//glm::vec3 worldRayNorm = glm::normalize(worldRay);
-	glm::vec3 worldRayNorm = (worldRay);
-
-	//cout << "x: "  << worldRayNorm.x << "y: " << worldRayNorm.y <<  "z: " << worldRayNorm.z << endl;
-	return { 0.0f, 0.0f, 0.0f };
-}
-
-///Renders the objects inside the main loop.
-void render(const char* name, vec3 camera_pos, GLuint VAO, GLuint tex_num)
-{
-	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[name]));
-	glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
-	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
-	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-	glUniform1i(texture_number, tex_num);
-
-	glBindVertexArray(VAO);
-	glDrawArrays(objRenderMode, 0, objectVertices[name].size());
-	glBindVertexArray(0);
-}
-
-/// The MAIN function, from here we start the application and run the game loop
-int main()
-{
-	roomDimensions.x = 0;
-	roomDimensions.y = 0;
-	setRoomSize();
-	
-	
-	if (-1 == windowSetup()) {
-		return -1;
-	}
-
-	// Define the viewport dimensions
-	int width, height;
-	glfwGetFramebufferSize(window, &width, &height);
-
-	glViewport(0, 0, width, height);
-
-	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.00f, 100.0f);
-
-	// Set depth buffer
-	glEnable(GL_DEPTH_TEST);
-	//glDepthMask(GL_TRUE);
-	glDepthFunc(GL_LESS);
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-
-	setShaders();
-
-	//load and create a texture
-	unsigned int texture0, texture1, texture2, texture3, texture_menu_back, texture_menu_furniture, texture_menu_wallpaper;
-
 	//texture 1
 	glGenTextures(1, &texture0);
 	glBindTexture(GL_TEXTURE_2D, texture0);
@@ -568,7 +506,7 @@ int main()
 	//load image, create texture and generate mipmaps
 	int twidth, theight, tnrChannels;
 	//stbi_set_flip_vertically_on_load(true);
-	unsigned char *data = stbi_load("Textures/metal1.jpg", &twidth, &theight, &tnrChannels,0);
+	unsigned char *data = stbi_load("Textures/metal1.jpg", &twidth, &theight, &tnrChannels, 0);
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -704,8 +642,50 @@ int main()
 		std::cout << "Failed to load texture_menu_wallpaper" << std::endl;
 	}
 	stbi_image_free(data);
+}
 
+///Renders the objects inside the main loop.
+void render(const char* name, vec3 camera_pos, GLuint VAO, GLuint tex_num)
+{
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objects[name]->objectModel));
+	glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
+	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
+	glUniform1i(texture_number, tex_num);
 
+	glBindVertexArray(VAO);
+	glDrawArrays(objRenderMode, 0, objects[name]->vertices.size());
+	glBindVertexArray(0);
+}
+
+/// The MAIN function, from here we start the application and run the game loop
+int main()
+{
+	roomDimensions.x = 0;
+	roomDimensions.y = 0;
+	setRoomSize();	
+	
+	if (-1 == windowSetup()) {
+		return -1;
+	}
+
+	// Define the viewport dimensions
+	int width, height;
+	glfwGetFramebufferSize(window, &width, &height);
+
+	glViewport(0, 0, width, height);
+
+	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.00f, 100.0f);
+
+	// Set depth buffer
+	glEnable(GL_DEPTH_TEST);
+	//glDepthMask(GL_TRUE);
+	glDepthFunc(GL_LESS);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	setShaders();
+	setTexture();
 
 	glUseProgram(shaderProgram);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
@@ -723,48 +703,42 @@ int main()
 	Object *coffee = new Object(COFFEE_TABLE1_NAME);
 	Object *toilet = new Object(TOILET_NAME);
 	Object *torchere = new Object(TORCHERE1_NAME);
-	//Object *floor = new Object(FLOOR);
 	Object *wall = new Object(WALL);
 
+	invWalls -> loadObjToMap(objects);
+	objects[invWalls->name] = invWalls;
 
-	invWalls -> loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-
-	bed->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	bed->loadObjToMap(objects);
+	objects[bed->name] = bed;
 	//objectTriangles[bed->name] = bed->triangles;
 
-	bedBox->loadObjBoxToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);//This method has a slight variant which adds the box instead of the triangles.
-	//objectTriangles[bedBox->name] = bedBox->triangles;
+	//cabinet->loadObjToMap(objects);	
+	//objects[cabinet->name] = cabinet;
 
-	cabinet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[cabinet->name] = cabinet->triangles;
+	//coffee->loadObjToMap(objects);	
+	//objects[coffee->name] = coffee;
 
-	coffee->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[coffee->name] = coffee->triangles;
+	//toilet->loadObjToMap(objects);
+	//objects[toilet->name] = toilet;
 
-	toilet->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[toilet->name] = toilet->triangles;
+	//torchere->loadObjToMap(objects);	
+	//objects[torchere->name] = torchere;
 
-	torchere->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[torchere->name] = torchere->triangles;
-
-	//floor->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[floor->name] = floor->triangles;
-
-	wall->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
-	//objectTriangles[wall->name] = wall->triangles;
+	wall->loadObjToMap(objects);
+	objects[wall->name] = wall;
 	
 	setVBOs();
 
 	triangle_scale = glm::vec3(1.0f);
 
-	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
+	camera_pos = camera.Position;
 
-	invWalls->scale(objectModels, objectTriangles, vec3(roomDimensions.x, 2, roomDimensions.y));
-	wall->scale(objectModels,objectTriangles, vec3(1, 0.5, 1));
-	wall->translate(objectModels, objectTriangles, vec3(0.5, 1, 5));
+	invWalls->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
+	wall->scale(objects, vec3(1, 0.5, 1));
+	wall->translate(objects, vec3(0.5, 1, 5));
 	//floor->translate(objectModels, objectTriangles, vec3(0, 0, 0));
 	//bed->translate(objectModels,objectTriangles, vec3(0, 0.5, 0));
-	bed->translate(objectModels, objectTriangles, vec3(-2.5, 0.5, 0));
+	bed->translate(objects, vec3(-2.5, 0.5, 0));
 
 	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
@@ -783,7 +757,7 @@ int main()
 		processInput(window);
 		glfwPollEvents();
 
-		getCameraRay();
+		camera_pos = camera.Position;
 
 		// Render
 		// Clear the colorbuffer
@@ -792,16 +766,7 @@ int main()
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
 
-
-		//kept this for reference
-		/*glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objectModels[BED1_NAME]));
-		glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
-		glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
-		glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-
-		glBindVertexArray(VAO);
-		glDrawArrays(objRenderMode, 0, objectVertices[BED1_NAME].size());
-		glBindVertexArray(0);*/
+		objects[bed->name]->translate(objects, vec3(0.01f, 0.0f, 0.0f));
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture0);
@@ -822,11 +787,6 @@ int main()
 		render(INVERTED_WALLS_NAME, camera_pos, VAOINVERTEDWALLS, 3);
 
 		render(BED1_NAME, camera_pos, VAO, 1);
-
-		//render(BED1BOX_NAME, camera_pos, VAOBEDBOX);
-
-
-		//end axes	
 
 		//Floor
 		//render(FLOOR, camera_pos, VAOFloor);
@@ -849,19 +809,17 @@ int main()
 	}
 
 	bed = nullptr;
-	bedBox = nullptr;
-	cabinet = nullptr;
-	coffee = nullptr;
-	toilet = nullptr;
-	torchere = nullptr;
+	//cabinet = nullptr;
+	//coffee = nullptr;
+	//toilet = nullptr;
+	//torchere = nullptr;
 	//floor = nullptr;
 	wall = nullptr;
-	delete bedBox;
 	delete bed;
-	delete cabinet;
-	delete coffee;
-	delete toilet;
-	delete torchere;
+	//delete cabinet;
+	//delete coffee;
+	//delete toilet;
+	//delete torchere;
 	//delete floor;
 	delete wall;
 
