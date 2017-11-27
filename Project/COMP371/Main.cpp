@@ -944,13 +944,14 @@ int main()
 		}
 		else
 		{
-			glm::mat4 inverseViewMatrix = glm::inverse(camera.GetViewMatrix());
+			glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+			glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
 			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
 			glm::mat4 menu_model_matrix = mat4(1.0f);
 			menu_model_matrix = glm::translate(menu_model_matrix, cameraPositionWorldSpace);
-			menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(camera.Front) * glm::vec3(8));
+			menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
 			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(menu_model_matrix));
-			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
+			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(menuViewMatrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 
