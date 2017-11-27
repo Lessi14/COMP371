@@ -67,12 +67,12 @@ const char* CABINET3_NAME = "Objects/cabinet3.obj";
 const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
 const char* TOILET_NAME = "Objects/toilet.obj";
 const char* TORCHERE1_NAME = "Objects/torchere1.obj";
-const char* FLOOR = "Objects/floorTemp.obj";
+//const char* FLOOR = "Objects/floorTemp.obj";
 const char* WALL = "Objects/wall.obj";
 
 GLuint VAO, VBO, EBO;
 GLuint vertices_VBO, normals_VBO, uvs_VBO;
-GLuint VAOFloor, verticesFloor, normals_Floor, uvsFloor;
+//GLuint VAOFloor, verticesFloor, normals_Floor, uvsFloor;
 GLuint VAOWall, verticesWall, normalsWall, uvsWall;
 GLuint VAOBEDBOX, vertices_BedBox_VBO, normals_BedBox_VBO, uvs_BedBox_VBO;
 
@@ -450,7 +450,7 @@ void setVBOs()
 	glGenBuffers(1, &uvs_inverted_walls_VBO);
 	setIndividualBuffers(VAOINVERTEDWALLS, vertices_inverted_walls_VBO, normals_inverted_walls_VBO, uvs_inverted_walls_VBO, INVERTED_WALLS_NAME);
 	
-
+	/*
 	//Tentative for floor
 	glGenVertexArrays(1, &VAOFloor);
 
@@ -459,6 +459,7 @@ void setVBOs()
 	glGenBuffers(1, &uvsFloor);
 
 	setIndividualBuffers(VAOFloor, verticesFloor, normals_Floor, uvsFloor, FLOOR);
+	*/
 
 	//Wall
 	glGenVertexArrays(1, &VAOWall);
@@ -553,7 +554,7 @@ int main()
 	setShaders();
 
 	//load and create a texture
-	unsigned int texture0, texture1;
+	unsigned int texture0, texture1, texture2;
 
 	//texture 1
 	glGenTextures(1, &texture0);
@@ -571,6 +572,7 @@ int main()
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture0" << std::endl;
 	}
 	else {
 		std::cout << "Failed to load texture0" << std::endl;
@@ -591,27 +593,54 @@ int main()
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture1" << std::endl;
 	}
 	else {
 		std::cout << "Failed to load texture1" << std::endl;
 	}
 	stbi_image_free(data);
+
+	//texture 3
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+	//set the texture wrapping parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//set texture filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//load image, create texture and generate mipmaps
+	data = stbi_load("Textures/wood1.jpg", &twidth, &theight, &tnrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, twidth, theight, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+		std::cout << "Loaded texture2" << std::endl;
+	}
+	else {
+		std::cout << "Failed to load texture2" << std::endl;
+	}
+	stbi_image_free(data);
+
+
+
+
 	glUseProgram(shaderProgram);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture0"), 0);
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 1);
+	glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 2);
 
-	Object *invCube = new Object(INVERTED_WALLS_NAME);
+	Object *invWalls = new Object(INVERTED_WALLS_NAME);
 	Object *bedBox = new Object(BED1BOX_NAME);
 	Object *bed = new Object(BED1_NAME);
 	Object *cabinet = new Object(CABINET3_NAME);
 	Object *coffee = new Object(COFFEE_TABLE1_NAME);
 	Object *toilet = new Object(TOILET_NAME);
 	Object *torchere = new Object(TORCHERE1_NAME);
-	Object *floor = new Object(FLOOR);
+	//Object *floor = new Object(FLOOR);
 	Object *wall = new Object(WALL);
 
 
-	invCube -> loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	invWalls -> loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
 
 	bed->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
 	//objectTriangles[bed->name] = bed->triangles;
@@ -631,7 +660,7 @@ int main()
 	torchere->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
 	//objectTriangles[torchere->name] = torchere->triangles;
 
-	floor->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
+	//floor->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
 	//objectTriangles[floor->name] = floor->triangles;
 
 	wall->loadObjToMap(objectVertices, objectNormals, objectUVs, objectModels, objectTriangles);
@@ -643,10 +672,10 @@ int main()
 
 	glm::vec3 camera_pos = glm::vec3(0, 0, 10);
 
-	invCube->scale(objectModels, objectTriangles, vec3(roomDimensions.x, 2, roomDimensions.y));
+	invWalls->scale(objectModels, objectTriangles, vec3(roomDimensions.x, 2, roomDimensions.y));
 	wall->scale(objectModels,objectTriangles, vec3(1, 0.5, 1));
 	wall->translate(objectModels, objectTriangles, vec3(0.5, 1, 5));
-	floor->translate(objectModels, objectTriangles, vec3(0, 0, 0));
+	//floor->translate(objectModels, objectTriangles, vec3(0, 0, 0));
 	//bed->translate(objectModels,objectTriangles, vec3(0, 0.5, 0));
 	bed->translate(objectModels, objectTriangles, vec3(-2.5, 0.5, 0));
 
@@ -691,9 +720,11 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture0);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, texture2);
 
 
-		render(INVERTED_WALLS_NAME, camera_pos, VAOINVERTEDWALLS, 0);
+		render(INVERTED_WALLS_NAME, camera_pos, VAOINVERTEDWALLS, 2);
 
 		render(BED1_NAME, camera_pos, VAO, 1);
 
@@ -728,7 +759,7 @@ int main()
 	coffee = nullptr;
 	toilet = nullptr;
 	torchere = nullptr;
-	floor = nullptr;
+	//floor = nullptr;
 	wall = nullptr;
 	delete bedBox;
 	delete bed;
@@ -736,7 +767,7 @@ int main()
 	delete coffee;
 	delete toilet;
 	delete torchere;
-	delete floor;
+	//delete floor;
 	delete wall;
 
 	// Terminate GLFW, clearing any resources allocated by GLFW.
