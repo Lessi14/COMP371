@@ -37,7 +37,7 @@ glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
-glm::vec3 default_furniture_location(0.0f, 0.001f, 0.0f);
+glm::vec3 default_furniture_location(0.0f, 0.02f, 0.0f);
 
 std::vector<glm::vec3> menuVertices[3];
 std::vector<glm::vec2> menuUVs[3];
