@@ -8,6 +8,8 @@ Report document [here](https://docs.google.com/document/d/1g92dKkl_skenO66iRo6fS
 | W,A,S,D | Move the camera forward, left, back and right |
 | Up, Down | Move the camera up and down |
 | Backspace | Reset camera |
+| Delete | Delete the currently selected object |
+| Q, E | Rotate the currently selected object 90 degrees in either direction |
 | T,P,L | Switch between Triangle(T), Point(P) and Line(L) render modes |
 | Enter | Open/Close Menu |
 | Escape | Quit Program |
