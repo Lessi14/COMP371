@@ -689,17 +689,25 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 ///Set the size of the room.
 void setRoomSize() {
-	while (roomDimensions.x < 4) {
+	while (roomDimensions.x < 4 || roomDimensions.x > 30) {
 		std::cout << "Enter room width(x): " << std::endl;
 		std::cin >> roomDimensions.x;
-		if (roomDimensions.x < 4)
+		if (roomDimensions.x < 4) {
 			std::cout << "Minimum accepted value is 4.0" << std::endl;
+		}
+		if (roomDimensions.x > 30) {
+			std::cout << "Maximum accepted value is 30.0" << std::endl;
+		}
 	}
-	while (roomDimensions.y < 4) {
+	while (roomDimensions.y < 4 || roomDimensions.y > 30) {
 		std::cout << "Enter room length(z): " << std::endl;
 		std::cin >> roomDimensions.y;
-		if (roomDimensions.y < 4)
+		if (roomDimensions.y < 4) {
 			std::cout << "Minimum accepted value is 4.0" << std::endl;
+		}
+		if (roomDimensions.y > 30) {
+			std::cout << "Maximum accepted value is 30.0" << std::endl;
+		}
 	}
 }
 
