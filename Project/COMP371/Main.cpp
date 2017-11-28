@@ -518,8 +518,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		case GLFW_KEY_ENTER:
 			menu_open = !menu_open;
 			menu_mode = 0;
-			if (menu_open)
-			{
+			//if (menu_open)
+			//{
 				//glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
 				//glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
 				//glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
@@ -542,7 +542,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 				//	buttonObjects[2][i]->translate(buttonObjects[2], cameraPositionWorldSpace);
 				//	buttonObjects[2][i]->translate(buttonObjects[2], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
 				//}
-			}
+			//}
 		default:
 			break;
 		}
@@ -698,6 +698,10 @@ void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vec
 	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
 	for (int i = 0; i<tempVertices.size(); i++)
 		(*vertices).push_back(tempVertices[i]);
+
+	tempVertices.push_back(glm::vec3(rightX, bottomY, 0.01f));
+	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
+	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
 	
 	vector<glm::vec2> tempUVs;
 	tempUVs.push_back(glm::vec2(1.0f, 1.0f));
@@ -945,8 +949,7 @@ int main()
 	glCullFace(GL_BACK);
 
 	setShaders();
-	setTexture();
- 
+	setTexture(); 
 	
 	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
@@ -959,10 +962,7 @@ int main()
 	
 	int tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
-	objects[tempCeiling]->texture_number = 4;
-
-	int bedDefault = addFurniture(BED1_NAME, vec3(0.0f, 0.1f, 0.0f));
-	objects[tempCeiling]->texture_number = 4;
+	objects[tempCeiling]->texture_number = 4;	
 
 	setVBOs();
 
@@ -1063,7 +1063,6 @@ int main()
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(menuViewMatrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-
 
 			switch (menu_mode)
 			{
