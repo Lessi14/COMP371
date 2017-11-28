@@ -247,7 +247,7 @@ bool Object::intersect(vec3 rayPosition, vec3 rayDir, float &distanceT)
 	}
 
 	//check for intersection with each tringles of the boundary box
-	for (Triangle localTriangleBound : triangles)
+	for (Triangle localTriangleBound : boundingBoxTriangles)
 	{
 		if (ray_intersect_triangle(rayPosition, rayDir, localTriangleBound, collisionDistance))
 		{

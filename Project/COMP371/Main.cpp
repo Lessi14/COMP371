@@ -174,7 +174,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	float dempener = 0.05;
 	float modifier = diffY * dempener;
 	//cout << modifier << endl;	
-	if (abs(modifier) < 0.20)
+	if (abs(modifier) < 0.30)
 	{
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(modifier, 0.0f, 0.0f), 0, 1); //0 and 1 stands for minX and maxX
@@ -529,7 +529,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		}
 		else
 		{
-			selectedObject = -1;
+			selectedObject = 0;
 			lastClickX = last_cursor_x;
 			lastClickY = last_cursor_y;
 			vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
