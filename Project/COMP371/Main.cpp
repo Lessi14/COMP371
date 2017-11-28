@@ -497,6 +497,16 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		case GLFW_KEY_F:
 			//Flying  or viewing camera
 			break;
+		case GLFW_KEY_Q:
+			//Don't rotate walls, floor, or ceiling
+			if (selectedObject > 2)
+				objects[selectedObject]->rotate(objects, 90.0f, glm::vec3(0, 1, 0));
+			break;
+		case GLFW_KEY_E:
+			//Don't rotate walls, floor, or ceiling
+			if (selectedObject > 2)
+				objects[selectedObject]->rotate(objects, -90.0f, glm::vec3(0, 1, 0));
+			break;
 		case GLFW_KEY_ENTER:
 			menu_open = !menu_open;
 			menu_mode = 0;
