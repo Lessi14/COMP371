@@ -309,12 +309,12 @@ void handle_button_click(int buttonId)
 			break;
 		//Green
 		case 5:
-			set_object_texture(6);
+			set_object_texture(5);
 			close_menu();
 			break;
 		//Blue
 		case 6:
-			set_object_texture(5);
+			set_object_texture(6);
 			close_menu();
 			break;
 		//Yellow
