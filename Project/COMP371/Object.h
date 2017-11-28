@@ -106,6 +106,5 @@ public:
 private:
 	float maxX, maxY, maxZ, minX, minY, minZ;
 	vector<float> listOfMaxAndMin;
-	float angle;
 };
 

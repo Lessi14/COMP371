@@ -5,7 +5,6 @@ Object::Object(int id, const char * type)
 {
 	this->id = ++counter;
 	this->type = type;
-	this->angle = 0.0f;
 	texture_number = 1;
 }
 
@@ -29,7 +28,6 @@ Object::Object(int id,
 	setIntersectionTriangle();
 	calculateBounderyBox();
 	this->id = ++counter;
-	this->angle = 0.0f;
 	texture_number = 1;
 	objects[id] = this;
 }
@@ -54,7 +52,6 @@ Object::Object(int id,
 	setIntersectionTriangle();
 	calculateBounderyBox();
 	this->id = ++counter;
-	this->angle = 0.0f;
 	texture_number = 1;
 	objects[id] = this;
 }
@@ -76,7 +73,6 @@ Object::Object(int id,
 	setIntersectionTriangle();
 	calculateBounderyBox();
 	texture_number = 1;
-	this->angle = 0.0f;
 	objects[id] = this;
 }
 
@@ -91,6 +87,7 @@ bool Object::checkIdAvailability(int id){
 
 void Object::translate(map<int, Object*>& objects, vec3 changes)
 {
+	this->centerCoordinates += changes;
 	this->objectModel *= glm::translate(mat4(1.0f), changes);	
 	UpdateVertices();
 	setIntersectionTriangle();
@@ -99,13 +96,8 @@ void Object::translate(map<int, Object*>& objects, vec3 changes)
 
 void Object::rotate(map<int, Object*>& objects, float angle, glm::vec3 rotationAxe)
 {
-	this->angle += angle;
-	//reset to center
-	this->objectModel = this->defaultObjectModel;
-	//translate back to center
-	this->objectModel *= glm::translate(mat4(1.0f), this->worldCoordinates);
 	//rotate the object
-	this->objectModel = glm::rotate(mat4(1.0f), glm::radians(this->angle), rotationAxe);
+	this->objectModel = glm::rotate(this->objectModel, glm::radians(angle), rotationAxe);
 	UpdateVertices();
 	setIntersectionTriangle();
 	objects[id] = this;
