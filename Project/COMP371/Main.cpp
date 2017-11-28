@@ -250,6 +250,12 @@ void close_menu()
 	menu_mode = 0;
 }
 
+void set_object_texture(int texture)
+{
+	if (selectedObject >= 0)
+		objects[selectedObject]->texture_number = texture;
+}
+
 void handle_button_click(int buttonId)
 {
 	switch (menu_mode)
@@ -276,34 +282,42 @@ void handle_button_click(int buttonId)
 		{
 		//Metal 1
 		case 0:
+			set_object_texture(0);
 			close_menu();
 			break;
 		//Metal 2
 		case 1:
+			set_object_texture(1);
 			close_menu();
 			break;
 		//Wood 1
 		case 2:
+			set_object_texture(2);
 			close_menu();
 			break;
 		//Wood 2
 		case 3:
+			set_object_texture(3);
 			close_menu();
 			break;
 		//Red
 		case 4:
+			set_object_texture(4);
 			close_menu();
 			break;
 		//Green
 		case 5:
+			set_object_texture(6);
 			close_menu();
 			break;
 		//Blue
 		case 6:
+			set_object_texture(5);
 			close_menu();
 			break;
 		//Yellow
 		case 7:
+			set_object_texture(7);
 			close_menu();
 			break;
 		}
@@ -917,7 +931,7 @@ int main()
 	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempExtWalls]->texture_number = 3;
 
-	/*int tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
+	int tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempFloor]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempFloor]->texture_number = 1;
 	
@@ -925,30 +939,6 @@ int main()
 	int tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempCeiling]->texture_number = 4;
-
-	int tempPainting = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, 0.0f, 0.0f));
-	objects[tempPainting]->texture_number = 5;
-
-
-	int tempBed = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));	
-	objects[tempBed]->translate(objects, vec3(-3.5, 0.5, 0));
-	objects[tempBed]->texture_number = 1;
-
-	int bed1 = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[bed1]->translate(objects, vec3(3.0f, 0.5, 0));
-	objects[bed1]->texture_number = 3;
-
-	int bed2 = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[bed2]->translate(objects, vec3(0.0f, 3.0f, 0));
-	objects[bed2]->texture_number = 0;
-
-	int tempWall = addFurniture(WALL, vec3(0.0f, 0.0f, 0.0f));
-	objects[tempWall]->scale(objects, vec3(1, 0.5, 1));
-	objects[tempWall]->translate(objects, vec3(0.5, 1, 5));
-	objects[tempWall]->texture_number = 0;
-
-	int torch = addFurniture(TORCHERE1_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[torch]->texture_number = 3;*/
 
 	setVBOs();
 
