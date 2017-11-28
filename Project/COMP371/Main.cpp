@@ -38,7 +38,7 @@ glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
-glm::vec3 default_furniture_location(0.0f, 0.001f, 0.0f);
+glm::vec3 default_furniture_location(0.0f, 0.01f, 0.0f);
 
 std::vector<glm::vec3> menuVertices[3];
 std::vector<glm::vec2> menuUVs[3];
@@ -103,6 +103,8 @@ GLuint axes_VAO;
 
 GLuint VAO_Coffee, vertices_VBO_Coffee, normals_VBO_Coffee, uvs_VBO_Coffee;
 
+vector<int> randomXs;
+vector<int> randomYs;
 
 std::vector<glm::vec3> axesVertices;
 std::vector<glm::vec3> axesColors;
@@ -238,54 +240,39 @@ bool isUnique(int n, vector<int> list) {
 
 vec3 randomLocationGenerator(int objectId) {
 	glm::vec3 randomLocation = vec3(-1000, -1000, 1000);
+	
 	int randomX = 0, randomY = 0;
-	vector<float> xs, ys;
-	//float startingPointX = (roomDimensions.x * (-1)) + 0.1;
-	//float startingPointY = (roomDimensions.y * (-1)) + 0.1;
 
-	float startingPointX = ((roomDimensions.x/-2) + 0.1)*10;
-	float startingPointY = ((roomDimensions.y/-2) + 0.1)*10;
-
-	for (int i = 0; i < (roomDimensions.x - 0.2)* 10; i++) {
-		startingPointX++;
-		xs.push_back(startingPointX);
-	}
-
-	for (int i = 0; i < (roomDimensions.y - 0.2) * 10; i++) {
-		startingPointY++;
-		ys.push_back(startingPointY);
-	}
-
+	int startingPointX = ((roomDimensions.x/2) - 0.1)*10;
+	int startingPointY = ((roomDimensions.y/2) - 0.1)*10;
+	int endingPositionX = (roomDimensions.x + 0.1) * 10;
+	int endingPositionY = (roomDimensions.y + 0.1) * 10;
 
 	int overAllCounter = 0;
 
 	srand(time(0));
+	
 
-	while (overAllCounter != 1000)
+	while (overAllCounter != 5000)
 	{
-		
-		vector<int> randomXs;
-		vector<int> randomYs;
 
-		randomX = rand() % xs.size();
+		randomX = rand() % endingPositionX - startingPointX;
 
-		while (!isUnique(randomX, randomXs) /*&& randomXs.size() <= xs.size()*/)
+		while (!isUnique(randomX, randomXs))
 		{
-			randomX = rand() % xs.size();
+			randomX = rand() % endingPositionX - startingPointX;
 		}
 
-		randomXs.push_back(randomX);
 
-		randomY = rand() % ys.size();
+		randomY = rand() % endingPositionY - startingPointY;
 
-		while (!isUnique(randomY, randomYs) /*&& randomYs.size() <= ys.size()*/)
+		while (!isUnique(randomY, randomYs))
 		{
-			randomY = rand() % ys.size();
+			randomY = rand() % endingPositionY - startingPointY;
 		}
 
-		randomYs.push_back(randomY);
 
-		randomLocation = vec3(xs.at(randomY)*0.1, 0.001f, ys.at(randomY)*0.1);
+		randomLocation = vec3(randomX*0.1, 0.01f, randomY*0.1);
 
 		bool checkIfItCollidesX = objects[objectId]->isNextACollision(objects, randomLocation, 0, 1); //0 and 1 stands for minX and maxX
 		bool checkIfItCollidesY = objects[objectId]->isNextACollision(objects, randomLocation, 2, 3); //2 and 3 stands for minY and maxY
@@ -293,8 +280,11 @@ vec3 randomLocationGenerator(int objectId) {
 
 		if (!checkIfItCollidesX && !checkIfItCollidesY && !checkIfItCollidesZ)
 		{
+			randomXs.push_back(randomX);
+			randomYs.push_back(randomY);
 			break;
 		}
+
 		randomLocation = vec3(-1000, -1000, 1000);
 		overAllCounter++;
 	}
@@ -426,29 +416,79 @@ void handle_button_click(int buttonId)
 		//Cabinet
 		case 1:
 			furniture = addFurniture(CABINET3_NAME, default_furniture_location);
-			objects[furniture]->texture_number = 2;
+			randomLocation = randomLocationGenerator(furniture);
+
+			if (randomLocation != vec3(-1000, -1000, 1000)) {
+				objects[furniture]->texture_number = 2;
+				objects[furniture]->translate(objects, randomLocation);
+			}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
 			close_menu();
 			break;
 		//Coffee Table
 		case 2:
 			furniture = addFurniture(COFFEE_TABLE1_NAME, default_furniture_location);
-			objects[furniture]->texture_number = 2;
+			randomLocation = randomLocationGenerator(furniture);
+
+			if (randomLocation != vec3(-1000, -1000, 1000)) {
+				objects[furniture]->texture_number = 2;
+				objects[furniture]->translate(objects, randomLocation);
+			}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
 			close_menu();
 			break;
 		//Toilet
 		case 3:
 			furniture = addFurniture(TOILET_NAME, default_furniture_location);
-			objects[furniture]->texture_number = 1;
+			randomLocation = randomLocationGenerator(furniture);
+
+			if (randomLocation != vec3(-1000, -1000, 1000)) {
+				objects[furniture]->texture_number = 1;
+				objects[furniture]->translate(objects, randomLocation);
+			}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
 			close_menu();
 			break;
 		//Lamp
 		case 4:
 			furniture = addFurniture(TORCHERE1_NAME, default_furniture_location);
-			objects[furniture]->texture_number = 1;
+			randomLocation = randomLocationGenerator(furniture);
+
+			if (randomLocation != vec3(-1000, -1000, 1000)) {
+				objects[furniture]->texture_number = 1;
+				objects[furniture]->translate(objects, randomLocation);
+			}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
 			close_menu();
 			break;
 		//Painting
 		case 5:
+			/*
+			furniture = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, default_furniture_location.y, default_furniture_location.z));
+			randomLocation = randomLocationGenerator(furniture);
+
+			if (randomLocation != vec3(-1000, -1000, 1000)) {
+				objects[furniture]->texture_number = 1;
+				objects[furniture]->translate(objects, randomLocation);
+			}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
+			close_menu();
+			break;*/
 			furniture = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, default_furniture_location.y, default_furniture_location.z));
 			objects[furniture]->texture_number = 1;
 			close_menu();
