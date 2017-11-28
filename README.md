@@ -1,5 +1,6 @@
 # COMP371
 Comp 371 Group Assignment.
+Report document [here](https://docs.google.com/document/d/1g92dKkl_skenO66iRo6fSTeJ3uzsULvn_BqmgtTsltA/edit?usp=sharing).
 
 ## Controls:
 | Key Event | Effect |
