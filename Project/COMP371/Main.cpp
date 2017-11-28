@@ -18,6 +18,7 @@
 #include "camera.h"
 #include "Object.h"
 #include "UtilClass.h"
+#include <time.h>
 
 using namespace std;
 
@@ -37,7 +38,7 @@ glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
-glm::vec3 default_furniture_location(0.0f, 0.02f, 0.0f);
+glm::vec3 default_furniture_location(0.0f, 0.001f, 0.0f);
 
 std::vector<glm::vec3> menuVertices[3];
 std::vector<glm::vec2> menuUVs[3];
@@ -132,7 +133,7 @@ c
 void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-		//cout << "x: " << xpos << endl;c
+		//cout << "x: " << xpos << endl;
 		//cout << "y: " << ypos << endl;
 		if (last_cursor_x != NULL && last_cursor_y != NULL)
 		{
@@ -207,21 +208,98 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glBindVertexArray(localVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->vertices.size() * sizeof(glm::vec3), &objects[id]->vertices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->vertices.size() * sizeof(glm::vec3), &objects[id]->vertices.front(), GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->normals.size() * sizeof(glm::vec3), &objects[id]->normals.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->normals.size() * sizeof(glm::vec3), &objects[id]->normals.front(), GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->uvs.size() * sizeof(glm::vec3), &objects[id]->uvs.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->uvs.size() * sizeof(glm::vec3), &objects[id]->uvs.front(), GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+
+bool isUnique(int n, vector<int> list) {
+
+	for (int i = 0; i < list.size(); i++) {
+		if (n == list.at(i)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+vec3 randomLocationGenerator(int objectId) {
+	glm::vec3 randomLocation = vec3(-1000, -1000, 1000);
+	int randomX = 0, randomY = 0;
+	vector<float> xs, ys;
+	//float startingPointX = (roomDimensions.x * (-1)) + 0.1;
+	//float startingPointY = (roomDimensions.y * (-1)) + 0.1;
+
+	float startingPointX = ((roomDimensions.x/-2) + 0.1)*10;
+	float startingPointY = ((roomDimensions.y/-2) + 0.1)*10;
+
+	for (int i = 0; i < (roomDimensions.x - 0.2)* 10; i++) {
+		startingPointX++;
+		xs.push_back(startingPointX);
+	}
+
+	for (int i = 0; i < (roomDimensions.y - 0.2) * 10; i++) {
+		startingPointY++;
+		ys.push_back(startingPointY);
+	}
+
+
+	int overAllCounter = 0;
+
+	srand(time(0));
+
+	while (overAllCounter != 1000)
+	{
+		
+		vector<int> randomXs;
+		vector<int> randomYs;
+
+		randomX = rand() % xs.size();
+
+		while (!isUnique(randomX, randomXs) /*&& randomXs.size() <= xs.size()*/)
+		{
+			randomX = rand() % xs.size();
+		}
+
+		randomXs.push_back(randomX);
+
+		randomY = rand() % ys.size();
+
+		while (!isUnique(randomY, randomYs) /*&& randomYs.size() <= ys.size()*/)
+		{
+			randomY = rand() % ys.size();
+		}
+
+		randomYs.push_back(randomY);
+
+		randomLocation = vec3(xs.at(randomY)*0.1, 0.001f, ys.at(randomY)*0.1);
+
+		bool checkIfItCollidesX = objects[objectId]->isNextACollision(objects, randomLocation, 0, 1); //0 and 1 stands for minX and maxX
+		bool checkIfItCollidesY = objects[objectId]->isNextACollision(objects, randomLocation, 2, 3); //2 and 3 stands for minY and maxY
+		bool checkIfItCollidesZ = objects[objectId]->isNextACollision(objects, randomLocation, 4, 5); //4 and 5 stands for minZ and 
+
+		if (!checkIfItCollidesX && !checkIfItCollidesY && !checkIfItCollidesZ)
+		{
+			break;
+		}
+		randomLocation = vec3(-1000, -1000, 1000);
+		overAllCounter++;
+	}
+
+	return randomLocation;
 }
 
 int addFurniture(const char * type, vec3 position)
@@ -260,6 +338,8 @@ void set_object_texture(int texture)
 
 void handle_button_click(int buttonId)
 {
+	//vec3 tempPosition = vec3(0, 0, 0);
+	vec3 randomLocation;
 	switch (menu_mode)
 	{
 	case 0:
@@ -330,8 +410,17 @@ void handle_button_click(int buttonId)
 		int furniture;
 		//Bed
 		case 0:
-			furniture = addFurniture(BED1_NAME, default_furniture_location);
-			objects[furniture]->texture_number = 1;
+				furniture = addFurniture(BED1_NAME, default_furniture_location);
+				randomLocation = randomLocationGenerator(furniture);
+				
+				if (randomLocation != vec3(-1000, -1000, 1000)){
+					objects[furniture]->texture_number = 1;
+					objects[furniture]->translate(objects, randomLocation);
+				}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
 			close_menu();
 			break;
 		//Cabinet
