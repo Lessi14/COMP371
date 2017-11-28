@@ -22,7 +22,6 @@ enum Camera_Movement {
 // Default camera values
 const float YAW = -225.0f;
 const float PITCH = -19.0f;
-const float SPEED = 2.0f;
 const float SENSITIVTY = 0.1f;
 const float ZOOM = 45.0f;
 
@@ -40,27 +39,30 @@ public:
 	// Eular Angles
 	float Yaw;
 	float Pitch;
+	//float Speed;;
 	// Camera options
 	float MovementSpeed;
 	float MouseSensitivity;
 	float Zoom;
 
 	// Constructor with vectors
-	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVTY), Zoom(ZOOM)
+	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH, float speed = 2.0f) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MouseSensitivity(SENSITIVTY), Zoom(ZOOM)
 	{
 		Position = position;
 		WorldUp = up;
 		Yaw = yaw;
 		Pitch = pitch;
+		MovementSpeed = speed;
 		updateCameraVectors();
 	}
 	// Constructor with scalar values
-	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVTY), Zoom(ZOOM)
+	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch, float speed) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MouseSensitivity(SENSITIVTY), Zoom(ZOOM)
 	{
 		Position = glm::vec3(posX, posY, posZ);
 		WorldUp = glm::vec3(upX, upY, upZ);
 		Yaw = yaw;
 		Pitch = pitch;
+		MovementSpeed = speed;
 		updateCameraVectors();
 	}
 
