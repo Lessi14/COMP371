@@ -507,6 +507,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			if (selectedObject > 2)
 				objects[selectedObject]->rotate(objects, -90.0f, glm::vec3(0, 1, 0));
 			break;
+		case GLFW_KEY_DELETE:
+			//Don't let them delete walls, floor, or ceiling
+			if (selectedObject > 2)
+				objects.erase(selectedObject);
+			break;
 		case GLFW_KEY_ENTER:
 			menu_open = !menu_open;
 			menu_mode = 0;
