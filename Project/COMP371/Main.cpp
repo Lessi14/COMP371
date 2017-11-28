@@ -642,6 +642,15 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 			if (selectedObject > 2)
 				objects.erase(selectedObject);
 			break;
+		case GLFW_KEY_1:
+			camera.MovementSpeed = 2.0f;
+			break;
+		case GLFW_KEY_2:
+			camera.MovementSpeed = 4.5f;
+			break;
+		case GLFW_KEY_3:
+			camera.MovementSpeed = 7.0f;
+			break;
 		case GLFW_KEY_ENTER:
 			menu_open = !menu_open;
 			menu_mode = 0;
