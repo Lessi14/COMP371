@@ -7,6 +7,7 @@ Report document [here](https://docs.google.com/document/d/1g92dKkl_skenO66iRo6fS
 | ------ | ------ |
 | W,A,S,D | Move the camera forward, left, back and right |
 | Up, Down | Move the camera up and down |
+| 1,2,3 | Change camera movement speed |
 | Backspace | Reset camera |
 | Delete | Delete the currently selected object |
 | Q, E | Rotate the currently selected object 90 degrees in either direction |
@@ -40,3 +41,4 @@ Report document [here](https://docs.google.com/document/d/1g92dKkl_skenO66iRo6fS
 ### Other
 * Single header image texture loading lib: https://github.com/nothings/stb/blob/master/stb_image.h
 * Texturing tutorial: https://learnopengl.com/#!Getting-started/Textures
+* More sources available in the Report document

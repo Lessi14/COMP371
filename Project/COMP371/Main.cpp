@@ -18,6 +18,7 @@
 #include "camera.h"
 #include "Object.h"
 #include "UtilClass.h"
+#include "LightSource.h"
 #include <time.h>
 
 using namespace std;
@@ -29,15 +30,16 @@ glm::vec3 camera_position;
 glm::vec3 triangle_scale;
 
 glm::vec3 camera_pos = vec3(0, 0, 0);
-glm::vec3 light_color = vec3(0, 0, 0);
-float specular_strength = 0.0f;
-glm::vec3 light_position = vec3(0, 0, 0);
-float ambient_strength = 0.0f;
+//glm::vec3 light_color = vec3(0, 0, 0);
+//float specular_strength = 0.0f;
+//glm::vec3 light_position = vec3(0, 0, 0);
+//float ambient_strength = 0.0f;
 
 glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
+vector<LightSource> lights;
 
 glm::mat4 menuViewMatrix;
 glm::vec3 default_furniture_location(0.0f, 0.01f, 0.0f);
@@ -174,7 +176,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	float dempener = 0.05;
 	float modifier = diffY * dempener;
 	//cout << modifier << endl;	
-	if (abs(modifier) < 0.20)
+	if (abs(modifier) < 0.30)
 	{
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(modifier, 0.0f, 0.0f), 0, 1); //0 and 1 stands for minX and maxX
@@ -406,7 +408,7 @@ int addFurniture(const char * type, vec3 position)
 	glGenBuffers(1, &objects[tempObject->id]->vertices_VBO);
 	glGenBuffers(1, &objects[tempObject->id]->normals_VBO);
 	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
-
+	
 
 	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id);
 	glBindVertexArray(0);
@@ -614,7 +616,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		}
 		else
 		{
-			selectedObject = -1;
+			selectedObject = 0;
 			lastClickX = last_cursor_x;
 			lastClickY = last_cursor_y;
 			vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, view_matrix);
@@ -774,17 +776,25 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 ///Set the size of the room.
 void setRoomSize() {
-	while (roomDimensions.x < 4) {
+	while (roomDimensions.x < 4 || roomDimensions.x > 30) {
 		std::cout << "Enter room width(x): " << std::endl;
 		std::cin >> roomDimensions.x;
-		if (roomDimensions.x < 4)
+		if (roomDimensions.x < 4) {
 			std::cout << "Minimum accepted value is 4.0" << std::endl;
+		}
+		if (roomDimensions.x > 30) {
+			std::cout << "Maximum accepted value is 30.0" << std::endl;
+		}
 	}
-	while (roomDimensions.y < 4) {
+	while (roomDimensions.y < 4 || roomDimensions.y > 30) {
 		std::cout << "Enter room length(z): " << std::endl;
 		std::cin >> roomDimensions.y;
-		if (roomDimensions.y < 4)
+		if (roomDimensions.y < 4) {
 			std::cout << "Minimum accepted value is 4.0" << std::endl;
+		}
+		if (roomDimensions.y > 30) {
+			std::cout << "Maximum accepted value is 30.0" << std::endl;
+		}
 	}
 }
 
@@ -1117,10 +1127,10 @@ void render(int id, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 	glUniform1i(texture_number, tex_num);
 
-	glUniform3fv(light_colour_loc, 1, glm::value_ptr(light_color));
-	glUniform1f(specular_strength_loc, specular_strength);
-	glUniform3fv(light_position_loc, 1, glm::value_ptr(light_position));
-	glUniform1f(ambient_strength_loc, ambient_strength);
+	glUniform3fv(light_colour_loc, 1, glm::value_ptr(lights[0].light_color));
+	glUniform1f(specular_strength_loc, lights[0].specular_strength);
+	glUniform3fv(light_position_loc, 1, glm::value_ptr(lights[0].light_position));
+	glUniform1f(ambient_strength_loc, lights[0].ambient_strength);
 
 	glBindVertexArray(VAO);
 	glDrawArrays(objRenderMode, 0, objects[id]->vertices.size());
@@ -1134,10 +1144,10 @@ void render(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-	glUniform3fv(light_colour_loc, 1, glm::value_ptr(light_color));
-	glUniform1f(specular_strength_loc, specular_strength);
-	glUniform3fv(light_position_loc, 1, glm::value_ptr(light_position));
-	glUniform1f(ambient_strength_loc, ambient_strength);
+	glUniform3fv(light_colour_loc, 1, glm::value_ptr(lights[0].light_color));
+	glUniform1f(specular_strength_loc, lights[0].specular_strength);
+	glUniform3fv(light_position_loc, 1, glm::value_ptr(lights[0].light_position));
+	glUniform1f(ambient_strength_loc, lights[0].ambient_strength);
 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_LINES, 0, vertices.size());
@@ -1173,6 +1183,10 @@ int main()
 
 	setShaders();
 	setTexture(); 
+
+	camera_pos = camera.Position;
+	LightSource l1 = LightSource(vec3(1.0f, 1.0f, 1.0f), 1.9f, vec3(0.0f, 3.0f, 0.0f), 0.35f);
+	lights.push_back(l1);
 	
 	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
@@ -1188,14 +1202,7 @@ int main()
 	objects[tempCeiling]->texture_number = 4;	
 
 	setVBOs();
-
-	triangle_scale = glm::vec3(1.0f);
-
-	camera_pos = camera.Position;
-	light_color = vec3(1.0f, 1.0f, 1.0f);
-	specular_strength = 1.9f;
-	light_position = vec3(0.0f, 5.0f, 0.0f);
-	ambient_strength = 0.15f;
+	triangle_scale = glm::vec3(1.0f);	
 
 	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
@@ -1219,12 +1226,8 @@ int main()
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		processInput(window);
 		glfwPollEvents();
-
+		
 		camera_pos = camera.Position;
-		light_color = vec3(1.0f, 1.0f, 1.0f);
-		specular_strength = 0.5f;
-		light_position = vec3(0.0f, 3.0f, 0.0f);
-		ambient_strength = 0.15f;
 
 		// Render
 		// Clear the colorbuffer
@@ -1232,7 +1235,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
-
+		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture0);
 		glActiveTexture(GL_TEXTURE1);
@@ -1275,13 +1278,10 @@ int main()
 			render(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
 		}
 		else
-		{
-			//glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+		{			
 			glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
 			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
-			glm::mat4 menu_model_matrix = mat4(1.0f);
-			//menu_model_matrix = glm::translate(menu_model_matrix, cameraPositionWorldSpace);
-			//menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+			glm::mat4 menu_model_matrix = mat4(1.0f);		
 			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(menu_model_matrix));
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(menuViewMatrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));

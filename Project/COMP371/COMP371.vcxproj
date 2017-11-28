@@ -117,6 +117,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
+    <ClInclude Include="LightSource.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="objloader.hpp" />
     <ClInclude Include="stb_image.h" />
@@ -126,6 +127,7 @@
     <ClInclude Include="UtilClass.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="LightSource.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="objloader.cpp" />
@@ -140,6 +142,7 @@
     <ClCompile Include="UtilClass.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram.cd" />
     <None Include="fragment.shader" />
     <None Include="glew32.dll" />
     <None Include="glfw3.dll" />
