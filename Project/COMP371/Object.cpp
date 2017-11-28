@@ -1,4 +1,5 @@
 #include "Object.h"
+#include <iostream>
 //Set the counter
 int Object::counter = -1;
 Object::Object(int id, const char * type)
@@ -56,11 +57,12 @@ Object::Object(int id,
 	objects[id] = this;
 }
 
+//Buttons
 Object::Object(int id,
 	const char * type,
 	std::vector<glm::vec3> vertices,
 	std::vector<glm::vec2> uvs,
-	std::map<int, Object*> objects
+	std::map<int, Object*> &objects
 )
 {
 	this->id = id;
@@ -68,36 +70,40 @@ Object::Object(int id,
 	this->vertices = vertices;
 	this->defaultVertices = vertices;
 	this->uvs = uvs;
-	objects[id] = this;
-
+	
 	setIntersectionTriangle();
 	calculateBounderyBox();
 	texture_number = 1;
 	objects[id] = this;
 }
 
-bool Object::checkIdAvailability(int id){
-	for (int lId : ids)
-	{
-		if (lId == id)
-			return true;
-	}
-	return false;
-}
-
 void Object::translate(map<int, Object*>& objects, vec3 changes)
 {
 	this->centerCoordinates += changes;
-	this->objectModel *= glm::translate(mat4(1.0f), changes);	
+	//this->objectModel *= glm::translate(mat4(1.0f), changes);
+	this->objectModel = mat4(1.0f);
+	this->objectModel *= glm::translate(mat4(1.0f), this->centerCoordinates);
+	this->objectModel *= glm::rotate(mat4(1.0f), glm::radians(this->angle), glm::vec3(0, 1, 0));
 	UpdateVertices();
 	setIntersectionTriangle();
 	objects[id] = this;
+	cout << "translated to "<< endl;
+	cout << this->centerCoordinates.x << endl;
+	cout << this->centerCoordinates.y << endl;
+	cout << this->centerCoordinates.z << endl;
 }
 
 void Object::rotate(map<int, Object*>& objects, float angle, glm::vec3 rotationAxe)
 {
+	this->angle += angle;
+	//vec3 previousPoint = this->centerCoordinates;
+	cout << "rotating" << endl;
 	//rotate the object
-	this->objectModel = glm::rotate(this->objectModel, glm::radians(angle), rotationAxe);
+	//this->translate(objects, -this->centerCoordinates);
+	this->objectModel = mat4(1.0f);
+	this->objectModel *= glm::translate(mat4(1.0f), this->centerCoordinates);
+	this->objectModel *= glm::rotate(mat4(1.0f), glm::radians(this->angle), rotationAxe);	
+	cout << "done" << endl;
 	UpdateVertices();
 	setIntersectionTriangle();
 	objects[id] = this;
@@ -200,6 +206,24 @@ bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri, floa
 	}
 	else // This means that there is a line intersection but not a ray intersection.
 		return false;
+}
+
+
+///Check intersection for buttons
+bool Object::intersectButtons(vec3 rayPosition, vec3 rayDir)
+{	
+	float collisionDistance = 1000;	
+
+		//check for intersection with each tringles.
+	for (Triangle localTriangle : triangles)
+	{
+		if (ray_intersect_triangle(rayPosition, rayDir, localTriangle, collisionDistance))
+		{			
+			return true;
+		}
+	}
+
+	return false;
 }
 
 ///Given a a ray position and a direction. checks if the object is in the path of the ray.
