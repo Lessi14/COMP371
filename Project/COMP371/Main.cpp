@@ -315,28 +315,37 @@ void handle_button_click(int buttonId)
 		//Bed
 		case 0:
 			furniture = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
-			objects[furniture]->translate(objects, vec3(3.0f, 0.5, 0));
-			objects[furniture]->texture_number = 3;
+			objects[furniture]->texture_number = 1;
 			close_menu();
 			break;
 		//Cabinet
 		case 1:
+			furniture = addFurniture(CABINET3_NAME, vec3(0.0f, 0.0f, 0.0f));
+			objects[furniture]->texture_number = 2;
 			close_menu();
 			break;
 		//Coffee Table
 		case 2:
+			furniture = addFurniture(COFFEE_TABLE1_NAME, vec3(0.0f, 0.0f, 0.0f));
+			objects[furniture]->texture_number = 2;
 			close_menu();
 			break;
 		//Toilet
 		case 3:
+			furniture = addFurniture(TOILET_NAME, vec3(0.0f, 0.0f, 0.0f));
+			objects[furniture]->texture_number = 1;
 			close_menu();
 			break;
 		//Lamp
 		case 4:
+			furniture = addFurniture(TORCHERE1_NAME, vec3(0.0f, 0.0f, 0.0f));
+			objects[furniture]->texture_number = 1;
 			close_menu();
 			break;
 		//Painting
 		case 5:
+			furniture = addFurniture(PAINTING_NAME, vec3(0.0f, 0.0f, 0.0f));
+			objects[furniture]->texture_number = 1;
 			close_menu();
 			break;
 		}
@@ -908,7 +917,7 @@ int main()
 	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempExtWalls]->texture_number = 3;
 
-	int tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
+	/*int tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempFloor]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempFloor]->texture_number = 1;
 	
@@ -925,9 +934,9 @@ int main()
 	objects[tempBed]->translate(objects, vec3(-3.5, 0.5, 0));
 	objects[tempBed]->texture_number = 1;
 
-	/*int bed1 = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
+	int bed1 = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[bed1]->translate(objects, vec3(3.0f, 0.5, 0));
-	objects[bed1]->texture_number = 3;*/
+	objects[bed1]->texture_number = 3;
 
 	int bed2 = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[bed2]->translate(objects, vec3(0.0f, 3.0f, 0));
@@ -939,7 +948,7 @@ int main()
 	objects[tempWall]->texture_number = 0;
 
 	int torch = addFurniture(TORCHERE1_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[torch]->texture_number = 3;
+	objects[torch]->texture_number = 3;*/
 
 	setVBOs();
 
