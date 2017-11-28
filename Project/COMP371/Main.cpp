@@ -22,7 +22,7 @@
 using namespace std;
 
 // Window dimensions
-const GLuint WIDTH = 800, HEIGHT = 600;
+GLuint WIDTH = 800, HEIGHT = 600;
 
 glm::vec3 camera_position;
 glm::vec3 triangle_scale;
@@ -36,6 +36,8 @@ float ambient_strength = 0.0f;
 glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
+
+glm::vec3 default_furniture_location(0.0f, 0.001f, 0.0f);
 
 std::vector<glm::vec3> menuVertices[3];
 std::vector<glm::vec2> menuUVs[3];
@@ -195,6 +197,67 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	lastClickY = ypos;
 }
 
+///Extractedd the method which creates the vbos.
+void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id)
+{
+	glGenBuffers(1, &verticesVBO);
+	glGenBuffers(1, &normalsVBO);
+	glGenBuffers(1, &uvsVBO);
+
+	glBindVertexArray(localVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->vertices.size() * sizeof(glm::vec3), &objects[id]->vertices.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->normals.size() * sizeof(glm::vec3), &objects[id]->normals.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->uvs.size() * sizeof(glm::vec3), &objects[id]->uvs.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+int addFurniture(const char * type, vec3 position)
+{
+	Object *tempObject = new Object(0, type);
+	tempObject->loadObjToMap(objects);
+	objects[tempObject->id] = tempObject;
+
+	///----------------
+	glGenVertexArrays(1, &objects[tempObject->id]->VAO);
+
+	glGenBuffers(1, &objects[tempObject->id]->vertices_VBO);
+	glGenBuffers(1, &objects[tempObject->id]->normals_VBO);
+	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
+
+
+	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id);
+	glBindVertexArray(0);
+
+	objects[tempObject->id]->translate(objects, position);
+
+	return tempObject->id;
+}
+
+void close_menu()
+{
+	menu_open = false;
+	menu_mode = 0;
+}
+
+void set_object_texture(int texture)
+{
+	if (selectedObject >= 0)
+		objects[selectedObject]->texture_number = texture;
+}
+
 void handle_button_click(int buttonId)
 {
 	switch (menu_mode)
@@ -212,8 +275,7 @@ void handle_button_click(int buttonId)
 			break;
 		//back button
 		case 2:
-			menu_open = false;
-			menu_mode = 0;
+			close_menu();
 			break;
 		}
 		break;
@@ -222,40 +284,85 @@ void handle_button_click(int buttonId)
 		{
 		//Metal 1
 		case 0:
+			set_object_texture(0);
+			close_menu();
 			break;
 		//Metal 2
 		case 1:
+			set_object_texture(1);
+			close_menu();
 			break;
 		//Wood 1
 		case 2:
+			set_object_texture(2);
+			close_menu();
 			break;
 		//Wood 2
 		case 3:
+			set_object_texture(3);
+			close_menu();
 			break;
+		//Red
 		case 4:
+			set_object_texture(4);
+			close_menu();
 			break;
+		//Green
 		case 5:
+			set_object_texture(5);
+			close_menu();
 			break;
+		//Blue
 		case 6:
+			set_object_texture(6);
+			close_menu();
 			break;
+		//Yellow
 		case 7:
+			set_object_texture(7);
+			close_menu();
 			break;
 		}
 		break;
 	case 2:
 		switch (buttonId)
 		{
+		int furniture;
+		//Bed
 		case 0:
+			furniture = addFurniture(BED1_NAME, default_furniture_location);
+			objects[furniture]->texture_number = 1;
+			close_menu();
 			break;
+		//Cabinet
 		case 1:
+			furniture = addFurniture(CABINET3_NAME, default_furniture_location);
+			objects[furniture]->texture_number = 2;
+			close_menu();
 			break;
+		//Coffee Table
 		case 2:
+			furniture = addFurniture(COFFEE_TABLE1_NAME, default_furniture_location);
+			objects[furniture]->texture_number = 2;
+			close_menu();
 			break;
+		//Toilet
 		case 3:
+			furniture = addFurniture(TOILET_NAME, default_furniture_location);
+			objects[furniture]->texture_number = 1;
+			close_menu();
 			break;
+		//Lamp
 		case 4:
+			furniture = addFurniture(TORCHERE1_NAME, default_furniture_location);
+			objects[furniture]->texture_number = 1;
+			close_menu();
 			break;
+		//Painting
 		case 5:
+			furniture = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, default_furniture_location.y, default_furniture_location.z));
+			objects[furniture]->texture_number = 1;
+			close_menu();
 			break;
 		}
 		break;
@@ -340,6 +447,8 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 //This method will be called when the window is resized and will ensure the application displays properly
 void window_resize_callback(GLFWwindow* window, int width, int height)
 {
+	WIDTH = width;
+	HEIGHT = height;
 	glViewport(0, 0, width, height);
 	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
 }
@@ -560,33 +669,6 @@ int windowSetup()
 	}
 }
 
-///Extractedd the method which creates the vbos.
-void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id)
-{
-	glGenBuffers(1, &verticesVBO);
-	glGenBuffers(1, &normalsVBO);
-	glGenBuffers(1, &uvsVBO);
-
-	glBindVertexArray(localVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->vertices.size() * sizeof(glm::vec3), &objects[id]->vertices.front(), GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->normals.size() * sizeof(glm::vec3), &objects[id]->normals.front(), GL_STATIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->uvs.size() * sizeof(glm::vec3), &objects[id]->uvs.front(), GL_STATIC_DRAW);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
 void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs, map<int, Object*> *buttonObjects, int id)
 {
 	vector<glm::vec3> tempVertices;
@@ -721,28 +803,6 @@ void setVBOs()
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 	glBindVertexArray(0);
-}
-
-int addFurniture(const char * type, vec3 position)
-{
-	Object *tempObject = new Object(0, type);
-	tempObject->loadObjToMap(objects);
-	objects[tempObject->id] = tempObject;
-
-	///----------------
-	glGenVertexArrays(1, &objects[tempObject->id]->VAO);
-
-	glGenBuffers(1, &objects[tempObject->id]->vertices_VBO);
-	glGenBuffers(1, &objects[tempObject->id]->normals_VBO);
-	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
-
-
-	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id);
-	glBindVertexArray(0);
-
-	objects[tempObject->id]->translate(objects, position);
-
-	return tempObject->id;
 }
 
 void setIndividualTexture(unsigned int *texture, char* filename)
@@ -881,30 +941,6 @@ int main()
 	int tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempCeiling]->texture_number = 4;
-
-	int tempPainting = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, 0.0f, 0.0f));
-	objects[tempPainting]->texture_number = 5;
-
-
-	int tempBed = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));	
-	objects[tempBed]->translate(objects, vec3(-3.5, 0.5, 0));
-	objects[tempBed]->texture_number = 1;
-
-	int bed1 = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[bed1]->translate(objects, vec3(3.0f, 0.5, 0));
-	objects[bed1]->texture_number = 3;
-
-	int bed2 = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[bed2]->translate(objects, vec3(0.0f, 3.0f, 0));
-	objects[bed2]->texture_number = 0;
-
-	int tempWall = addFurniture(WALL, vec3(0.0f, 0.0f, 0.0f));
-	objects[tempWall]->scale(objects, vec3(1, 0.5, 1));
-	objects[tempWall]->translate(objects, vec3(0.5, 1, 5));
-	objects[tempWall]->texture_number = 0;
-
-	int torch = addFurniture(TORCHERE1_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[torch]->texture_number = 3;
 
 	setVBOs();
 
