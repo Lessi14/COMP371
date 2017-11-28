@@ -18,6 +18,7 @@
 #include "camera.h"
 #include "Object.h"
 #include "UtilClass.h"
+#include "LightSource.h"
 
 using namespace std;
 
@@ -28,15 +29,16 @@ glm::vec3 camera_position;
 glm::vec3 triangle_scale;
 
 glm::vec3 camera_pos = vec3(0, 0, 0);
-glm::vec3 light_color = vec3(0, 0, 0);
-float specular_strength = 0.0f;
-glm::vec3 light_position = vec3(0, 0, 0);
-float ambient_strength = 0.0f;
+//glm::vec3 light_color = vec3(0, 0, 0);
+//float specular_strength = 0.0f;
+//glm::vec3 light_position = vec3(0, 0, 0);
+//float ambient_strength = 0.0f;
 
 glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
+vector<LightSource> lights;
 
 glm::mat4 menuViewMatrix;
 
@@ -201,11 +203,12 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 }
 
 ///Extractedd the method which creates the vbos.
-void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id)
+void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, GLuint colorVBO, int id)
 {
 	glGenBuffers(1, &verticesVBO);
 	glGenBuffers(1, &normalsVBO);
 	glGenBuffers(1, &uvsVBO);
+	glGenBuffers(1, &colorVBO);
 
 	glBindVertexArray(localVAO);
 
@@ -224,6 +227,11 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 
+	glBindBuffer(GL_ARRAY_BUFFER, colorVBO);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->colorVector.size() * sizeof(glm::vec3), &objects[id]->colorVector.front(), GL_STATIC_DRAW);
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glEnableVertexAttribArray(3);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -239,9 +247,26 @@ int addFurniture(const char * type, vec3 position)
 	glGenBuffers(1, &objects[tempObject->id]->vertices_VBO);
 	glGenBuffers(1, &objects[tempObject->id]->normals_VBO);
 	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
+	glGenBuffers(1, &objects[tempObject->id]->colorVBO);
 
+	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, objects[tempObject->id]->colorVBO, tempObject->id);
+	glBindVertexArray(0);
 
-	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id);
+	objects[tempObject->id]->translate(objects, position);
+
+	return tempObject->id;
+}
+
+void updateColorVBO(int id)
+{
+	///----------------
+	glGenVertexArrays(1, &objects[tempObject->id]->VAO);
+
+	glGenBuffers(1, &objects[tempObject->id]->vertices_VBO);
+	glGenBuffers(1, &objects[tempObject->id]->normals_VBO);
+	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
+
+	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, objects[tempObject->id]->colorVBO, tempObject->id);
 	glBindVertexArray(0);
 
 	objects[tempObject->id]->translate(objects, position);
@@ -969,10 +994,12 @@ int main()
 	triangle_scale = glm::vec3(1.0f);
 
 	camera_pos = camera.Position;
-	light_color = vec3(1.0f, 1.0f, 1.0f);
+	LightSource l1 = LightSource(vec3(1.0f, 1.0f, 1.0f), 1.9f, vec3(0.0f, 3.0f, 0.0f), 0.15f);
+	lights.push_back(l1);
+	/*light_color = ;
 	specular_strength = 1.9f;
-	light_position = vec3(0.0f, 5.0f, 0.0f);
-	ambient_strength = 0.15f;
+	light_position = vec3(0.0f, 3.0f, 0.0f);
+	ambient_strength = 0.15f;*/
 
 	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
@@ -996,12 +1023,8 @@ int main()
 		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
 		processInput(window);
 		glfwPollEvents();
-
+		
 		camera_pos = camera.Position;
-		light_color = vec3(1.0f, 1.0f, 1.0f);
-		specular_strength = 0.5f;
-		light_position = vec3(0.0f, 3.0f, 0.0f);
-		ambient_strength = 0.15f;
 
 		// Render
 		// Clear the colorbuffer

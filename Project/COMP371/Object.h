@@ -5,6 +5,7 @@
 #include "Triangle.h"
 #include "objloader.hpp"
 #include <glew.h>
+#include "LightSource.h"
 
 using namespace std;
 using namespace glm;
@@ -69,7 +70,7 @@ public:
 	void calculateBounderyBox();
 	static int counter;
 
-	GLuint VAO, vertices_VBO, normals_VBO, uvs_VBO, texture_number;
+	GLuint VAO, vertices_VBO, normals_VBO, uvs_VBO,color,colorVBO, texture_number;
 
 	int id;
 	static vector<int> ids;
@@ -81,8 +82,10 @@ public:
 
 	vector<float> getListOfMaxAndMin();
 
+	void setVertexIllumination(vector<LightSource> &lights, map<int, Object*> &objects, vec3 camPosition);
+
 	//Basic Architecture
-	vector<vec3> vertices, normals;
+	vector<vec3> vertices, normals, colorVector;
 	vector<vec3> defaultVertices, defaultNormals;
 	vector<vec2> uvs;
 	const char* type;

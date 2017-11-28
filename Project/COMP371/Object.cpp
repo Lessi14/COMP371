@@ -7,6 +7,7 @@ Object::Object(int id, const char * type)
 	this->id = ++counter;
 	this->type = type;
 	texture_number = 1;
+	ambientColor = vec3(0.4f, 0.4f, 0.4f);
 }
 
 Object::Object(int id,
@@ -31,6 +32,7 @@ Object::Object(int id,
 	this->id = ++counter;
 	texture_number = 1;
 	objects[id] = this;
+	ambientColor = vec3(0.4f, 0.4f, 0.4f);
 }
 
 Object::Object(int id,
@@ -55,6 +57,7 @@ Object::Object(int id,
 	this->id = ++counter;
 	texture_number = 1;
 	objects[id] = this;
+	ambientColor = vec3(0.4f, 0.4f, 0.4f);
 }
 
 //Buttons
@@ -70,7 +73,7 @@ Object::Object(int id,
 	this->vertices = vertices;
 	this->defaultVertices = vertices;
 	this->uvs = uvs;
-	
+
 	setIntersectionTriangle();
 	calculateBounderyBox();
 	texture_number = 1;
@@ -87,7 +90,7 @@ void Object::translate(map<int, Object*>& objects, vec3 changes)
 	UpdateVertices();
 	setIntersectionTriangle();
 	objects[id] = this;
-	cout << "translated to "<< endl;
+	cout << "translated to " << endl;
 	cout << this->centerCoordinates.x << endl;
 	cout << this->centerCoordinates.y << endl;
 	cout << this->centerCoordinates.z << endl;
@@ -102,7 +105,7 @@ void Object::rotate(map<int, Object*>& objects, float angle, glm::vec3 rotationA
 	//this->translate(objects, -this->centerCoordinates);
 	this->objectModel = mat4(1.0f);
 	this->objectModel *= glm::translate(mat4(1.0f), this->centerCoordinates);
-	this->objectModel *= glm::rotate(mat4(1.0f), glm::radians(this->angle), rotationAxe);	
+	this->objectModel *= glm::rotate(mat4(1.0f), glm::radians(this->angle), rotationAxe);
 	cout << "done" << endl;
 	UpdateVertices();
 	setIntersectionTriangle();
@@ -112,7 +115,7 @@ void Object::rotate(map<int, Object*>& objects, float angle, glm::vec3 rotationA
 
 void Object::scale(map<int, Object*>& objects, vec3 changes)
 {
-	this->objectModel *= glm::scale(this->objectModel, changes);	
+	this->objectModel *= glm::scale(this->objectModel, changes);
 	UpdateVertices();
 	setIntersectionTriangle();
 	objects[id] = this;
@@ -211,14 +214,14 @@ bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri, floa
 
 ///Check intersection for buttons
 bool Object::intersectButtons(vec3 rayPosition, vec3 rayDir)
-{	
-	float collisionDistance = 1000;	
+{
+	float collisionDistance = 1000;
 
-		//check for intersection with each tringles.
+	//check for intersection with each tringles.
 	for (Triangle localTriangle : triangles)
 	{
 		if (ray_intersect_triangle(rayPosition, rayDir, localTriangle, collisionDistance))
-		{			
+		{
 			return true;
 		}
 	}
@@ -246,7 +249,7 @@ bool Object::intersect(vec3 rayPosition, vec3 rayDir, float &distanceT)
 	//check for intersection with each tringles of the boundary box
 	for (Triangle localTriangleBound : triangles)
 	{
-		if (ray_intersect_triangle(rayPosition, rayDir, localTriangleBound,collisionDistance))
+		if (ray_intersect_triangle(rayPosition, rayDir, localTriangleBound, collisionDistance))
 		{
 			hitBoundaryBox = true;
 			break;
@@ -271,7 +274,7 @@ bool Object::intersect(vec3 rayPosition, vec3 rayDir, float &distanceT)
 		//check for intersection with each tringles.
 		for (Triangle localTriangle : triangles)
 		{
-			if (ray_intersect_triangle(rayPosition, rayDir, localTriangle,collisionDistance))
+			if (ray_intersect_triangle(rayPosition, rayDir, localTriangle, collisionDistance))
 			{
 				distanceT = collisionDistance;
 				return true;
@@ -445,6 +448,53 @@ vector<float> Object::getListOfMaxAndMin()
 	return listOfMaxAndMin;
 }
 
+void Object::setVertexIllumination(vector<LightSource>& lights, map<int, Object*>& objects, vec3 camPosition)
+{
+	this->colorVector.clear();
+	
+	int normCounter = 0;
+	//Foreach fragment position
+	for (vec3 fragPosition : vertices)
+	{
+		vec3 resultantColour = this->ambientColor;		
+		//Foreach light source in the scene
+		for (LightSource localLight : lights)
+		{
+			bool inShadow = false;
+
+			vec3 localLightColour = localLight.light_color;
+			vec3 cubeColour = resultantColour;
+			float localSpecularStrength = localLight.specular_strength;
+
+			vec3 light_position = localLight.light_position;
+
+			float localAmbientStrength = localLight.ambient_strength;
+			vec3 ambient_contribution = localAmbientStrength * localLightColour;
+						
+			//vec3 norm = normalize(norm);
+			vec3 norm = normalize(normals.at(normCounter));
+			vec3 light_direction = normalize(light_position - fragPosition);
+			float incident_degree = max(dot(norm, light_direction), 0.0f);
+			vec3 diffuse_contribution = incident_degree * localLightColour;
+
+			vec3 viewDir = normalize(camPosition - fragPosition);
+			vec3 reflectDir = reflect(-light_direction, norm);
+
+			float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 128);
+			vec3 specular = localSpecularStrength * spec * localLightColour;
+
+			if (!inShadow)
+			{
+				resultantColour += (ambient_contribution + diffuse_contribution + specular) * cubeColour;
+			}
+		}
+
+		colorVector.push_back(resultantColour);
+		normCounter++;
+	}
+
+}
+
 vector<float> Object::getPostMaxMinBeforeTranslation(vec3 potentialNewPosition)
 {
 	vector<float> tempList;
@@ -460,7 +510,7 @@ vector<float> Object::getPostMaxMinBeforeTranslation(vec3 potentialNewPosition)
 	tempMinZ += potentialNewPosition.z;
 	tempMaxZ += potentialNewPosition.z;
 
-	tempList = {tempMinX, tempMaxX, tempMinY, tempMaxY, tempMinZ, tempMaxZ};
+	tempList = { tempMinX, tempMaxX, tempMinY, tempMaxY, tempMinZ, tempMaxZ };
 
 	return tempList;
 }
