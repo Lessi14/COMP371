@@ -108,6 +108,8 @@ GLuint VAO_Coffee, vertices_VBO_Coffee, normals_VBO_Coffee, uvs_VBO_Coffee;
 vector<int> randomXs;
 vector<int> randomYs;
 
+vector<int> paintingsList;
+
 std::vector<glm::vec3> axesVertices;
 std::vector<glm::vec3> axesColors;
 
@@ -176,12 +178,60 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	{
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(modifier, 0.0f, 0.0f), 0, 1); //0 and 1 stands for minX and maxX
+			
+			float orientation = objects[selectedObject]->angle;
 
-			if (!checkIfItCollides && selectedObject >2 )
-			{
-				objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
+			if (paintingsList.size() > 0) {
+				for (int i = 0; i < paintingsList.size(); i++)
+				{
+					if (!checkIfItCollides && selectedObject > 2)
+					{
+						if (paintingsList.at(i) == selectedObject && (orientation == 90))
+						{
+							objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
+
+							if (paintingsList.at(i) == selectedObject && (roomDimensions.x*-1 + 0.5f) >= objects[selectedObject]->getListOfMaxAndMin().at(0) ) {
+								
+								objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));
+								objects[selectedObject]->translate(objects, vec3(-0.9, 0.0f, -1.55f));
+							}
+							if (paintingsList.at(i) == selectedObject && (roomDimensions.x - 0.5f) <= objects[selectedObject]->getListOfMaxAndMin().at(1)) {
+
+									objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
+									objects[selectedObject]->translate(objects, vec3(0.9, 0.0f, -1.55f));
+							}
+
+						}
+
+						else if (paintingsList.at(i) == selectedObject && (orientation == 270))
+						{
+							objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
+
+							if (paintingsList.at(i) == selectedObject && (roomDimensions.x*-1 + 0.5f) >= objects[selectedObject]->getListOfMaxAndMin().at(0)) {
+
+								objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
+								objects[selectedObject]->translate(objects, vec3(-0.9, 0.0f, 1.55f));
+							}
+							if (paintingsList.at(i) == selectedObject && (roomDimensions.x - 0.5f) <= objects[selectedObject]->getListOfMaxAndMin().at(1)) {
+
+								objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));
+								objects[selectedObject]->translate(objects, vec3(0.9, 0.0f, 1.55f));
+							}
+						}
+						else if (paintingsList.at(i) != selectedObject)
+						{
+							objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
+						}
+					}
+				}
 			}
-
+			else {
+				if (!checkIfItCollides && selectedObject > 2)
+				{
+					objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
+				}
+			}
+			
 		}
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, modifier, 0.0f), 2, 3); //2 and 3 stands for minY and maxY
@@ -193,9 +243,59 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, 0.0f, modifier), 4, 5); //4 and 5 stands for minZ and maxZ
 
-			if (!checkIfItCollides && selectedObject >2) {
-				objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
+			float orientation = objects[selectedObject]->angle;
+
+			
+			if (paintingsList.size() > 0) {
+				for (int i = 0; i < paintingsList.size(); i++) {
+
+					if (!checkIfItCollides && selectedObject > 2)
+					{
+						if (paintingsList.at(i) == selectedObject && (orientation == 0)) {
+							objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
+
+							if (paintingsList.at(i) == selectedObject && roomDimensions.y - 0.5f <= objects[selectedObject]->getListOfMaxAndMin().at(5)) {
+								
+									objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));
+									objects[selectedObject]->translate(objects, vec3(-1.55, 0.0f, 0.9));
+							}
+							if (paintingsList.at(i) == selectedObject && (roomDimensions.y*-1 + 0.5f) > objects[selectedObject]->getListOfMaxAndMin().at(4)) {
+
+									objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
+									objects[selectedObject]->translate(objects, vec3(-1.55, 0.0f, -0.9f));
+							}
+
+						}
+						else if (paintingsList.at(i) == selectedObject && (orientation == 180)) {
+							objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
+
+							if (paintingsList.at(i) == selectedObject && roomDimensions.y - 0.5f <= objects[selectedObject]->getListOfMaxAndMin().at(5)) {
+
+									objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
+									objects[selectedObject]->translate(objects, vec3(1.55, 0.0f, 0.9f));
+							}
+							if (paintingsList.at(i) == selectedObject && (roomDimensions.y*-1 + 0.5f) > objects[selectedObject]->getListOfMaxAndMin().at(4)) {
+									
+								objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));						
+								objects[selectedObject]->translate(objects, vec3(1.55, 0.0f, -0.9f));
+							}
+
+						}
+						else if (paintingsList.at(i) != selectedObject) {
+							objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
+						}
+					}
 			}
+			
+
+			}
+			else {
+				if (!checkIfItCollides && selectedObject > 2)
+				{
+						objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
+				}
+			}
+		
 		}
 	}
 	lastClickX = xpos;
@@ -476,23 +576,10 @@ void handle_button_click(int buttonId)
 			break;
 		//Painting
 		case 5:
-			/*
-			furniture = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, default_furniture_location.y, default_furniture_location.z));
-			randomLocation = randomLocationGenerator(furniture);
-
-			if (randomLocation != vec3(-1000, -1000, 1000)) {
-				objects[furniture]->texture_number = 1;
-				objects[furniture]->translate(objects, randomLocation);
-			}
-			else {
-				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
-				objects.erase(furniture);
-			}
-			close_menu();
-			break;*/
 			furniture = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, default_furniture_location.y, default_furniture_location.z));
 			objects[furniture]->texture_number = 1;
 			close_menu();
+			paintingsList.push_back(furniture);
 			break;
 		}
 		break;
