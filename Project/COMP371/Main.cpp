@@ -37,6 +37,8 @@ glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
+glm::vec3 default_furniture_location(0.0f, 0.001f, 0.0f);
+
 std::vector<glm::vec3> menuVertices[3];
 std::vector<glm::vec2> menuUVs[3];
 
@@ -328,37 +330,37 @@ void handle_button_click(int buttonId)
 		int furniture;
 		//Bed
 		case 0:
-			furniture = addFurniture(BED1_NAME, vec3(0.0f, 0.0f, 0.0f));
+			furniture = addFurniture(BED1_NAME, default_furniture_location);
 			objects[furniture]->texture_number = 1;
 			close_menu();
 			break;
 		//Cabinet
 		case 1:
-			furniture = addFurniture(CABINET3_NAME, vec3(0.0f, 0.0f, 0.0f));
+			furniture = addFurniture(CABINET3_NAME, default_furniture_location);
 			objects[furniture]->texture_number = 2;
 			close_menu();
 			break;
 		//Coffee Table
 		case 2:
-			furniture = addFurniture(COFFEE_TABLE1_NAME, vec3(0.0f, 0.0f, 0.0f));
+			furniture = addFurniture(COFFEE_TABLE1_NAME, default_furniture_location);
 			objects[furniture]->texture_number = 2;
 			close_menu();
 			break;
 		//Toilet
 		case 3:
-			furniture = addFurniture(TOILET_NAME, vec3(0.0f, 0.0f, 0.0f));
+			furniture = addFurniture(TOILET_NAME, default_furniture_location);
 			objects[furniture]->texture_number = 1;
 			close_menu();
 			break;
 		//Lamp
 		case 4:
-			furniture = addFurniture(TORCHERE1_NAME, vec3(0.0f, 0.0f, 0.0f));
+			furniture = addFurniture(TORCHERE1_NAME, default_furniture_location);
 			objects[furniture]->texture_number = 1;
 			close_menu();
 			break;
 		//Painting
 		case 5:
-			furniture = addFurniture(PAINTING_NAME, vec3(0.0f, 0.0f, 0.0f));
+			furniture = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, default_furniture_location.y, default_furniture_location.z));
 			objects[furniture]->texture_number = 1;
 			close_menu();
 			break;
