@@ -32,7 +32,7 @@ uniform sampler2D texture_menu_wallpaper;
 void main()
 {	
 	vec3 localLightColour = lightColour;
-	vec3 cubeColour = col;	
+	vec3 ambientColor = col;	
 	float localSpecularStrength = specularStrength;
 	
 	vec3 light_position = lightPosition;												  
@@ -51,7 +51,7 @@ void main()
 	float spec = pow(max(dot(viewDir, reflectDir), 0.0), 128);
 	vec3 specular = localSpecularStrength * spec * localLightColour;
 
-	vec3 resultantColour = (ambient_contribution + diffuse_contribution + specular) * cubeColour;
+	vec3 resultantColour = (ambient_contribution + diffuse_contribution + specular) * ambientColor;
 
 	switch (texture_number) {
 		//DIFFUSE TEXTURES

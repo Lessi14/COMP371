@@ -82,8 +82,6 @@ public:
 
 	vector<float> getListOfMaxAndMin();
 
-	void setVertexIllumination(vector<LightSource> &lights, map<int, Object*> &objects, vec3 camPosition);
-
 	//Basic Architecture
 	vector<vec3> vertices, normals, colorVector;
 	vector<vec3> defaultVertices, defaultNormals;

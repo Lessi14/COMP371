@@ -308,8 +308,7 @@ int addFurniture(const char * type, vec3 position)
 	glGenBuffers(1, &objects[tempObject->id]->vertices_VBO);
 	glGenBuffers(1, &objects[tempObject->id]->normals_VBO);
 	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
-
-	objects[tempObject->id]->translate(objects, position);
+	
 
 	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id);
 	glBindVertexArray(0);
@@ -1033,10 +1032,10 @@ void render(int id, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
 	glUniform1i(texture_number, tex_num);
 
-	glUniform3fv(light_colour_loc, 1, glm::value_ptr(light_color));
-	glUniform1f(specular_strength_loc, specular_strength);
-	glUniform3fv(light_position_loc, 1, glm::value_ptr(light_position));
-	glUniform1f(ambient_strength_loc, ambient_strength);
+	glUniform3fv(light_colour_loc, 1, glm::value_ptr(lights[0].light_color));
+	glUniform1f(specular_strength_loc, lights[0].specular_strength);
+	glUniform3fv(light_position_loc, 1, glm::value_ptr(lights[0].light_position));
+	glUniform1f(ambient_strength_loc, lights[0].ambient_strength);
 
 	glBindVertexArray(VAO);
 	glDrawArrays(objRenderMode, 0, objects[id]->vertices.size());
@@ -1050,10 +1049,10 @@ void render(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 	glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 	glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-	glUniform3fv(light_colour_loc, 1, glm::value_ptr(light_color));
-	glUniform1f(specular_strength_loc, specular_strength);
-	glUniform3fv(light_position_loc, 1, glm::value_ptr(light_position));
-	glUniform1f(ambient_strength_loc, ambient_strength);
+	glUniform3fv(light_colour_loc, 1, glm::value_ptr(lights[0].light_color));
+	glUniform1f(specular_strength_loc, lights[0].specular_strength);
+	glUniform3fv(light_position_loc, 1, glm::value_ptr(lights[0].light_position));
+	glUniform1f(ambient_strength_loc, lights[0].ambient_strength);
 
 	glBindVertexArray(VAO);
 	glDrawArrays(GL_LINES, 0, vertices.size());
@@ -1089,6 +1088,10 @@ int main()
 
 	setShaders();
 	setTexture(); 
+
+	camera_pos = camera.Position;
+	LightSource l1 = LightSource(vec3(1.0f, 1.0f, 1.0f), 1.9f, vec3(0.0f, 3.0f, 0.0f), 0.35f);
+	lights.push_back(l1);
 	
 	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
@@ -1104,16 +1107,7 @@ int main()
 	objects[tempCeiling]->texture_number = 4;	
 
 	setVBOs();
-
-	triangle_scale = glm::vec3(1.0f);
-
-	camera_pos = camera.Position;
-	LightSource l1 = LightSource(vec3(1.0f, 1.0f, 1.0f), 1.9f, vec3(0.0f, 3.0f, 0.0f), 0.15f);
-	lights.push_back(l1);
-	/*light_color = ;
-	specular_strength = 1.9f;
-	light_position = vec3(0.0f, 3.0f, 0.0f);
-	ambient_strength = 0.15f;*/
+	triangle_scale = glm::vec3(1.0f);	
 
 	projectionLoc = glGetUniformLocation(shaderProgram, "projection_matrix");
 	viewMatrixLoc = glGetUniformLocation(shaderProgram, "view_matrix");
@@ -1146,7 +1140,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		view_matrix = camera.GetViewMatrix();
 		model_matrix = glm::scale(model_matrix, triangle_scale);
-
+		
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture0);
 		glActiveTexture(GL_TEXTURE1);
@@ -1189,13 +1183,10 @@ int main()
 			render(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
 		}
 		else
-		{
-			//glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+		{			
 			glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
 			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
-			glm::mat4 menu_model_matrix = mat4(1.0f);
-			//menu_model_matrix = glm::translate(menu_model_matrix, cameraPositionWorldSpace);
-			//menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+			glm::mat4 menu_model_matrix = mat4(1.0f);		
 			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(menu_model_matrix));
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(menuViewMatrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));

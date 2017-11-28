@@ -142,6 +142,7 @@
     <ClCompile Include="UtilClass.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram.cd" />
     <None Include="fragment.shader" />
     <None Include="glew32.dll" />
     <None Include="glfw3.dll" />

@@ -448,53 +448,6 @@ vector<float> Object::getListOfMaxAndMin()
 	return listOfMaxAndMin;
 }
 
-void Object::setVertexIllumination(vector<LightSource>& lights, map<int, Object*>& objects, vec3 camPosition)
-{
-	this->colorVector.clear();
-	
-	int normCounter = 0;
-	//Foreach fragment position
-	for (vec3 fragPosition : vertices)
-	{
-		vec3 resultantColour = this->ambientColor;		
-		//Foreach light source in the scene
-		for (LightSource localLight : lights)
-		{
-			bool inShadow = false;
-
-			vec3 localLightColour = localLight.light_color;
-			vec3 cubeColour = resultantColour;
-			float localSpecularStrength = localLight.specular_strength;
-
-			vec3 light_position = localLight.light_position;
-
-			float localAmbientStrength = localLight.ambient_strength;
-			vec3 ambient_contribution = localAmbientStrength * localLightColour;
-						
-			//vec3 norm = normalize(norm);
-			vec3 norm = normalize(normals.at(normCounter));
-			vec3 light_direction = normalize(light_position - fragPosition);
-			float incident_degree = max(dot(norm, light_direction), 0.0f);
-			vec3 diffuse_contribution = incident_degree * localLightColour;
-
-			vec3 viewDir = normalize(camPosition - fragPosition);
-			vec3 reflectDir = reflect(-light_direction, norm);
-
-			float spec = pow(max(dot(viewDir, reflectDir), 0.0f), 128);
-			vec3 specular = localSpecularStrength * spec * localLightColour;
-
-			if (!inShadow)
-			{
-				resultantColour += (ambient_contribution + diffuse_contribution + specular) * cubeColour;
-			}
-		}
-
-		colorVector.push_back(resultantColour);
-		normCounter++;
-	}
-
-}
-
 vector<float> Object::getPostMaxMinBeforeTranslation(vec3 potentialNewPosition)
 {
 	vector<float> tempList;
