@@ -34,7 +34,7 @@ public:
 		const char * type,
 		std::vector<glm::vec3> vertices,
 		std::vector<glm::vec2> uvs,
-		std::map<int, Object*> objects
+		std::map<int, Object*> &objects
 	);
 
 	void loadObjNoUVsToMap(map<int, Object*> obj);
@@ -59,6 +59,8 @@ public:
 	///fills the vectors with the triangle object which can be used for intersection and normals.
 	void setIntersectionTriangle();
 
+	bool intersectButtons(vec3 rayPosition, vec3 rayDir);
+
 	bool intersect(vec3 position, vec3 ray, float &distanceT);
 
 	~Object();
@@ -66,10 +68,6 @@ public:
 	///Calculate the cube around the object
 	void calculateBounderyBox();
 	static int counter;
-	static bool checkIdAvailability(int id);
-
-
-
 
 	GLuint VAO, vertices_VBO, normals_VBO, uvs_VBO, texture_number;
 
@@ -91,6 +89,7 @@ public:
 
 	//World position
 	vec3 worldCoordinates, centerCoordinates;
+	float angle;
 
 	//Attributes for the  lighting or color
 	glm::vec3 ambientColor, speculardColor, diffusecolor;

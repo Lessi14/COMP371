@@ -38,6 +38,8 @@ glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
 glm::mat4 model_matrix;
 
+
+glm::mat4 menuViewMatrix;
 glm::vec3 default_furniture_location(0.0f, 0.01f, 0.0f);
 
 std::vector<glm::vec3> menuVertices[3];
@@ -170,12 +172,12 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	float dempener = 0.05;
 	float modifier = diffY * dempener;
 	//cout << modifier << endl;	
-	if (abs(modifier) < 0.15)
+	if (abs(modifier) < 0.20)
 	{
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(modifier, 0.0f, 0.0f), 0, 1); //0 and 1 stands for minX and maxX
 
-			if (!checkIfItCollides)
+			if (!checkIfItCollides && selectedObject >2 )
 			{
 				objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
 			}
@@ -184,14 +186,14 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, modifier, 0.0f), 2, 3); //2 and 3 stands for minY and maxY
 
-			if (!checkIfItCollides) {
+			if (!checkIfItCollides && selectedObject >2) {
 				objects[selectedObject]->translate(objects, vec3(0.0f, modifier, 0.0f));
 			}
 		}
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
 			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(0.0f, 0.0f, modifier), 4, 5); //4 and 5 stands for minZ and maxZ
 
-			if (!checkIfItCollides) {
+			if (!checkIfItCollides && selectedObject >2) {
 				objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
 			}
 		}
@@ -328,7 +330,6 @@ void set_object_texture(int texture)
 
 void handle_button_click(int buttonId)
 {
-	//vec3 tempPosition = vec3(0, 0, 0);
 	vec3 randomLocation;
 	switch (menu_mode)
 	{
@@ -508,13 +509,13 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 			int selectedButtonID = -1;
 			lastClickX = last_cursor_x;
 			lastClickY = last_cursor_y;
-			glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+			//menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
 			vec3 castedRay = UtilClass::getCameraRay(last_cursor_x, last_cursor_y, HEIGHT, WIDTH, projection_matrix, menuViewMatrix);
 			float distanceT = 0;
 			float currentClosest = 1000;
 			for (auto const &ent : buttonObjects[menu_mode])
 			{
-				if (ent.second->intersect(glm::vec3(0, 0, 0), castedRay, distanceT) && distanceT < currentClosest)
+				if (ent.second->intersect(glm::vec3(0, 0, -8), castedRay, distanceT) && distanceT < currentClosest)
 				{
 					//Ray Interacted with button vertices
 					currentClosest = distanceT;
@@ -644,31 +645,31 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		case GLFW_KEY_ENTER:
 			menu_open = !menu_open;
 			menu_mode = 0;
-			if (menu_open)
-			{
-				glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
-				glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
-				glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
-				//cameraPositionWorldSpace += glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8);
-				for (int i = 0; i < 3; i++)
-				{
-					buttonObjects[0][i]->resetObjectModel(buttonObjects[0]);
-					buttonObjects[0][i]->translate(buttonObjects[0], cameraPositionWorldSpace);
-					buttonObjects[0][i]->translate(buttonObjects[0], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
-				}
-				for (int i = 0; i < 8; i++)
-				{
-					buttonObjects[1][i]->resetObjectModel(buttonObjects[1]);
-					buttonObjects[1][i]->translate(buttonObjects[1], cameraPositionWorldSpace);
-					buttonObjects[1][i]->translate(buttonObjects[1], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
-				}
-				for (int i = 0; i < 6; i++)
-				{
-					buttonObjects[2][i]->resetObjectModel(buttonObjects[2]);
-					buttonObjects[2][i]->translate(buttonObjects[2], cameraPositionWorldSpace);
-					buttonObjects[2][i]->translate(buttonObjects[2], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
-				}
-			}
+			//if (menu_open)
+			//{
+				//glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+				//glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
+				//glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
+				////cameraPositionWorldSpace += glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8);
+				//for (int i = 0; i < 3; i++)
+				//{
+				//	buttonObjects[0][i]->resetObjectModel(buttonObjects[0]);
+				//	buttonObjects[0][i]->translate(buttonObjects[0], cameraPositionWorldSpace);
+				//	buttonObjects[0][i]->translate(buttonObjects[0], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+				//}
+				//for (int i = 0; i < 8; i++)
+				//{
+				//	buttonObjects[1][i]->resetObjectModel(buttonObjects[1]);
+				//	buttonObjects[1][i]->translate(buttonObjects[1], cameraPositionWorldSpace);
+				//	buttonObjects[1][i]->translate(buttonObjects[1], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+				//}
+				//for (int i = 0; i < 6; i++)
+				//{
+				//	buttonObjects[2][i]->resetObjectModel(buttonObjects[2]);
+				//	buttonObjects[2][i]->translate(buttonObjects[2], cameraPositionWorldSpace);
+				//	buttonObjects[2][i]->translate(buttonObjects[2], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+				//}
+			//}
 		default:
 			break;
 		}
@@ -824,6 +825,10 @@ void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vec
 	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
 	for (int i = 0; i<tempVertices.size(); i++)
 		(*vertices).push_back(tempVertices[i]);
+
+	tempVertices.push_back(glm::vec3(rightX, bottomY, 0.01f));
+	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
+	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
 	
 	vector<glm::vec2> tempUVs;
 	tempUVs.push_back(glm::vec2(1.0f, 1.0f));
@@ -1061,6 +1066,7 @@ int main()
 	glViewport(0, 0, width, height);
 
 	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.00f, 100.0f);
+	menuViewMatrix = lookAt(glm::vec3(0, 0, -8), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
 
 	// Set depth buffer
 	glEnable(GL_DEPTH_TEST);
@@ -1070,8 +1076,7 @@ int main()
 	glCullFace(GL_BACK);
 
 	setShaders();
-	setTexture();
- 
+	setTexture(); 
 	
 	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
@@ -1084,7 +1089,7 @@ int main()
 	
 	int tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
-	objects[tempCeiling]->texture_number = 4;
+	objects[tempCeiling]->texture_number = 4;	
 
 	setVBOs();
 
@@ -1175,17 +1180,16 @@ int main()
 		}
 		else
 		{
-			glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
+			//glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
 			glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
 			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
 			glm::mat4 menu_model_matrix = mat4(1.0f);
-			menu_model_matrix = glm::translate(menu_model_matrix, cameraPositionWorldSpace);
-			menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
+			//menu_model_matrix = glm::translate(menu_model_matrix, cameraPositionWorldSpace);
+			//menu_model_matrix = glm::translate(menu_model_matrix, glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
 			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(menu_model_matrix));
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(menuViewMatrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-
 
 			switch (menu_mode)
 			{
