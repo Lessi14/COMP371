@@ -18,6 +18,7 @@
 #include "camera.h"
 #include "Object.h"
 #include "UtilClass.h"
+#include <time.h>
 
 using namespace std;
 
@@ -39,8 +40,7 @@ glm::mat4 model_matrix;
 
 
 glm::mat4 menuViewMatrix;
-
-glm::vec3 default_furniture_location(0.0f, 0.02f, 0.0f);
+glm::vec3 default_furniture_location(0.0f, 0.01f, 0.0f);
 
 std::vector<glm::vec3> menuVertices[3];
 std::vector<glm::vec2> menuUVs[3];
@@ -105,6 +105,8 @@ GLuint axes_VAO;
 
 GLuint VAO_Coffee, vertices_VBO_Coffee, normals_VBO_Coffee, uvs_VBO_Coffee;
 
+vector<int> randomXs;
+vector<int> randomYs;
 
 std::vector<glm::vec3> axesVertices;
 std::vector<glm::vec3> axesColors;
@@ -135,7 +137,7 @@ c
 void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
-		//cout << "x: " << xpos << endl;c
+		//cout << "x: " << xpos << endl;
 		//cout << "y: " << ypos << endl;
 		if (last_cursor_x != NULL && last_cursor_y != NULL)
 		{
@@ -210,21 +212,86 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glBindVertexArray(localVAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->vertices.size() * sizeof(glm::vec3), &objects[id]->vertices.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->vertices.size() * sizeof(glm::vec3), &objects[id]->vertices.front(), GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->normals.size() * sizeof(glm::vec3), &objects[id]->normals.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->normals.size() * sizeof(glm::vec3), &objects[id]->normals.front(), GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->uvs.size() * sizeof(glm::vec3), &objects[id]->uvs.front(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, objects[id]->uvs.size() * sizeof(glm::vec3), &objects[id]->uvs.front(), GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
 	glEnableVertexAttribArray(2);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+
+bool isUnique(int n, vector<int> list) {
+
+	for (int i = 0; i < list.size(); i++) {
+		if (n == list.at(i)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+vec3 randomLocationGenerator(int objectId) {
+	glm::vec3 randomLocation = vec3(-1000, -1000, 1000);
+	
+	int randomX = 0, randomY = 0;
+
+	int startingPointX = ((roomDimensions.x/2) - 0.1)*10;
+	int startingPointY = ((roomDimensions.y/2) - 0.1)*10;
+	int endingPositionX = (roomDimensions.x + 0.1) * 10;
+	int endingPositionY = (roomDimensions.y + 0.1) * 10;
+
+	int overAllCounter = 0;
+
+	srand(time(0));
+	
+
+	while (overAllCounter != 5000)
+	{
+
+		randomX = rand() % endingPositionX - startingPointX;
+
+		while (!isUnique(randomX, randomXs))
+		{
+			randomX = rand() % endingPositionX - startingPointX;
+		}
+
+
+		randomY = rand() % endingPositionY - startingPointY;
+
+		while (!isUnique(randomY, randomYs))
+		{
+			randomY = rand() % endingPositionY - startingPointY;
+		}
+
+
+		randomLocation = vec3(randomX*0.1, 0.01f, randomY*0.1);
+
+		bool checkIfItCollidesX = objects[objectId]->isNextACollision(objects, randomLocation, 0, 1); //0 and 1 stands for minX and maxX
+		bool checkIfItCollidesY = objects[objectId]->isNextACollision(objects, randomLocation, 2, 3); //2 and 3 stands for minY and maxY
+		bool checkIfItCollidesZ = objects[objectId]->isNextACollision(objects, randomLocation, 4, 5); //4 and 5 stands for minZ and 
+
+		if (!checkIfItCollidesX && !checkIfItCollidesY && !checkIfItCollidesZ)
+		{
+			randomXs.push_back(randomX);
+			randomYs.push_back(randomY);
+			break;
+		}
+
+		randomLocation = vec3(-1000, -1000, 1000);
+		overAllCounter++;
+	}
+
+	return randomLocation;
 }
 
 int addFurniture(const char * type, vec3 position)
@@ -263,6 +330,7 @@ void set_object_texture(int texture)
 
 void handle_button_click(int buttonId)
 {
+	vec3 randomLocation;
 	switch (menu_mode)
 	{
 	case 0:
@@ -333,36 +401,95 @@ void handle_button_click(int buttonId)
 		int furniture;
 		//Bed
 		case 0:
-			furniture = addFurniture(BED1_NAME, default_furniture_location);
-			objects[furniture]->texture_number = 1;
+				furniture = addFurniture(BED1_NAME, default_furniture_location);
+				randomLocation = randomLocationGenerator(furniture);
+				
+				if (randomLocation != vec3(-1000, -1000, 1000)){
+					objects[furniture]->texture_number = 1;
+					objects[furniture]->translate(objects, randomLocation);
+				}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
 			close_menu();
 			break;
 		//Cabinet
 		case 1:
 			furniture = addFurniture(CABINET3_NAME, default_furniture_location);
-			objects[furniture]->texture_number = 2;
+			randomLocation = randomLocationGenerator(furniture);
+
+			if (randomLocation != vec3(-1000, -1000, 1000)) {
+				objects[furniture]->texture_number = 2;
+				objects[furniture]->translate(objects, randomLocation);
+			}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
 			close_menu();
 			break;
 		//Coffee Table
 		case 2:
 			furniture = addFurniture(COFFEE_TABLE1_NAME, default_furniture_location);
-			objects[furniture]->texture_number = 2;
+			randomLocation = randomLocationGenerator(furniture);
+
+			if (randomLocation != vec3(-1000, -1000, 1000)) {
+				objects[furniture]->texture_number = 2;
+				objects[furniture]->translate(objects, randomLocation);
+			}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
 			close_menu();
 			break;
 		//Toilet
 		case 3:
 			furniture = addFurniture(TOILET_NAME, default_furniture_location);
-			objects[furniture]->texture_number = 1;
+			randomLocation = randomLocationGenerator(furniture);
+
+			if (randomLocation != vec3(-1000, -1000, 1000)) {
+				objects[furniture]->texture_number = 1;
+				objects[furniture]->translate(objects, randomLocation);
+			}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
 			close_menu();
 			break;
 		//Lamp
 		case 4:
 			furniture = addFurniture(TORCHERE1_NAME, default_furniture_location);
-			objects[furniture]->texture_number = 1;
+			randomLocation = randomLocationGenerator(furniture);
+
+			if (randomLocation != vec3(-1000, -1000, 1000)) {
+				objects[furniture]->texture_number = 1;
+				objects[furniture]->translate(objects, randomLocation);
+			}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
 			close_menu();
 			break;
 		//Painting
 		case 5:
+			/*
+			furniture = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, default_furniture_location.y, default_furniture_location.z));
+			randomLocation = randomLocationGenerator(furniture);
+
+			if (randomLocation != vec3(-1000, -1000, 1000)) {
+				objects[furniture]->texture_number = 1;
+				objects[furniture]->translate(objects, randomLocation);
+			}
+			else {
+				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
+				objects.erase(furniture);
+			}
+			close_menu();
+			break;*/
 			furniture = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, default_furniture_location.y, default_furniture_location.z));
 			objects[furniture]->texture_number = 1;
 			close_menu();
