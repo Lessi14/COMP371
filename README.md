@@ -27,10 +27,10 @@ Report document [here](https://docs.google.com/document/d/1g92dKkl_skenO66iRo6fS
 
 
 ## Members:
-* Bruce Edouard Brazier - 27419562
-* Emili Vasseva - 27526741
-* Sean Marcoux - 27511876
-* William Leclerc - 27424973
+* Bruce Edouard Brazier
+* Emili Vasseva
+* Sean Marcoux (Inactive)
+* William Leclerc (Inactive)
 
 
 ## External Sources
