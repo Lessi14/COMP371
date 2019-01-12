@@ -1,5 +1,6 @@
 //example skeleton code
 //modified from http://learnopengl.com/
+//Cheat sheet https://docs.google.com/document/d/1HFq4VXfPo2oeueri5UE0L6Wm-cq9jWYnxcyuwUh6XMs/edit?usp=sharing
 
 #include "stdafx.h"
 
@@ -66,6 +67,7 @@ double lastClickY = 0;
 double last_cursor_x = 0;
 double last_cursor_y = 0;
 GLuint currentButton = -1;
+
 //Global variable for the shaders
 GLuint vertexShader;
 GLuint fragmentShader;
@@ -703,7 +705,7 @@ void setRoomSize() {
 	}
 }
 
-///Read the files and create the shaders. Create main  shader program.
+///Read the files and create the shaders. Create main shader program.
 void setShaders()
 {
 	std::cout << "Setting Shaders..." << std::endl;
@@ -796,7 +798,7 @@ int windowSetup()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Interior Furniture Layout Design - Team Catchphrase", nullptr, nullptr);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Interior Furniture Layout Design", nullptr, nullptr);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -810,7 +812,7 @@ int windowSetup()
 	glfwSetFramebufferSizeCallback(window, window_resize_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 
-	// tell GLFW to capture our mouse
+	//tell GLFW to capture our mouse
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); ----------------------------------------------------------------
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
@@ -1093,18 +1095,19 @@ int main()
 	LightSource l1 = LightSource(vec3(1.0f, 1.0f, 1.0f), 1.9f, vec3(0.0f, 3.0f, 0.0f), 0.35f);
 	lights.push_back(l1);
 	
+	//Set up walls, can be refactored
 	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempExtWalls]->texture_number = 3;
 
 	int tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempFloor]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
-	objects[tempFloor]->texture_number = 1;
-	
+	objects[tempFloor]->texture_number = 1;	
 	
 	int tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
-	objects[tempCeiling]->texture_number = 4;	
+	objects[tempCeiling]->texture_number = 4;
+
 
 	setVBOs();
 	triangle_scale = glm::vec3(1.0f);	
@@ -1183,7 +1186,9 @@ int main()
 			render(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
 		}
 		else
-		{			
+		{		
+			//Draws the menu
+			//Could be refacatored
 			glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
 			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
 			glm::mat4 menu_model_matrix = mat4(1.0f);		
