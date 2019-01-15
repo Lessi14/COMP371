@@ -332,6 +332,7 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
+
 //Move to furniture class
 bool isUnique(int n, vector<int> list) {
 		for (int i = 0; i < list.size(); i++) {
@@ -397,7 +398,7 @@ vec3 randomLocationGenerator(int objectId) {
 	return randomLocation;
 }
 
-//move to room manager
+//move room class
 int addFurniture(const char * type, vec3 position)
 {
 	Object *tempObject = new Object(0, type);
@@ -420,6 +421,7 @@ int addFurniture(const char * type, vec3 position)
 	return tempObject->id;
 }
 
+
 void close_menu()
 {
 	menu_open = false;
@@ -434,6 +436,7 @@ void set_object_texture(int texture)
 }
 
 ///IO
+///TODO move the furnition addition to a room class
 void handle_button_click(int buttonId)
 {
 	vec3 randomLocation;
@@ -803,7 +806,7 @@ void setRoomSize() {
 	}
 }
 
-///Read the files and create the shaders. Create main shader program.
+///Read the files and create the shaders. Create main shader program. Stays in main
 void setShaders()
 {
 	std::cout << "Setting Shaders..." << std::endl;
@@ -884,7 +887,7 @@ void setShaders()
 	std::cout << "Shaders Set." << std::endl;
 }
 
-///Set teh window component. Including height and width.
+///Set the window component. Including height and width. Main
 int windowSetup()
 {
 	std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
@@ -925,6 +928,8 @@ int windowSetup()
 	}
 }
 
+
+///Move to menu class
 void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs, map<int, Object*> *buttonObjects, int id)
 {
 	vector<glm::vec3> tempVertices;
@@ -955,6 +960,7 @@ void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vec
 	(*buttonObjects)[id] = newButton;
 }
 
+///Move to menu class
 void createMenuVertices()
 {
 	//First Menu
@@ -984,6 +990,8 @@ void createMenuVertices()
 	addButtonVertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 5);
 }
 
+
+///Keep in main
 void setAxes()
 {
 	//start axes
@@ -1020,7 +1028,7 @@ void setAxes()
 	glBindVertexArray(0);
 }
 
-///Set the VAO, VBOS for the vertices, UVs and the normals.
+///Set the VAO, VBOS for the vertices, UVs and the normals. Move to menu and then refactor
 void setVBOs()
 {
 	setAxes();
@@ -1090,7 +1098,7 @@ void setIndividualTexture(unsigned int *texture, char* filename)
 	stbi_image_free(data);
 }
 
-//Set the textures
+///Set the textures, stays in main
 void setTexture()
 {
 	setIndividualTexture(&texture0, "Textures/metal1.jpg");
@@ -1143,7 +1151,7 @@ void render(int id, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 }
 
 //Second version of the render button for the axes.
-void render(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
+void renderAxe(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
 {
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model));
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
@@ -1281,12 +1289,12 @@ int main()
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-			render(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
+			renderAxe(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
 		}
 		else
 		{		
 			//Draws the menu
-			//Could be refacatored
+			//TODO needs be refacatored
 			glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
 			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
 			glm::mat4 menu_model_matrix = mat4(1.0f);		
