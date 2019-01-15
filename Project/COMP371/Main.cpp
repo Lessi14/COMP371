@@ -332,11 +332,9 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
-
-
+//Move to furniture class
 bool isUnique(int n, vector<int> list) {
-
-	for (int i = 0; i < list.size(); i++) {
+		for (int i = 0; i < list.size(); i++) {
 		if (n == list.at(i)) {
 			return false;
 		}
@@ -344,6 +342,7 @@ bool isUnique(int n, vector<int> list) {
 	return true;
 }
 
+// move to furniture class
 vec3 randomLocationGenerator(int objectId) {
 	glm::vec3 randomLocation = vec3(-1000, -1000, 1000);
 	
@@ -398,6 +397,7 @@ vec3 randomLocationGenerator(int objectId) {
 	return randomLocation;
 }
 
+//move to room manager
 int addFurniture(const char * type, vec3 position)
 {
 	Object *tempObject = new Object(0, type);
@@ -426,12 +426,14 @@ void close_menu()
 	menu_mode = 0;
 }
 
+//what is this
 void set_object_texture(int texture)
 {
 	if (selectedObject >= 0)
 		objects[selectedObject]->texture_number = texture;
 }
 
+///IO
 void handle_button_click(int buttonId)
 {
 	vec3 randomLocation;
@@ -590,6 +592,7 @@ void handle_button_click(int buttonId)
 	}
 }
 
+///IO
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (action == GLFW_PRESS)
@@ -665,7 +668,7 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 
 }
 
-//This method will be called when the window is resized and will ensure the application displays properly
+///This method will be called when the window is resized and will ensure the application displays properly
 void window_resize_callback(GLFWwindow* window, int width, int height)
 {
 	WIDTH = width;
@@ -674,7 +677,7 @@ void window_resize_callback(GLFWwindow* window, int width, int height)
 	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
 }
 
-///Process input from the keyboard.
+///IO Process input from the keyboard.
 void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
