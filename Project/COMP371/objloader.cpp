@@ -8,6 +8,8 @@
 
 #pragma warning(disable:4996)
 
+///Provided with the initial squeleton
+
 bool loadOBJ(
 	const char * path,
 	std::vector<glm::vec3> & out_vertices,
