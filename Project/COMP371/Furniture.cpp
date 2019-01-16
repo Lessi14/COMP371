@@ -1,8 +1,8 @@
 #include "Furniture.h"
 #include <iostream>
 //Set the counter
-int Object::counter = -1;
-Object::Object(int id, const char * type)
+int Furniture::counter = -1;
+Furniture::Furniture(int id, const char * type)
 {
 	this->id = ++counter;
 	this->type = type;
@@ -10,12 +10,12 @@ Object::Object(int id, const char * type)
 	ambientColor = vec3(0.4f, 0.4f, 0.4f);
 }
 
-Object::Object(int id,
+Furniture::Furniture(int id,
 	const char * type,
 	vector<vec3> vertices,
 	vector<vec3> normals,
 	vector<vec2> uvs,
-	map<int, Object*> objects,
+	map<int, Furniture*> objects,
 	vec3 worldCoordinates)
 {
 	this->id = id;
@@ -35,12 +35,12 @@ Object::Object(int id,
 	ambientColor = vec3(0.4f, 0.4f, 0.4f);
 }
 
-Object::Object(int id,
+Furniture::Furniture(int id,
 	const char * type,
 	std::vector<glm::vec3> vertices,
 	std::vector<glm::vec3> normals,
 	std::vector<glm::vec2> uvs,
-	std::map<int, Object*> objects
+	std::map<int, Furniture*> objects
 )
 {
 	this->id = id;
@@ -61,11 +61,11 @@ Object::Object(int id,
 }
 
 //Buttons
-Object::Object(int id,
+Furniture::Furniture(int id,
 	const char * type,
 	std::vector<glm::vec3> vertices,
 	std::vector<glm::vec2> uvs,
-	std::map<int, Object*> &objects
+	std::map<int, Furniture*> &objects
 )
 {
 	this->id = id;
@@ -80,7 +80,7 @@ Object::Object(int id,
 	objects[id] = this;
 }
 
-void Object::translate(map<int, Object*>& objects, vec3 changes)
+void Furniture::translate(map<int, Furniture*>& objects, vec3 changes)
 {
 	this->centerCoordinates += changes;
 	//this->objectModel *= glm::translate(mat4(1.0f), changes);
@@ -96,7 +96,7 @@ void Object::translate(map<int, Object*>& objects, vec3 changes)
 	cout << this->centerCoordinates.z << endl;
 }
 
-void Object::rotate(map<int, Object*>& objects, float angle, glm::vec3 rotationAxe)
+void Furniture::rotate(map<int, Furniture*>& objects, float angle, glm::vec3 rotationAxe)
 {
 	this->angle += angle;
 	//vec3 previousPoint = this->centerCoordinates;
@@ -113,7 +113,7 @@ void Object::rotate(map<int, Object*>& objects, float angle, glm::vec3 rotationA
 }
 
 
-void Object::scale(map<int, Object*>& objects, vec3 changes)
+void Furniture::scale(map<int, Furniture*>& objects, vec3 changes)
 {
 	this->objectModel *= glm::scale(this->objectModel, changes);
 	UpdateVertices();
@@ -125,7 +125,7 @@ void Object::scale(map<int, Object*>& objects, vec3 changes)
 //https://gamedev.stackexchange.com/questions/28249/calculate-new-vertex-position-given-a-transform-matrix
 //We need to apply all transformation to the vector of vertices.
 //For translations for instance.
-void Object::UpdateVertices()
+void Furniture::UpdateVertices()
 {
 	vector<vec3> transFormedVertices;
 	float wComponent = 1.0f;
@@ -143,14 +143,14 @@ void Object::UpdateVertices()
 	this->vertices = transFormedVertices;
 }
 
-void Object::resetObjectModel(map<int, Object*>& objects)
+void Furniture::resetObjectModel(map<int, Furniture*>& objects)
 {
 	this->objectModel = mat4(1.0);
 	objects[id] = this;
 }
 
 /// Clears the trianglevector and the triangle and boundingbox
-void Object::setIntersectionTriangle()
+void Furniture::setIntersectionTriangle()
 {
 	this->triangles.clear();
 	this->boundingBoxTriangles.clear();
@@ -213,7 +213,7 @@ bool ray_intersect_triangle(glm::vec3 rayO, glm::vec3 rayDir, Triangle tri, floa
 
 
 ///Check intersection for buttons
-bool Object::intersectButtons(vec3 rayPosition, vec3 rayDir)
+bool Furniture::intersectButtons(vec3 rayPosition, vec3 rayDir)
 {
 	float collisionDistance = 1000;
 
@@ -230,7 +230,7 @@ bool Object::intersectButtons(vec3 rayPosition, vec3 rayDir)
 }
 
 ///Given a a ray position and a direction. checks if the object is in the path of the ray.
-bool Object::intersect(vec3 rayPosition, vec3 rayDir, float &distanceT)
+bool Furniture::intersect(vec3 rayPosition, vec3 rayDir, float &distanceT)
 {
 	bool hitBoundaryBox = false;
 	float collisionDistance = 1000;
@@ -285,12 +285,12 @@ bool Object::intersect(vec3 rayPosition, vec3 rayDir, float &distanceT)
 	return false;
 }
 
-Object::~Object()
+Furniture::~Furniture()
 {
 }
 
 ///Credit https://www.gamedev.net/forums/topic/373547-calculating-a-bounding-box-with-vertices-given/
-void Object::calculateBounderyBox()
+void Furniture::calculateBounderyBox()
 {
 	this->boundingbox.clear();
 	vec3 maxVertex(-1000, -1000, -1000), minVertex(1000, 1000, 1000);
@@ -357,7 +357,7 @@ void Object::calculateBounderyBox()
 	this->boundingbox.push_back(vec3(minVertex.x, minVertex.y, maxVertex.z));
 }
 
-bool Object::collides(vector<float> collidingObjectMaxandMin)
+bool Furniture::collides(vector<float> collidingObjectMaxandMin)
 {
 	bool withinX = false, withinY = false, withinZ = false;
 
@@ -381,7 +381,7 @@ bool Object::collides(vector<float> collidingObjectMaxandMin)
 	return false;
 }
 
-bool Object::isNextACollision(map<int, Object*> &objects, vec3 potentialTranlation, int min, int max)
+bool Furniture::isNextACollision(map<int, Furniture*> &objects, vec3 potentialTranlation, int min, int max)
 {
 	bool willItCollide = false;
 	for (auto const &ent2 : objects)
@@ -412,7 +412,7 @@ bool Object::isNextACollision(map<int, Object*> &objects, vec3 potentialTranlati
 	return true;
 }
 
-void Object::loadObjNoUVsToMap(std::map<int, Object*> objects)
+void Furniture::loadObjNoUVsToMap(std::map<int, Furniture*> objects)
 {
 	loadOBJNoUV(type, vertices, normals);
 	this->defaultVertices = vertices;
@@ -422,7 +422,7 @@ void Object::loadObjNoUVsToMap(std::map<int, Object*> objects)
 	objects[id] = this;
 }
 
-void Object::loadObjToMap(std::map<int, Object*> objects)
+void Furniture::loadObjToMap(std::map<int, Furniture*> objects)
 {
 	loadOBJ(type, vertices, normals, uvs);
 	this->defaultVertices = vertices;
@@ -433,7 +433,7 @@ void Object::loadObjToMap(std::map<int, Object*> objects)
 }
 
 
-void Object::loadObjBoxToMap(std::map<int, Object*> objects)
+void Furniture::loadObjBoxToMap(std::map<int, Furniture*> objects)
 {
 	loadOBJ(type, vertices, normals, uvs);
 	this->defaultVertices = vertices;
@@ -443,12 +443,12 @@ void Object::loadObjBoxToMap(std::map<int, Object*> objects)
 	objects[id] = this;
 }
 
-vector<float> Object::getListOfMaxAndMin()
+vector<float> Furniture::getListOfMaxAndMin()
 {
 	return listOfMaxAndMin;
 }
 
-vector<float> Object::getPostMaxMinBeforeTranslation(vec3 potentialNewPosition)
+vector<float> Furniture::getPostMaxMinBeforeTranslation(vec3 potentialNewPosition)
 {
 	vector<float> tempList;
 

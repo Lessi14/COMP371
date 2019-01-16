@@ -9,53 +9,53 @@
 
 using namespace std;
 using namespace glm;
-class Object
+class Furniture
 {
 public:
-	Object(int id, const char * type);
+	Furniture(int id, const char * type);
 
 	///Constructor which takes  the world coordinate
-	Object(int id,
+	Furniture(int id,
 		const char * type,
 		vector<vec3> vertices,
 		vector<vec3> normals,
 		vector<vec2> uvs,
-		map<int, Object*> obj,
+		map<int, Furniture*> obj,
 		vec3 worldCoordinates);
 
 	///Basic Construrctor
-	Object(int id,
+	Furniture(int id,
 		const char * type,
 		vector<vec3> vertices,
 		vector<vec3> normals,
 		vector<vec2> uvs,
-		map<int, Object*>);
+		map<int, Furniture*>);
 
-	Object::Object(int id,
+	Furniture::Furniture(int id,
 		const char * type,
 		std::vector<glm::vec3> vertices,
 		std::vector<glm::vec2> uvs,
-		std::map<int, Object*> &objects
+		std::map<int, Furniture*> &objects
 	);
 
-	void loadObjNoUVsToMap(map<int, Object*> obj);
+	void loadObjNoUVsToMap(map<int, Furniture*> obj);
 
-	void loadObjToMap(map<int, Object*> obj);
+	void loadObjToMap(map<int, Furniture*> obj);
 
-	void loadObjBoxToMap(map<int, Object*> obj);
+	void loadObjBoxToMap(map<int, Furniture*> obj);
 
 	//After each transformation update the object model.
-	void translate(map<int, Object*>& objects, vec3 changes);
+	void translate(map<int, Furniture*>& objects, vec3 changes);
 
-	void rotate(map<int, Object*>& objects, float angle, vec3 rotationAxe);
+	void rotate(map<int, Furniture*>& objects, float angle, vec3 rotationAxe);
 
-	void scale(map<int, Object*>& objects, vec3 changes);
+	void scale(map<int, Furniture*>& objects, vec3 changes);
 
 	//Update the vertices after a transformation
 	void UpdateVertices();
 
 	//Reset back to initial object model
-	void resetObjectModel(map<int, Object*>& objects);
+	void resetObjectModel(map<int, Furniture*>& objects);
 
 	///fills the vectors with the triangle object which can be used for intersection and normals.
 	void setIntersectionTriangle();
@@ -64,7 +64,7 @@ public:
 
 	bool intersect(vec3 position, vec3 ray, float &distanceT);
 
-	~Object();
+	~Furniture();
 
 	///Calculate the cube around the object
 	void calculateBounderyBox();
@@ -76,7 +76,7 @@ public:
 	static vector<int> ids;
 	
 	bool collides(vector<float> collidingObjectMaxandMin);
-	bool isNextACollision(map<int, Object*> &objects, vec3 potentialTranlation, int min, int max);
+	bool isNextACollision(map<int, Furniture*> &objects, vec3 potentialTranlation, int min, int max);
 
 	vector<float> getPostMaxMinBeforeTranslation(vec3 potentialNewPosition);
 

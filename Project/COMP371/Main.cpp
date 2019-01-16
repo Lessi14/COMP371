@@ -51,8 +51,8 @@ std::vector<glm::vec2> menuUVs[3];
 //load and create a texture
 unsigned int texture0, texture1, texture2, texture3, texture_menu_bed, texture_menu_back, texture_menu_cabinet, texture_menu_coffee_table, texture_menu_toilet, texture_menu_torchere, texture_menu_wall_item, texture_menu_furniture, texture_menu_wallpaper;
 
-map<int, Object*> objects;
-map<int, Object*> buttonObjects[3];
+map<int, Furniture*> objects;
+map<int, Furniture*> buttonObjects[3];
 
 //Which mode to render in between point, lines, and triangles
 int objRenderMode = GL_TRIANGLES;
@@ -401,7 +401,7 @@ vec3 randomLocationGenerator(int objectId) {
 //move room class
 int addFurniture(const char * type, vec3 position)
 {
-	Object *tempObject = new Object(0, type);
+	Furniture *tempObject = new Furniture(0, type);
 	tempObject->loadObjToMap(objects);
 	objects[tempObject->id] = tempObject;
 
@@ -930,7 +930,7 @@ int windowSetup()
 
 
 ///Move to menu class
-void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs, map<int, Object*> *buttonObjects, int id)
+void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs, map<int, Furniture*> *buttonObjects, int id)
 {
 	vector<glm::vec3> tempVertices;
 	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
@@ -956,7 +956,7 @@ void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vec
 	for (int i = 0; i<tempUVs.size(); i++)
 		(*uvs).push_back(tempUVs[i]);
 	const char *temp = "";
-	Object *newButton = new Object(id, temp, tempVertices, tempUVs, *buttonObjects);
+	Furniture *newButton = new Furniture(id, temp, tempVertices, tempUVs, *buttonObjects);
 	(*buttonObjects)[id] = newButton;
 }
 
@@ -1360,7 +1360,7 @@ int main()
 
 
 	//Garbage collection
-	map<int, Object*>::iterator itr = objects.begin();
+	map<int, Furniture*>::iterator itr = objects.begin();
 	while (itr != objects.end()) {
 	itr = objects.erase(itr);
 	}	
