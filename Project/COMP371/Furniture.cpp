@@ -467,3 +467,69 @@ vector<float> Furniture::getPostMaxMinBeforeTranslation(vec3 potentialNewPositio
 
 	return tempList;
 }
+
+//Move to furniture class
+bool isUnique(int n, vector<int> list) {
+	for (int i = 0; i < list.size(); i++) {
+		if (n == list.at(i)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+// move to furniture class
+vec3 randomLocationGenerator(int objectId) {
+	vector<int> randomXs;
+	vector<int> randomYs;
+	glm::vec3 randomLocation = vec3(-1000, -1000, 1000);
+
+	int randomX = 0, randomY = 0;
+
+	int startingPointX = ((roomDimensions.x / 2) - 0.1) * 10;
+	int startingPointY = ((roomDimensions.y / 2) - 0.1) * 10;
+	int endingPositionX = (roomDimensions.x + 0.1) * 10;
+	int endingPositionY = (roomDimensions.y + 0.1) * 10;
+
+	int overAllCounter = 0;
+
+	srand(time(0));
+
+	while (overAllCounter != 5000)
+	{
+
+		randomX = rand() % endingPositionX - startingPointX;
+
+		while (!isUnique(randomX, randomXs))
+		{
+			randomX = rand() % endingPositionX - startingPointX;
+		}
+
+
+		randomY = rand() % endingPositionY - startingPointY;
+
+		while (!isUnique(randomY, randomYs))
+		{
+			randomY = rand() % endingPositionY - startingPointY;
+		}
+
+
+		randomLocation = vec3(randomX*0.1, 0.01f, randomY*0.1);
+
+		bool checkIfItCollidesX = objects[objectId]->isNextACollision(objects, randomLocation, 0, 1); //0 and 1 stands for minX and maxX
+		bool checkIfItCollidesY = objects[objectId]->isNextACollision(objects, randomLocation, 2, 3); //2 and 3 stands for minY and maxY
+		bool checkIfItCollidesZ = objects[objectId]->isNextACollision(objects, randomLocation, 4, 5); //4 and 5 stands for minZ and 
+
+		if (!checkIfItCollidesX && !checkIfItCollidesY && !checkIfItCollidesZ)
+		{
+			randomXs.push_back(randomX);
+			randomYs.push_back(randomY);
+			break;
+		}
+
+		randomLocation = vec3(-1000, -1000, 1000);
+		overAllCounter++;
+	}
+
+	return randomLocation;
+}

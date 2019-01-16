@@ -20,7 +20,6 @@
 #include "Furniture.h"
 #include "UtilClass.h"
 #include "LightSource.h"
-#include <time.h>
 
 using namespace std;
 
@@ -108,9 +107,6 @@ GLuint axes_VBO, axesColorsVBO;
 GLuint axes_VAO;
 
 GLuint VAO_Coffee, vertices_VBO_Coffee, normals_VBO_Coffee, uvs_VBO_Coffee;
-
-vector<int> randomXs;
-vector<int> randomYs;
 
 vector<int> paintingsList;
 
@@ -333,71 +329,6 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-//Move to furniture class
-bool isUnique(int n, vector<int> list) {
-		for (int i = 0; i < list.size(); i++) {
-		if (n == list.at(i)) {
-			return false;
-		}
-	}
-	return true;
-}
-
-// move to furniture class
-vec3 randomLocationGenerator(int objectId) {
-	glm::vec3 randomLocation = vec3(-1000, -1000, 1000);
-	
-	int randomX = 0, randomY = 0;
-
-	int startingPointX = ((roomDimensions.x/2) - 0.1)*10;
-	int startingPointY = ((roomDimensions.y/2) - 0.1)*10;
-	int endingPositionX = (roomDimensions.x + 0.1) * 10;
-	int endingPositionY = (roomDimensions.y + 0.1) * 10;
-
-	int overAllCounter = 0;
-
-	srand(time(0));
-	
-
-	while (overAllCounter != 5000)
-	{
-
-		randomX = rand() % endingPositionX - startingPointX;
-
-		while (!isUnique(randomX, randomXs))
-		{
-			randomX = rand() % endingPositionX - startingPointX;
-		}
-
-
-		randomY = rand() % endingPositionY - startingPointY;
-
-		while (!isUnique(randomY, randomYs))
-		{
-			randomY = rand() % endingPositionY - startingPointY;
-		}
-
-
-		randomLocation = vec3(randomX*0.1, 0.01f, randomY*0.1);
-
-		bool checkIfItCollidesX = objects[objectId]->isNextACollision(objects, randomLocation, 0, 1); //0 and 1 stands for minX and maxX
-		bool checkIfItCollidesY = objects[objectId]->isNextACollision(objects, randomLocation, 2, 3); //2 and 3 stands for minY and maxY
-		bool checkIfItCollidesZ = objects[objectId]->isNextACollision(objects, randomLocation, 4, 5); //4 and 5 stands for minZ and 
-
-		if (!checkIfItCollidesX && !checkIfItCollidesY && !checkIfItCollidesZ)
-		{
-			randomXs.push_back(randomX);
-			randomYs.push_back(randomY);
-			break;
-		}
-
-		randomLocation = vec3(-1000, -1000, 1000);
-		overAllCounter++;
-	}
-
-	return randomLocation;
-}
-
 //move room class
 int addFurniture(const char * type, vec3 position)
 {
@@ -420,7 +351,6 @@ int addFurniture(const char * type, vec3 position)
 
 	return tempObject->id;
 }
-
 
 void close_menu()
 {

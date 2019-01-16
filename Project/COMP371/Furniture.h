@@ -6,6 +6,7 @@
 #include "objloader.hpp"
 #include <glew.h>
 #include "LightSource.h"
+#include "time.h"
 
 using namespace std;
 using namespace glm;
@@ -102,6 +103,10 @@ public:
 
 	//Models for the transformations
 	glm::mat4 defaultObjectModel, objectModel;
+
+	vec3 randomLocationGenerator(int objectId);
+
+	bool isUnique(int n, vector<int> list);
 
 private:
 	float maxX, maxY, maxZ, minX, minY, minZ;
