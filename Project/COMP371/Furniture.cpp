@@ -1,4 +1,4 @@
-#include "Object.h"
+#include "Furniture.h"
 #include <iostream>
 //Set the counter
 int Object::counter = -1;
