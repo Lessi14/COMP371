@@ -17,7 +17,7 @@
 #include "stb_image.h"
 #include <map>;
 #include "camera.h"
-#include "Object.h"
+#include "Furniture.h"
 #include "UtilClass.h"
 #include "LightSource.h"
 #include <time.h>
