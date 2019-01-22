@@ -2,13 +2,18 @@
 #include "Furniture.h"
 #include <ostream>
 #include <iostream>
+#include <glm.hpp>
 
+glm::vec3 Room::default_furniture_location = glm::vec3(0.0f, 0.01f, 0.0f);
 
 Room::Room(map<int,Furniture*>& roomObjects, glm::vec2&  room_dimensions)
 {
 	this->objects = roomObjects;
 	this->room_dimensions = room_dimensions;
-	this->default_furniture_location = glm::vec3(0.0f, 0.01f, 0.0f);
+}
+
+Room::Room()
+{
 }
 
 

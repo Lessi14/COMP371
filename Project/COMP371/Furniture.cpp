@@ -4,18 +4,17 @@
 //Global variable are the best.
 //Set the counter
 int Furniture::counter = -1;
-static const char* INVERTED_FLOOR_NAME = "Objects/inverted_normal_floor.obj";
-static const char* INVERTED_CEILING_NAME = "Objects/inverted_normal_ceiling.obj";
-static const char* INVERTED_WALLS_NAME = "Objects/inverted_normal_walls.obj";
-static const char* BED1_NAME = "Objects/bed1.obj";
-static const char* BED1BOX_NAME = "Objects/bed2.obj";
-static const char* CABINET3_NAME = "Objects/cabinet3.obj";
-static const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
-static const char* TOILET_NAME = "Objects/toilet.obj";
-static const char* TORCHERE1_NAME = "Objects/torchere1.obj";
-static const char* PAINTING_NAME = "Objects/painting.obj";
-static const char* WALL = "Objects/wall.obj";
-
+const char* Furniture::INVERTED_FLOOR_NAME = "Objects/inverted_normal_floor.obj";
+const char* Furniture::INVERTED_CEILING_NAME = "Objects/inverted_normal_ceiling.obj";
+const char* Furniture::INVERTED_WALLS_NAME = "Objects/inverted_normal_walls.obj";
+const char* Furniture::BED1_NAME = "Objects/bed1.obj";
+const char* Furniture::BED1BOX_NAME = "Objects/bed2.obj";
+const char* Furniture::CABINET3_NAME = "Objects/cabinet3.obj";
+const char* Furniture::COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
+const char* Furniture::TOILET_NAME = "Objects/toilet.obj";
+const char* Furniture::TORCHERE1_NAME = "Objects/torchere1.obj";
+const char* Furniture::PAINTING_NAME = "Objects/painting.obj";
+const char* Furniture::WALL = "Objects/wall.obj";
 
 Furniture::Furniture(int id, const char * type)
 {

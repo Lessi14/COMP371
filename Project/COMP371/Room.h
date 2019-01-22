@@ -7,6 +7,7 @@ class Room
 {
 public:
 	Room(map<int, Furniture*>& objects, glm::vec2&  room_dimensions);
+	Room();
 
 	glm::vec2 room_dimensions;
 
@@ -18,7 +19,7 @@ public:
 
 	void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id);
 
-	void Room::set_furniture(int texture_number, const char* furniture_name);
+	void set_furniture(int texture_number, const char* furniture_name);
 
 
 	~Room();
