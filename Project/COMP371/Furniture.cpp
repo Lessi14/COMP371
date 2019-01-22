@@ -469,7 +469,7 @@ vector<float> Furniture::getPostMaxMinBeforeTranslation(vec3 potentialNewPositio
 }
 
 //Move to furniture class
-bool isUnique(int n, vector<int> list) {
+ bool Furniture::isUnique(int n, vector<int> list) {
 	for (int i = 0; i < list.size(); i++) {
 		if (n == list.at(i)) {
 			return false;
@@ -479,7 +479,7 @@ bool isUnique(int n, vector<int> list) {
 }
 
 // move to furniture class
-vec3 randomLocationGenerator(int objectId) {
+ vec3 Furniture::randomLocationGenerator(int objectId, map<int,Furniture*>& objects, glm::vec2& roomDimensions) {
 	vector<int> randomXs;
 	vector<int> randomYs;
 	glm::vec3 randomLocation = vec3(-1000, -1000, 1000);

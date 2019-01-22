@@ -302,7 +302,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	lastClickY = ypos;
 }
 
-///Extractedd the method which creates the vbos.
+///Extracted the method which creates the vbos.
 void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id)
 {
 	glGenBuffers(1, &verticesVBO);
@@ -366,7 +366,7 @@ void set_object_texture(int texture)
 }
 
 ///IO
-///TODO move the furnition addition to a room class
+///TODO move the furniture addition to a room class
 void handle_button_click(int buttonId)
 {
 	vec3 randomLocation;
@@ -441,7 +441,7 @@ void handle_button_click(int buttonId)
 		//Bed
 		case 0:
 				furniture = addFurniture(BED1_NAME, default_furniture_location);
-				randomLocation = randomLocationGenerator(furniture);
+				randomLocation = Furniture::randomLocationGenerator(furniture, objects,roomDimensions);
 				
 				if (randomLocation != vec3(-1000, -1000, 1000)){
 					objects[furniture]->texture_number = 1;
@@ -456,7 +456,7 @@ void handle_button_click(int buttonId)
 		//Cabinet
 		case 1:
 			furniture = addFurniture(CABINET3_NAME, default_furniture_location);
-			randomLocation = randomLocationGenerator(furniture);
+			randomLocation = Furniture::randomLocationGenerator(furniture, objects, roomDimensions);
 
 			if (randomLocation != vec3(-1000, -1000, 1000)) {
 				objects[furniture]->texture_number = 2;
@@ -471,7 +471,7 @@ void handle_button_click(int buttonId)
 		//Coffee Table
 		case 2:
 			furniture = addFurniture(COFFEE_TABLE1_NAME, default_furniture_location);
-			randomLocation = randomLocationGenerator(furniture);
+			randomLocation = Furniture::randomLocationGenerator(furniture, objects, roomDimensions);
 
 			if (randomLocation != vec3(-1000, -1000, 1000)) {
 				objects[furniture]->texture_number = 2;
@@ -486,7 +486,7 @@ void handle_button_click(int buttonId)
 		//Toilet
 		case 3:
 			furniture = addFurniture(TOILET_NAME, default_furniture_location);
-			randomLocation = randomLocationGenerator(furniture);
+			randomLocation = Furniture::randomLocationGenerator(furniture, objects, roomDimensions);
 
 			if (randomLocation != vec3(-1000, -1000, 1000)) {
 				objects[furniture]->texture_number = 1;
@@ -501,7 +501,7 @@ void handle_button_click(int buttonId)
 		//Lamp
 		case 4:
 			furniture = addFurniture(TORCHERE1_NAME, default_furniture_location);
-			randomLocation = randomLocationGenerator(furniture);
+			randomLocation = Furniture::randomLocationGenerator(furniture,objects,roomDimensions);
 
 			if (randomLocation != vec3(-1000, -1000, 1000)) {
 				objects[furniture]->texture_number = 1;

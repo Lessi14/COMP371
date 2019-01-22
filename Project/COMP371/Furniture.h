@@ -104,9 +104,9 @@ public:
 	//Models for the transformations
 	glm::mat4 defaultObjectModel, objectModel;
 
-	vec3 randomLocationGenerator(int objectId);
+	static vec3 randomLocationGenerator(int objectId, map<int, Furniture*>& objects, glm::vec2& roomDimensions);
 
-	bool isUnique(int n, vector<int> list);
+	static bool isUnique(int n, vector<int> list);
 
 private:
 	float maxX, maxY, maxZ, minX, minY, minZ;
