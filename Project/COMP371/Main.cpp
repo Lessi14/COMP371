@@ -329,7 +329,8 @@ void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-//move room class
+//Adds a furniture object to the Object vector and returns the id.
+//TODO Move to room class
 int addFurniture(const char * type, vec3 position)
 {
 	Furniture *tempObject = new Furniture(0, type);
@@ -713,6 +714,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 }
 
 ///Set the size of the room.
+///Could be moved to a util class
 void setRoomSize() {
 	while (roomDimensions.x < 4 || roomDimensions.x > 30) {
 		std::cout << "Enter room width(x): " << std::endl;
@@ -1061,7 +1063,7 @@ void setTexture()
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_wallpaper"), 22);
 }
 
-///Renders the objects inside the main loop.
+///Renders the objects inside the main loop. Stays in main
 void render(int id, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 {
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objects[id]->objectModel));
@@ -1080,7 +1082,7 @@ void render(int id, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 	glBindVertexArray(0);
 }
 
-//Second version of the render button for the axes.
+//Second version of the render button for the axes. Consider refactoring with the one above.
 void renderAxe(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
 {
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model));
@@ -1132,15 +1134,15 @@ int main()
 	lights.push_back(l1);
 	
 	//Set up walls, can be refactored
-	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
+	auto tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempExtWalls]->texture_number = 3;
 
-	int tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
+	auto tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempFloor]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempFloor]->texture_number = 1;	
 	
-	int tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
+	auto tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempCeiling]->texture_number = 4;
 

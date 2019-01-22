@@ -2,9 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="objloader.cpp" />
-    <ClCompile Include="stb_image.cpp" />
-    <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="LightSource.cpp">
       <Filter>Engine\Light</Filter>
     </ClCompile>
@@ -17,11 +14,17 @@
     <ClCompile Include="UtilClass.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="objloader.cpp">
+      <Filter>openGL Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image.cpp">
+      <Filter>openGL Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>openGL Dependencies</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="objloader.hpp" />
-    <ClInclude Include="stb_image.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="camera.h">
       <Filter>Engine</Filter>
@@ -37,6 +40,15 @@
     </ClInclude>
     <ClInclude Include="UtilClass.h">
       <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="objloader.hpp">
+      <Filter>openGL Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>openGL Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>openGL Dependencies</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -58,6 +70,9 @@
     </Filter>
     <Filter Include="Engine\Light">
       <UniqueIdentifier>{a61ebffb-d1c1-4c60-b8fb-f7646f535f34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="openGL Dependencies">
+      <UniqueIdentifier>{b7a3d280-edb3-46f9-9033-f10eed80a10c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
