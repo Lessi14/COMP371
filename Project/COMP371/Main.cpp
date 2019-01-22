@@ -598,31 +598,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	}
 }
 
-///Set the size of the room.
-///Could be moved to a util class
-void setRoomSize() {
-	while (room_dimensions.x < 4 || room_dimensions.x > 30) {
-		std::cout << "Enter room width(x): " << std::endl;
-		std::cin >> room_dimensions.x;
-		if (room_dimensions.x < 4) {
-			std::cout << "Minimum accepted value is 4.0" << std::endl;
-		}
-		if (room_dimensions.x > 30) {
-			std::cout << "Maximum accepted value is 30.0" << std::endl;
-		}
-	}
-	while (room_dimensions.y < 4 || room_dimensions.y > 30) {
-		std::cout << "Enter room length(z): " << std::endl;
-		std::cin >> room_dimensions.y;
-		if (room_dimensions.y < 4) {
-			std::cout << "Minimum accepted value is 4.0" << std::endl;
-		}
-		if (room_dimensions.y > 30) {
-			std::cout << "Maximum accepted value is 30.0" << std::endl;
-		}
-	}
-}
-
 ///Read the files and create the shaders. Create main shader program. Stays in main
 void setShaders()
 {
@@ -987,7 +962,7 @@ void renderAxe(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
 /// The MAIN function, from here we start the application and run the game loop
 int main()
 {		
-	setRoomSize();
+	main_room.set_room_size();
 	//main_room = Room(room_dimensions, objects);
 
 	if (-1 == windowSetup()) {

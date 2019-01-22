@@ -36,6 +36,30 @@ Room::Room(glm::vec2&  dimensions, map<int, Furniture*>& room_objects) : room_di
 //}
 
 
+void Room::set_room_size()
+{
+	while (room_dimensions.x < 4 || room_dimensions.x > 30) {
+		std::cout << "Enter room width(x): " << std::endl;
+		std::cin >> room_dimensions.x;
+		if (room_dimensions.x < 4) {
+			std::cout << "Minimum accepted value is 4.0" << std::endl;
+		}
+		if (room_dimensions.x > 30) {
+			std::cout << "Maximum accepted value is 30.0" << std::endl;
+		}
+	}
+	while (room_dimensions.y < 4 || room_dimensions.y > 30) {
+		std::cout << "Enter room length(z): " << std::endl;
+		std::cin >> room_dimensions.y;
+		if (room_dimensions.y < 4) {
+			std::cout << "Minimum accepted value is 4.0" << std::endl;
+		}
+		if (room_dimensions.y > 30) {
+			std::cout << "Maximum accepted value is 30.0" << std::endl;
+		}
+	}
+}
+
 ///Adds a furniture object to the Object vector and returns the id.
 int Room::add_furniture(const char * type, glm::vec3 position)
 {
