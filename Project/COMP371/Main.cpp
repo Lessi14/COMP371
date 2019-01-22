@@ -87,11 +87,10 @@ GLuint ambient_strength_loc;
 GLFWwindow* window;
 
 Room main_room;
+glm::vec2 room_dimensions = glm::vec2(0.0, 0.0);
 
 int selectedObject = -1;
 GLuint menuVAOs[3], menuVBOs[3], menuUVVBOs[3];
-
-glm::vec2 roomDimensions;
 
 GLuint axes_VBO, axesColorsVBO;
 GLuint axes_VAO;
@@ -180,12 +179,12 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 						{
 							objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
 
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.x*-1 + 0.5f) >= objects[selectedObject]->getListOfMaxAndMin().at(0) ) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.x*-1 + 0.5f) >= objects[selectedObject]->getListOfMaxAndMin().at(0) ) {
 								
 								objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));
 								objects[selectedObject]->translate(objects, vec3(-0.9, 0.0f, -1.55f));
 							}
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.x - 0.5f) <= objects[selectedObject]->getListOfMaxAndMin().at(1)) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.x - 0.5f) <= objects[selectedObject]->getListOfMaxAndMin().at(1)) {
 
 									objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
 									objects[selectedObject]->translate(objects, vec3(0.9, 0.0f, -1.55f));
@@ -197,12 +196,12 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 						{
 							objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
 
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.x*-1 + 0.5f) >= objects[selectedObject]->getListOfMaxAndMin().at(0)) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.x*-1 + 0.5f) >= objects[selectedObject]->getListOfMaxAndMin().at(0)) {
 
 								objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
 								objects[selectedObject]->translate(objects, vec3(-0.9, 0.0f, 1.55f));
 							}
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.x - 0.5f) <= objects[selectedObject]->getListOfMaxAndMin().at(1)) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.x - 0.5f) <= objects[selectedObject]->getListOfMaxAndMin().at(1)) {
 
 								objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));
 								objects[selectedObject]->translate(objects, vec3(0.9, 0.0f, 1.55f));
@@ -244,12 +243,12 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 						if (paintingsList.at(i) == selectedObject && (orientation == 0)) {
 							objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
 
-							if (paintingsList.at(i) == selectedObject && roomDimensions.y - 0.5f <= objects[selectedObject]->getListOfMaxAndMin().at(5)) {
+							if (paintingsList.at(i) == selectedObject && room_dimensions.y - 0.5f <= objects[selectedObject]->getListOfMaxAndMin().at(5)) {
 								
 									objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));
 									objects[selectedObject]->translate(objects, vec3(-1.55, 0.0f, 0.9));
 							}
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.y*-1 + 0.5f) > objects[selectedObject]->getListOfMaxAndMin().at(4)) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.y*-1 + 0.5f) > objects[selectedObject]->getListOfMaxAndMin().at(4)) {
 
 									objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
 									objects[selectedObject]->translate(objects, vec3(-1.55, 0.0f, -0.9f));
@@ -259,12 +258,12 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 						else if (paintingsList.at(i) == selectedObject && (orientation == 180)) {
 							objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
 
-							if (paintingsList.at(i) == selectedObject && roomDimensions.y - 0.5f <= objects[selectedObject]->getListOfMaxAndMin().at(5)) {
+							if (paintingsList.at(i) == selectedObject && room_dimensions.y - 0.5f <= objects[selectedObject]->getListOfMaxAndMin().at(5)) {
 
 									objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
 									objects[selectedObject]->translate(objects, vec3(1.55, 0.0f, 0.9f));
 							}
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.y*-1 + 0.5f) > objects[selectedObject]->getListOfMaxAndMin().at(4)) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.y*-1 + 0.5f) > objects[selectedObject]->getListOfMaxAndMin().at(4)) {
 									
 								objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));						
 								objects[selectedObject]->translate(objects, vec3(1.55, 0.0f, -0.9f));
@@ -375,33 +374,33 @@ void handle_button_click(int buttonId)
 		//Bed
 		case 0:
 			//bed1_name
-			main_room.set_furniture(1, Furniture::BED1_NAME);
+			main_room.set_furniture(1, Furniture::BED1_NAME,objects);
 			close_menu();
 			break;
 		//Cabinet
 		case 1:
-			main_room.set_furniture(2, Furniture::CABINET3_NAME);			
+			main_room.set_furniture(2, Furniture::CABINET3_NAME, objects);
 			close_menu();
 			break;
 		//Coffee Table
 		case 2:
-			main_room.set_furniture(2, Furniture::COFFEE_TABLE1_NAME);			
+			main_room.set_furniture(2, Furniture::COFFEE_TABLE1_NAME, objects);
 			close_menu();
 			break;
 		//Toilet
 		case 3:
-			main_room.set_furniture(2, Furniture::TOILET_NAME);			
+			main_room.set_furniture(2, Furniture::TOILET_NAME, objects);
 			close_menu();
 			break;
 		//Lamp
 		case 4:
-			main_room.set_furniture(2, Furniture::TORCHERE1_NAME);
+			main_room.set_furniture(2, Furniture::TORCHERE1_NAME, objects);
 			close_menu();
 			break;
 		//Painting
 		case 5:
 			///todo what is the difference here?
-			furniture = main_room.add_furniture(Furniture::PAINTING_NAME, vec3(roomDimensions.x, Room::default_furniture_location.y, Room::default_furniture_location.y));
+			furniture = main_room.add_furniture(Furniture::PAINTING_NAME, vec3(room_dimensions.x, Room::default_furniture_location.y, Room::default_furniture_location.y), objects);
 			objects[furniture]->texture_number = 1;
 			close_menu();
 			paintingsList.push_back(furniture);
@@ -601,23 +600,23 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 ///Set the size of the room.
 ///Could be moved to a util class
 void setRoomSize() {
-	while (roomDimensions.x < 4 || roomDimensions.x > 30) {
+	while (room_dimensions.x < 4 || room_dimensions.x > 30) {
 		std::cout << "Enter room width(x): " << std::endl;
-		std::cin >> roomDimensions.x;
-		if (roomDimensions.x < 4) {
+		std::cin >> room_dimensions.x;
+		if (room_dimensions.x < 4) {
 			std::cout << "Minimum accepted value is 4.0" << std::endl;
 		}
-		if (roomDimensions.x > 30) {
+		if (room_dimensions.x > 30) {
 			std::cout << "Maximum accepted value is 30.0" << std::endl;
 		}
 	}
-	while (roomDimensions.y < 4 || roomDimensions.y > 30) {
+	while (room_dimensions.y < 4 || room_dimensions.y > 30) {
 		std::cout << "Enter room length(z): " << std::endl;
-		std::cin >> roomDimensions.y;
-		if (roomDimensions.y < 4) {
+		std::cin >> room_dimensions.y;
+		if (room_dimensions.y < 4) {
 			std::cout << "Minimum accepted value is 4.0" << std::endl;
 		}
-		if (roomDimensions.y > 30) {
+		if (room_dimensions.y > 30) {
 			std::cout << "Maximum accepted value is 30.0" << std::endl;
 		}
 	}
@@ -986,12 +985,9 @@ void renderAxe(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
 
 /// The MAIN function, from here we start the application and run the game loop
 int main()
-{
-
-	roomDimensions.x = 0;
-	roomDimensions.y = 0;
+{		
 	setRoomSize();
-	main_room = Room(objects, roomDimensions);
+	main_room = Room(room_dimensions);
 
 	if (-1 == windowSetup()) {
 		return -1;
@@ -1021,16 +1017,16 @@ int main()
 	lights.push_back(l1);
 	
 	//Set up walls, can be refactored
-	auto tempExtWalls = main_room.add_furniture(Furniture::INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
+	auto tempExtWalls = main_room.add_furniture(Furniture::INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f), objects);
+	objects[tempExtWalls]->scale(objects, vec3(room_dimensions.x, 2, room_dimensions.y));
 	objects[tempExtWalls]->texture_number = 3;
 
-	auto tempFloor = main_room.add_furniture(Furniture::INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[tempFloor]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
+	auto tempFloor = main_room.add_furniture(Furniture::INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f), objects);
+	objects[tempFloor]->scale(objects, vec3(room_dimensions.x, 2, room_dimensions.y));
 	objects[tempFloor]->texture_number = 1;	
 	
-	auto tempCeiling = main_room.add_furniture(Furniture::INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
+	auto tempCeiling = main_room.add_furniture(Furniture::INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f), objects);
+	objects[tempCeiling]->scale(objects, vec3(room_dimensions.x, 2, room_dimensions.y));
 	objects[tempCeiling]->texture_number = 4;
 
 
