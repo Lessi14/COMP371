@@ -119,6 +119,7 @@
     <ClInclude Include="camera.h" />
     <ClInclude Include="LightSource.h" />
     <ClInclude Include="Furniture.h" />
+    <ClInclude Include="Menu.h" />
     <ClInclude Include="objloader.hpp" />
     <ClInclude Include="Room.h" />
     <ClInclude Include="stb_image.h" />
@@ -131,6 +132,7 @@
     <ClCompile Include="LightSource.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Furniture.cpp" />
+    <ClCompile Include="Menu.cpp" />
     <ClCompile Include="objloader.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="stb_image.cpp" />

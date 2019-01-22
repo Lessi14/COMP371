@@ -6,18 +6,19 @@
 class Room
 {
 public:
-	Room(glm::vec2&  room_dimensions);
-	Room();
+	Room(glm::vec2& room_dimensions, map<int, Furniture*>& objects);
 
-	glm::vec2 room_dimensions;
+	glm::vec2& room_dimensions;
+
+	map<int, Furniture*>& objects;
 
 	static glm::vec3 default_furniture_location;
 
-	int add_furniture(const char* type, glm::vec3 position, map<int, Furniture*>& objects);
+	int add_furniture(const char* type, glm::vec3 position);
 
-	void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id, map<int, Furniture*>& objects);
+	void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id);
 
-	void set_furniture(int texture_number, const char* furniture_name, map<int,Furniture*>& objects);
+	void set_furniture(int texture_number, const char* furniture_name);
 
 
 	~Room();

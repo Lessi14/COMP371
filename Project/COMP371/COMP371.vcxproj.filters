@@ -26,6 +26,9 @@
     <ClCompile Include="Room.cpp">
       <Filter>Room</Filter>
     </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h" />
@@ -55,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="Room.h">
       <Filter>Room</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>Interface</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

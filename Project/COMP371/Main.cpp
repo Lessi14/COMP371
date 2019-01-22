@@ -21,6 +21,7 @@
 #include "UtilClass.h"
 #include "LightSource.h"
 #include "Room.h"
+#include "Menu.h"
 
 using namespace std;
 
@@ -86,8 +87,8 @@ GLuint ambient_strength_loc;
 //Global variable for the window
 GLFWwindow* window;
 
-Room main_room;
 glm::vec2 room_dimensions = glm::vec2(0.0, 0.0);
+Room main_room(room_dimensions,objects);
 
 int selectedObject = -1;
 GLuint menuVAOs[3], menuVBOs[3], menuUVVBOs[3];
@@ -374,33 +375,33 @@ void handle_button_click(int buttonId)
 		//Bed
 		case 0:
 			//bed1_name
-			main_room.set_furniture(1, Furniture::BED1_NAME,objects);
+			main_room.set_furniture(1, Furniture::BED1_NAME);
 			close_menu();
 			break;
 		//Cabinet
 		case 1:
-			main_room.set_furniture(2, Furniture::CABINET3_NAME, objects);
+			main_room.set_furniture(2, Furniture::CABINET3_NAME);
 			close_menu();
 			break;
 		//Coffee Table
 		case 2:
-			main_room.set_furniture(2, Furniture::COFFEE_TABLE1_NAME, objects);
+			main_room.set_furniture(2, Furniture::COFFEE_TABLE1_NAME);
 			close_menu();
 			break;
 		//Toilet
 		case 3:
-			main_room.set_furniture(2, Furniture::TOILET_NAME, objects);
+			main_room.set_furniture(2, Furniture::TOILET_NAME);
 			close_menu();
 			break;
 		//Lamp
 		case 4:
-			main_room.set_furniture(2, Furniture::TORCHERE1_NAME, objects);
+			main_room.set_furniture(2, Furniture::TORCHERE1_NAME);
 			close_menu();
 			break;
 		//Painting
 		case 5:
 			///todo what is the difference here?
-			furniture = main_room.add_furniture(Furniture::PAINTING_NAME, vec3(room_dimensions.x, Room::default_furniture_location.y, Room::default_furniture_location.y), objects);
+			furniture = main_room.add_furniture(Furniture::PAINTING_NAME, vec3(room_dimensions.x, Room::default_furniture_location.y, Room::default_furniture_location.y));
 			objects[furniture]->texture_number = 1;
 			close_menu();
 			paintingsList.push_back(furniture);
@@ -987,7 +988,7 @@ void renderAxe(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
 int main()
 {		
 	setRoomSize();
-	main_room = Room(room_dimensions);
+	//main_room = Room(room_dimensions, objects);
 
 	if (-1 == windowSetup()) {
 		return -1;
@@ -1017,15 +1018,15 @@ int main()
 	lights.push_back(l1);
 	
 	//Set up walls, can be refactored
-	auto tempExtWalls = main_room.add_furniture(Furniture::INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f), objects);
+	auto tempExtWalls = main_room.add_furniture(Furniture::INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempExtWalls]->scale(objects, vec3(room_dimensions.x, 2, room_dimensions.y));
 	objects[tempExtWalls]->texture_number = 3;
 
-	auto tempFloor = main_room.add_furniture(Furniture::INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f), objects);
+	auto tempFloor = main_room.add_furniture(Furniture::INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempFloor]->scale(objects, vec3(room_dimensions.x, 2, room_dimensions.y));
 	objects[tempFloor]->texture_number = 1;	
 	
-	auto tempCeiling = main_room.add_furniture(Furniture::INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f), objects);
+	auto tempCeiling = main_room.add_furniture(Furniture::INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempCeiling]->scale(objects, vec3(room_dimensions.x, 2, room_dimensions.y));
 	objects[tempCeiling]->texture_number = 4;
 
@@ -1112,7 +1113,7 @@ int main()
 			//TODO needs be refacatored
 			glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
 			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
-			glm::mat4 menu_model_matrix = mat4(1.0f);		
+			glm::mat4 menu_model_matrix = glm::mat4(1.0f);
 			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(menu_model_matrix));
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(menuViewMatrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));

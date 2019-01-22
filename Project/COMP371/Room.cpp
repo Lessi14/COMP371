@@ -6,12 +6,7 @@
 
 glm::vec3 Room::default_furniture_location = glm::vec3(0.0f, 0.01f, 0.0f);
 
-Room::Room(glm::vec2&  room_dimensions)
-{
-	this->room_dimensions = room_dimensions;
-}
-
-Room::Room()
+Room::Room(glm::vec2&  dimensions, map<int, Furniture*>& room_objects) : room_dimensions(dimensions),objects(room_objects)
 {
 }
 
@@ -42,7 +37,7 @@ Room::Room()
 
 
 ///Adds a furniture object to the Object vector and returns the id.
-int Room::add_furniture(const char * type, glm::vec3 position, map<int, Furniture*>& objects)
+int Room::add_furniture(const char * type, glm::vec3 position)
 {
 	Furniture *tempObject = new Furniture(0, type);
 	tempObject->loadObjToMap(objects);
@@ -56,7 +51,7 @@ int Room::add_furniture(const char * type, glm::vec3 position, map<int, Furnitur
 	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
 
 
-	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id,objects);
+	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id);
 	glBindVertexArray(0);
 
 	objects[tempObject->id]->translate(objects, position);
@@ -65,7 +60,7 @@ int Room::add_furniture(const char * type, glm::vec3 position, map<int, Furnitur
 }
 
 ///Extracted the method which creates the vbos.
-void Room::setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id, map<int,Furniture*>& objects)
+void Room::setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id)
 {
 	glGenBuffers(1, &verticesVBO);
 	glGenBuffers(1, &normalsVBO);
@@ -93,9 +88,9 @@ void Room::setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint norm
 
 
 ///Set the texture of the furniture and places it in the room.
-void Room::set_furniture(const int texture_number, const char* furniture_name, map<int, Furniture*>& objects)
+void Room::set_furniture(const int texture_number, const char* furniture_name)
 {
-	const int furniture = add_furniture(furniture_name, default_furniture_location, objects);
+	const int furniture = add_furniture(furniture_name, default_furniture_location);
 	const glm::vec3 randomLocation = Furniture::randomLocationGenerator(furniture, objects, room_dimensions);
 
 	if (randomLocation != vec3(-1000, -1000, 1000)) {
