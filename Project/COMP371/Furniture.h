@@ -108,6 +108,18 @@ public:
 
 	static bool isUnique(int n, vector<int> list);
 
+	static const char* INVERTED_FLOOR_NAME;
+	static const char* INVERTED_CEILING_NAME;
+	static const char* INVERTED_WALLS_NAME;
+	static const char* BED1_NAME;
+	static const char* BED1BOX_NAME;
+	static const char* CABINET3_NAME;
+	static const char* COFFEE_TABLE1_NAME;
+	static const char* TOILET_NAME;
+	static const char* TORCHERE1_NAME;
+	static const char* PAINTING_NAME;
+	static const char* WALL;
+
 private:
 	float maxX, maxY, maxZ, minX, minY, minZ;
 	vector<float> listOfMaxAndMin;

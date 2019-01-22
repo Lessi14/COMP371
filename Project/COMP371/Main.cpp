@@ -20,6 +20,7 @@
 #include "Furniture.h"
 #include "UtilClass.h"
 #include "LightSource.h"
+#include "Room.h"
 
 using namespace std;
 
@@ -42,7 +43,6 @@ glm::mat4 model_matrix;
 vector<LightSource> lights;
 
 glm::mat4 menuViewMatrix;
-glm::vec3 default_furniture_location(0.0f, 0.01f, 0.0f);
 
 std::vector<glm::vec3> menuVertices[3];
 std::vector<glm::vec2> menuUVs[3];
@@ -86,17 +86,7 @@ GLuint ambient_strength_loc;
 //Global variable for the window
 GLFWwindow* window;
 
-const char* INVERTED_FLOOR_NAME = "Objects/inverted_normal_floor.obj";
-const char* INVERTED_CEILING_NAME = "Objects/inverted_normal_ceiling.obj";
-const char* INVERTED_WALLS_NAME = "Objects/inverted_normal_walls.obj";
-const char* BED1_NAME = "Objects/bed1.obj";
-const char* BED1BOX_NAME = "Objects/bed2.obj";
-const char* CABINET3_NAME = "Objects/cabinet3.obj";
-const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
-const char* TOILET_NAME = "Objects/toilet.obj";
-const char* TORCHERE1_NAME = "Objects/torchere1.obj";
-const char* PAINTING_NAME = "Objects/painting.obj";
-const char* WALL = "Objects/wall.obj";
+Room main_room;
 
 int selectedObject = -1;
 GLuint menuVAOs[3], menuVBOs[3], menuUVVBOs[3];
@@ -302,57 +292,7 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	lastClickY = ypos;
 }
 
-///Extracted the method which creates the vbos.
-void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id)
-{
-	glGenBuffers(1, &verticesVBO);
-	glGenBuffers(1, &normalsVBO);
-	glGenBuffers(1, &uvsVBO);
-
-	glBindVertexArray(localVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->vertices.size() * sizeof(glm::vec3), &objects[id]->vertices.front(), GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->normals.size() * sizeof(glm::vec3), &objects[id]->normals.front(), GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->uvs.size() * sizeof(glm::vec3), &objects[id]->uvs.front(), GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-//Adds a furniture object to the Object vector and returns the id.
-//TODO Move to room class
-int addFurniture(const char * type, vec3 position)
-{
-	Furniture *tempObject = new Furniture(0, type);
-	tempObject->loadObjToMap(objects);
-	objects[tempObject->id] = tempObject;
-
-	///----------------
-	glGenVertexArrays(1, &objects[tempObject->id]->VAO);
-
-	glGenBuffers(1, &objects[tempObject->id]->vertices_VBO);
-	glGenBuffers(1, &objects[tempObject->id]->normals_VBO);
-	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
-	
-
-	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id);
-	glBindVertexArray(0);
-
-	objects[tempObject->id]->translate(objects, position);
-
-	return tempObject->id;
-}
-
+///Helper method which changes the menu mode.
 void close_menu()
 {
 	menu_open = false;
@@ -364,6 +304,7 @@ void set_object_texture(int texture)
 {
 	if (selectedObject >= 0)
 		objects[selectedObject]->texture_number = texture;
+	close_menu();
 }
 
 ///IO
@@ -396,42 +337,34 @@ void handle_button_click(int buttonId)
 		//Metal 1
 		case 0:
 			set_object_texture(0);
-			close_menu();
 			break;
 		//Metal 2
 		case 1:
 			set_object_texture(1);
-			close_menu();
 			break;
 		//Wood 1
 		case 2:
 			set_object_texture(2);
-			close_menu();
 			break;
 		//Wood 2
 		case 3:
 			set_object_texture(3);
-			close_menu();
 			break;
 		//Red
 		case 4:
 			set_object_texture(4);
-			close_menu();
 			break;
 		//Green
 		case 5:
 			set_object_texture(5);
-			close_menu();
 			break;
 		//Blue
 		case 6:
 			set_object_texture(6);
-			close_menu();
 			break;
 		//Yellow
 		case 7:
 			set_object_texture(7);
-			close_menu();
 			break;
 		}
 		break;
@@ -441,82 +374,34 @@ void handle_button_click(int buttonId)
 		int furniture;
 		//Bed
 		case 0:
-				furniture = addFurniture(BED1_NAME, default_furniture_location);
-				randomLocation = Furniture::randomLocationGenerator(furniture, objects,roomDimensions);
-				
-				if (randomLocation != vec3(-1000, -1000, 1000)){
-					objects[furniture]->texture_number = 1;
-					objects[furniture]->translate(objects, randomLocation);
-				}
-			else {
-				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
-				objects.erase(furniture);
-			}
+			//bed1_name
+			main_room.set_furniture(1, Furniture::BED1_NAME);
 			close_menu();
 			break;
 		//Cabinet
 		case 1:
-			furniture = addFurniture(CABINET3_NAME, default_furniture_location);
-			randomLocation = Furniture::randomLocationGenerator(furniture, objects, roomDimensions);
-
-			if (randomLocation != vec3(-1000, -1000, 1000)) {
-				objects[furniture]->texture_number = 2;
-				objects[furniture]->translate(objects, randomLocation);
-			}
-			else {
-				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
-				objects.erase(furniture);
-			}
+			main_room.set_furniture(2, Furniture::CABINET3_NAME);			
 			close_menu();
 			break;
 		//Coffee Table
 		case 2:
-			furniture = addFurniture(COFFEE_TABLE1_NAME, default_furniture_location);
-			randomLocation = Furniture::randomLocationGenerator(furniture, objects, roomDimensions);
-
-			if (randomLocation != vec3(-1000, -1000, 1000)) {
-				objects[furniture]->texture_number = 2;
-				objects[furniture]->translate(objects, randomLocation);
-			}
-			else {
-				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
-				objects.erase(furniture);
-			}
+			main_room.set_furniture(2, Furniture::COFFEE_TABLE1_NAME);			
 			close_menu();
 			break;
 		//Toilet
 		case 3:
-			furniture = addFurniture(TOILET_NAME, default_furniture_location);
-			randomLocation = Furniture::randomLocationGenerator(furniture, objects, roomDimensions);
-
-			if (randomLocation != vec3(-1000, -1000, 1000)) {
-				objects[furniture]->texture_number = 1;
-				objects[furniture]->translate(objects, randomLocation);
-			}
-			else {
-				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
-				objects.erase(furniture);
-			}
+			main_room.set_furniture(2, Furniture::TOILET_NAME);			
 			close_menu();
 			break;
 		//Lamp
 		case 4:
-			furniture = addFurniture(TORCHERE1_NAME, default_furniture_location);
-			randomLocation = Furniture::randomLocationGenerator(furniture,objects,roomDimensions);
-
-			if (randomLocation != vec3(-1000, -1000, 1000)) {
-				objects[furniture]->texture_number = 1;
-				objects[furniture]->translate(objects, randomLocation);
-			}
-			else {
-				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
-				objects.erase(furniture);
-			}
+			main_room.set_furniture(2, Furniture::TORCHERE1_NAME);
 			close_menu();
 			break;
 		//Painting
 		case 5:
-			furniture = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, default_furniture_location.y, default_furniture_location.z));
+			///todo what is the difference here?
+			furniture = main_room.add_furniture(Furniture::PAINTING_NAME, vec3(roomDimensions.x, Room::default_furniture_location.y, Room::default_furniture_location.y));
 			objects[furniture]->texture_number = 1;
 			close_menu();
 			paintingsList.push_back(furniture);
@@ -638,7 +523,7 @@ void processInput(GLFWwindow *window)
 		camera.Reset();
 }
 
-///Key callabck
+///Key callback
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
 	//std::cout << key << std::endl;
@@ -1102,9 +987,11 @@ void renderAxe(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
 /// The MAIN function, from here we start the application and run the game loop
 int main()
 {
+
 	roomDimensions.x = 0;
 	roomDimensions.y = 0;
 	setRoomSize();
+	main_room = Room(objects, roomDimensions);
 
 	if (-1 == windowSetup()) {
 		return -1;
@@ -1134,15 +1021,15 @@ int main()
 	lights.push_back(l1);
 	
 	//Set up walls, can be refactored
-	auto tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
+	auto tempExtWalls = main_room.add_furniture(Furniture::INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempExtWalls]->texture_number = 3;
 
-	auto tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
+	auto tempFloor = main_room.add_furniture(Furniture::INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempFloor]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempFloor]->texture_number = 1;	
 	
-	auto tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
+	auto tempCeiling = main_room.add_furniture(Furniture::INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
 	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
 	objects[tempCeiling]->texture_number = 4;
 

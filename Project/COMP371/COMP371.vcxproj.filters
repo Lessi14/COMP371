@@ -23,6 +23,9 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>openGL Dependencies</Filter>
     </ClCompile>
+    <ClCompile Include="Room.cpp">
+      <Filter>Room</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="targetver.h" />
@@ -49,6 +52,9 @@
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>openGL Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="Room.h">
+      <Filter>Room</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

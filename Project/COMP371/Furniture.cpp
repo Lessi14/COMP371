@@ -1,7 +1,22 @@
 #include "Furniture.h"
 #include <iostream>
+
+//Global variable are the best.
 //Set the counter
 int Furniture::counter = -1;
+static const char* INVERTED_FLOOR_NAME = "Objects/inverted_normal_floor.obj";
+static const char* INVERTED_CEILING_NAME = "Objects/inverted_normal_ceiling.obj";
+static const char* INVERTED_WALLS_NAME = "Objects/inverted_normal_walls.obj";
+static const char* BED1_NAME = "Objects/bed1.obj";
+static const char* BED1BOX_NAME = "Objects/bed2.obj";
+static const char* CABINET3_NAME = "Objects/cabinet3.obj";
+static const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
+static const char* TOILET_NAME = "Objects/toilet.obj";
+static const char* TORCHERE1_NAME = "Objects/torchere1.obj";
+static const char* PAINTING_NAME = "Objects/painting.obj";
+static const char* WALL = "Objects/wall.obj";
+
+
 Furniture::Furniture(int id, const char * type)
 {
 	this->id = ++counter;
