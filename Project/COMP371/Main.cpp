@@ -32,10 +32,6 @@ glm::vec3 camera_position;
 glm::vec3 triangle_scale;
 
 glm::vec3 camera_pos = vec3(0, 0, 0);
-//glm::vec3 light_color = vec3(0, 0, 0);
-//float specular_strength = 0.0f;
-//glm::vec3 light_position = vec3(0, 0, 0);
-//float ambient_strength = 0.0f;
 
 glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
@@ -49,7 +45,8 @@ std::vector<glm::vec3> menuVertices[3];
 std::vector<glm::vec2> menuUVs[3];
 
 //load and create a texture
-unsigned int texture0, texture1, texture2, texture3, texture_menu_bed, texture_menu_back, texture_menu_cabinet, texture_menu_coffee_table, texture_menu_toilet, texture_menu_torchere, texture_menu_wall_item, texture_menu_furniture, texture_menu_wallpaper;
+unsigned int texture0, texture1, texture2, texture3, texture_menu_bed, texture_menu_back, texture_menu_cabinet, texture_menu_coffee_table;
+unsigned int texture_menu_toilet, texture_menu_torchere, texture_menu_wall_item, texture_menu_furniture, texture_menu_wallpaper;
 
 map<int, Furniture*> objects;
 map<int, Furniture*> buttonObjects[3];
@@ -166,12 +163,14 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	//cout << modifier << endl;	
 	if (abs(modifier) < 0.30)
 	{
+		///todo this is magnificent
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(modifier, 0.0f, 0.0f), 0, 1); //0 and 1 stands for minX and maxX
 			
 			float orientation = objects[selectedObject]->angle;
 
 			if (paintingsList.size() > 0) {
+				//what about !empty()
 				for (int i = 0; i < paintingsList.size(); i++)
 				{
 					if (!checkIfItCollides && selectedObject > 2)
@@ -299,7 +298,7 @@ void close_menu()
 	menu_mode = 0;
 }
 
-//what is this
+///todo what is this>?
 void set_object_texture(int texture)
 {
 	if (selectedObject >= 0)
@@ -308,7 +307,6 @@ void set_object_texture(int texture)
 }
 
 ///IO
-///TODO move the furniture addition to a room class
 void handle_button_click(int buttonId)
 {
 	vec3 randomLocation;
@@ -453,7 +451,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 					//Object Selected
 					currentClosest = distanceT;
 					selectedObject = ent.second->id;
-
 				}
 			}
 			cout << selectedObject << endl;
@@ -467,9 +464,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 	//last click for x and y
 	lastClickX = xpos;
 	lastClickY = ypos;
-	double diffY = lastClickX - ypos;
-	double diffX = lastClickY - xpos;
-
 	switch (currentButton)
 	{
 	case GLFW_MOUSE_BUTTON_LEFT:
@@ -567,31 +561,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		case GLFW_KEY_ENTER:
 			menu_open = !menu_open;
 			menu_mode = 0;
-			//if (menu_open)
-			//{
-				//glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
-				//glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
-				//glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
-				////cameraPositionWorldSpace += glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8);
-				//for (int i = 0; i < 3; i++)
-				//{
-				//	buttonObjects[0][i]->resetObjectModel(buttonObjects[0]);
-				//	buttonObjects[0][i]->translate(buttonObjects[0], cameraPositionWorldSpace);
-				//	buttonObjects[0][i]->translate(buttonObjects[0], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
-				//}
-				//for (int i = 0; i < 8; i++)
-				//{
-				//	buttonObjects[1][i]->resetObjectModel(buttonObjects[1]);
-				//	buttonObjects[1][i]->translate(buttonObjects[1], cameraPositionWorldSpace);
-				//	buttonObjects[1][i]->translate(buttonObjects[1], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
-				//}
-				//for (int i = 0; i < 6; i++)
-				//{
-				//	buttonObjects[2][i]->resetObjectModel(buttonObjects[2]);
-				//	buttonObjects[2][i]->translate(buttonObjects[2], cameraPositionWorldSpace);
-				//	buttonObjects[2][i]->translate(buttonObjects[2], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
-				//}
-			//}
 		default:
 			break;
 		}
@@ -720,68 +689,35 @@ int windowSetup()
 	}
 }
 
-
-///Move to menu class
-void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs, map<int, Furniture*> *buttonObjects, int id)
-{
-	vector<glm::vec3> tempVertices;
-	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
-	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
-	tempVertices.push_back(glm::vec3(rightX, bottomY, 0.01f));
-	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
-	tempVertices.push_back(glm::vec3(leftX, topY, 0.01f));
-	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
-	for (int i = 0; i<tempVertices.size(); i++)
-		(*vertices).push_back(tempVertices[i]);
-
-	tempVertices.push_back(glm::vec3(rightX, bottomY, 0.01f));
-	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
-	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
-	
-	vector<glm::vec2> tempUVs;
-	tempUVs.push_back(glm::vec2(1.0f, 1.0f));
-	tempUVs.push_back(glm::vec2(0.0f, 0.0f));
-	tempUVs.push_back(glm::vec2(0.0f, 1.0f));
-	tempUVs.push_back(glm::vec2(1.0f, 1.0f));
-	tempUVs.push_back(glm::vec2(1.0f, 0.0f));
-	tempUVs.push_back(glm::vec2(0.0f, 0.0f));
-	for (int i = 0; i<tempUVs.size(); i++)
-		(*uvs).push_back(tempUVs[i]);
-	const char *temp = "";
-	Furniture *newButton = new Furniture(id, temp, tempVertices, tempUVs, *buttonObjects);
-	(*buttonObjects)[id] = newButton;
-}
-
-///Move to menu class
+///todo Move to menu class
 void createMenuVertices()
 {
 	//First Menu
 	//Furniture
-	addButtonVertices(-3.0f, 3.0f, 2.0f, 4.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 0);
+	Menu::add_button_vertices(-3.0f, 3.0f, 2.0f, 4.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 0);
 	//Wallpaper
-	addButtonVertices(-3.0f, 3.0f, -1.0f, 1.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 1);
+	Menu::add_button_vertices(-3.0f, 3.0f, -1.0f, 1.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 1);
 	//Back
-	addButtonVertices(-3.0f, 3.0f, -4.0f, -2.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 2);
+	Menu::add_button_vertices(-3.0f, 3.0f, -4.0f, -2.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 2);
 
 	//Texture Menu
-	addButtonVertices(-5.0f, -1.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 0);
-	addButtonVertices(1.0f, 5.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 1);
-	addButtonVertices(-5.0f, -1.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 2);
-	addButtonVertices(1.0f, 5.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 3);
-	addButtonVertices(-5.0f, -1.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 4);
-	addButtonVertices(1.0f, 5.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 5);
-	addButtonVertices(-5.0f, -1.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 6);
-	addButtonVertices(1.0f, 5.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 7);
+	Menu::add_button_vertices(-5.0f, -1.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 0);
+	Menu::add_button_vertices(1.0f, 5.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 1);
+	Menu::add_button_vertices(-5.0f, -1.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 2);
+	Menu::add_button_vertices(1.0f, 5.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 3);
+	Menu::add_button_vertices(-5.0f, -1.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 4);
+	Menu::add_button_vertices(1.0f, 5.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 5);
+	Menu::add_button_vertices(-5.0f, -1.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 6);
+	Menu::add_button_vertices(1.0f, 5.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 7);
 
 	//Furniture Menu
-	addButtonVertices(-5.0f, -1.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 0);
-	addButtonVertices(1.0f, 5.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 1);
-	addButtonVertices(-5.0f, -1.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 2);
-	addButtonVertices(1.0f, 5.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 3);
-	addButtonVertices(-5.0f, -1.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 4);
-	addButtonVertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 5);
+	Menu::add_button_vertices(-5.0f, -1.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 0);
+	Menu::add_button_vertices(1.0f, 5.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 1);
+	Menu::add_button_vertices(-5.0f, -1.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 2);
+	Menu::add_button_vertices(1.0f, 5.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 3);
+	Menu::add_button_vertices(-5.0f, -1.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 4);
+	Menu::add_button_vertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 5);
 }
-
 
 ///Keep in main
 void setAxes()
@@ -821,10 +757,9 @@ void setAxes()
 }
 
 ///Set the VAO, VBOS for the vertices, UVs and the normals. Move to menu and then refactor
+///todo move the menu class
 void setVBOs()
-{
-	setAxes();
-	//Menus
+{	//Menus
 	createMenuVertices();
 	glGenVertexArrays(3, menuVAOs);
 	glGenBuffers(3, menuVBOs);
@@ -963,7 +898,7 @@ void renderAxe(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
 int main()
 {		
 	main_room.set_room_size();
-	//main_room = Room(room_dimensions, objects);
+	Menu menu();
 
 	if (-1 == windowSetup()) {
 		return -1;
@@ -1005,7 +940,7 @@ int main()
 	objects[tempCeiling]->scale(objects, vec3(room_dimensions.x, 2, room_dimensions.y));
 	objects[tempCeiling]->texture_number = 4;
 
-
+	setAxes();
 	setVBOs();
 	triangle_scale = glm::vec3(1.0f);	
 
@@ -1015,7 +950,7 @@ int main()
 	camera_pos_addr = glGetUniformLocation(shaderProgram, "view_pos");
 	texture_number = glGetUniformLocation(shaderProgram, "texture_number");
 
-	//Necessary for lighthing
+	//Necessary for lighting
 	light_colour_loc = glGetUniformLocation(shaderProgram, "light_colour");
 	specular_strength_loc = glGetUniformLocation(shaderProgram, "specular_strength");
 	light_position_loc = glGetUniformLocation(shaderProgram, "light_position");
@@ -1028,7 +963,7 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
+		// Check if any events have been activaited (key pressed, mouse moved etc.) and call corresponding response functions
 		processInput(window);
 		glfwPollEvents();
 		
@@ -1085,7 +1020,7 @@ int main()
 		else
 		{		
 			//Draws the menu
-			//TODO needs be refacatored
+			//TODO needs be refactored
 			glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
 			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
 			glm::mat4 menu_model_matrix = glm::mat4(1.0f);

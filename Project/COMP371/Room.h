@@ -16,7 +16,7 @@ public:
 
 	void set_room_size();
 
-	int add_furniture(const char* type, glm::vec3 position);
+	int add_furniture(const char* type, glm::vec3 const& position);
 
 	void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id);
 
