@@ -11,30 +11,6 @@ Room::Room(glm::vec2&  dimensions, map<int, Furniture*>& room_objects) : room_di
 }
 
 
-//Adds a furniture object to the Object vector and returns the id.
-////TODO Move to room class
-//int addFurniture(const char * type, vec3 position)x
-//{
-//	Furniture *tempObject = new Furniture(0, type);
-//	tempObject->loadObjToMap(objects);
-//	objects[tempObject->id] = tempObject;
-//
-//	///----------------
-//	glGenVertexArrays(1, &objects[tempObject->id]->VAO);
-//
-//	glGenBuffers(1, &objects[tempObject->id]->vertices_VBO);
-//	glGenBuffers(1, &objects[tempObject->id]->normals_VBO);
-//	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
-//
-//
-//	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id);
-//	glBindVertexArray(0);
-//
-//	objects[tempObject->id]->translate(objects, position);
-//
-//	return tempObject->id;
-//}
-
 ///Takes in the dimensions of the rooms from the user.
 void Room::set_room_size()
 {
