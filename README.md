@@ -1,5 +1,4 @@
-# COMP371
-Comp 371 Group Assignment.
+GraphicsEngine
 Report document [here](https://docs.google.com/document/d/1g92dKkl_skenO66iRo6fSTeJ3uzsULvn_BqmgtTsltA/edit?usp=sharing).
 
 ## Controls:
@@ -29,8 +28,8 @@ Report document [here](https://docs.google.com/document/d/1g92dKkl_skenO66iRo6fS
 ## Members:
 * Bruce Edouard Brazier
 * Emili Vasseva
-* Sean Marcoux (Inactive)
-* William Leclerc (Inactive)
+* Sean Marcoux
+* William Leclerc
 
 
 ## External Sources
