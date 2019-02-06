@@ -1,4 +1,5 @@
-GraphicsEngine
+Graphics Engine
+
 
 
 ## Controls:
@@ -28,8 +29,9 @@ GraphicsEngine
 ## Members:
 * Bruce Edouard Brazier
 * Emili Vasseva
-* Sean Marcoux
-* William Leclerc
+* Sean Marcoux (Inactive)
+* William Leclerc (Inactive)
+
 
 
 ## External Sources

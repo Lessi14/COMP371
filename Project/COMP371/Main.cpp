@@ -1,5 +1,6 @@
 //example skeleton code
 //modified from http://learnopengl.com/
+//Cheat sheet https://docs.google.com/document/d/1HFq4VXfPo2oeueri5UE0L6Wm-cq9jWYnxcyuwUh6XMs/edit?usp=sharing
 
 #include "stdafx.h"
 
@@ -16,10 +17,11 @@
 #include "stb_image.h"
 #include <map>;
 #include "camera.h"
-#include "Object.h"
+#include "Furniture.h"
 #include "UtilClass.h"
 #include "LightSource.h"
-#include <time.h>
+#include "Room.h"
+#include "Menu.h"
 
 using namespace std;
 
@@ -30,10 +32,6 @@ glm::vec3 camera_position;
 glm::vec3 triangle_scale;
 
 glm::vec3 camera_pos = vec3(0, 0, 0);
-//glm::vec3 light_color = vec3(0, 0, 0);
-//float specular_strength = 0.0f;
-//glm::vec3 light_position = vec3(0, 0, 0);
-//float ambient_strength = 0.0f;
 
 glm::mat4 projection_matrix;
 glm::mat4 view_matrix;
@@ -42,16 +40,16 @@ glm::mat4 model_matrix;
 vector<LightSource> lights;
 
 glm::mat4 menuViewMatrix;
-glm::vec3 default_furniture_location(0.0f, 0.01f, 0.0f);
 
 std::vector<glm::vec3> menuVertices[3];
 std::vector<glm::vec2> menuUVs[3];
 
 //load and create a texture
-unsigned int texture0, texture1, texture2, texture3, texture_menu_bed, texture_menu_back, texture_menu_cabinet, texture_menu_coffee_table, texture_menu_toilet, texture_menu_torchere, texture_menu_wall_item, texture_menu_furniture, texture_menu_wallpaper;
+unsigned int texture0, texture1, texture2, texture3, texture_menu_bed, texture_menu_back, texture_menu_cabinet, texture_menu_coffee_table;
+unsigned int texture_menu_toilet, texture_menu_torchere, texture_menu_wall_item, texture_menu_furniture, texture_menu_wallpaper;
 
-map<int, Object*> objects;
-map<int, Object*> buttonObjects[3];
+map<int, Furniture*> objects;
+map<int, Furniture*> buttonObjects[3];
 
 //Which mode to render in between point, lines, and triangles
 int objRenderMode = GL_TRIANGLES;
@@ -66,6 +64,7 @@ double lastClickY = 0;
 double last_cursor_x = 0;
 double last_cursor_y = 0;
 GLuint currentButton = -1;
+
 //Global variable for the shaders
 GLuint vertexShader;
 GLuint fragmentShader;
@@ -85,30 +84,16 @@ GLuint ambient_strength_loc;
 //Global variable for the window
 GLFWwindow* window;
 
-const char* INVERTED_FLOOR_NAME = "Objects/inverted_normal_floor.obj";
-const char* INVERTED_CEILING_NAME = "Objects/inverted_normal_ceiling.obj";
-const char* INVERTED_WALLS_NAME = "Objects/inverted_normal_walls.obj";
-const char* BED1_NAME = "Objects/bed1.obj";
-const char* BED1BOX_NAME = "Objects/bed2.obj";
-const char* CABINET3_NAME = "Objects/cabinet3.obj";
-const char* COFFEE_TABLE1_NAME = "Objects/coffee_table1.obj";
-const char* TOILET_NAME = "Objects/toilet.obj";
-const char* TORCHERE1_NAME = "Objects/torchere1.obj";
-const char* PAINTING_NAME = "Objects/painting.obj";
-const char* WALL = "Objects/wall.obj";
+glm::vec2 room_dimensions = glm::vec2(0.0, 0.0);
+Room main_room(room_dimensions,objects);
 
 int selectedObject = -1;
 GLuint menuVAOs[3], menuVBOs[3], menuUVVBOs[3];
-
-glm::vec2 roomDimensions;
 
 GLuint axes_VBO, axesColorsVBO;
 GLuint axes_VAO;
 
 GLuint VAO_Coffee, vertices_VBO_Coffee, normals_VBO_Coffee, uvs_VBO_Coffee;
-
-vector<int> randomXs;
-vector<int> randomYs;
 
 vector<int> paintingsList;
 
@@ -178,12 +163,14 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	//cout << modifier << endl;	
 	if (abs(modifier) < 0.30)
 	{
+		///todo this is magnificent
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
 			bool checkIfItCollides = objects[selectedObject]->isNextACollision(objects, vec3(modifier, 0.0f, 0.0f), 0, 1); //0 and 1 stands for minX and maxX
 			
 			float orientation = objects[selectedObject]->angle;
 
 			if (paintingsList.size() > 0) {
+				//what about !empty()
 				for (int i = 0; i < paintingsList.size(); i++)
 				{
 					if (!checkIfItCollides && selectedObject > 2)
@@ -192,12 +179,12 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 						{
 							objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
 
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.x*-1 + 0.5f) >= objects[selectedObject]->getListOfMaxAndMin().at(0) ) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.x*-1 + 0.5f) >= objects[selectedObject]->getListOfMaxAndMin().at(0) ) {
 								
 								objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));
 								objects[selectedObject]->translate(objects, vec3(-0.9, 0.0f, -1.55f));
 							}
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.x - 0.5f) <= objects[selectedObject]->getListOfMaxAndMin().at(1)) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.x - 0.5f) <= objects[selectedObject]->getListOfMaxAndMin().at(1)) {
 
 									objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
 									objects[selectedObject]->translate(objects, vec3(0.9, 0.0f, -1.55f));
@@ -209,12 +196,12 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 						{
 							objects[selectedObject]->translate(objects, vec3(modifier, 0.0f, 0.0f));
 
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.x*-1 + 0.5f) >= objects[selectedObject]->getListOfMaxAndMin().at(0)) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.x*-1 + 0.5f) >= objects[selectedObject]->getListOfMaxAndMin().at(0)) {
 
 								objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
 								objects[selectedObject]->translate(objects, vec3(-0.9, 0.0f, 1.55f));
 							}
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.x - 0.5f) <= objects[selectedObject]->getListOfMaxAndMin().at(1)) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.x - 0.5f) <= objects[selectedObject]->getListOfMaxAndMin().at(1)) {
 
 								objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));
 								objects[selectedObject]->translate(objects, vec3(0.9, 0.0f, 1.55f));
@@ -256,12 +243,12 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 						if (paintingsList.at(i) == selectedObject && (orientation == 0)) {
 							objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
 
-							if (paintingsList.at(i) == selectedObject && roomDimensions.y - 0.5f <= objects[selectedObject]->getListOfMaxAndMin().at(5)) {
+							if (paintingsList.at(i) == selectedObject && room_dimensions.y - 0.5f <= objects[selectedObject]->getListOfMaxAndMin().at(5)) {
 								
 									objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));
 									objects[selectedObject]->translate(objects, vec3(-1.55, 0.0f, 0.9));
 							}
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.y*-1 + 0.5f) > objects[selectedObject]->getListOfMaxAndMin().at(4)) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.y*-1 + 0.5f) > objects[selectedObject]->getListOfMaxAndMin().at(4)) {
 
 									objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
 									objects[selectedObject]->translate(objects, vec3(-1.55, 0.0f, -0.9f));
@@ -271,12 +258,12 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 						else if (paintingsList.at(i) == selectedObject && (orientation == 180)) {
 							objects[selectedObject]->translate(objects, vec3(0.0f, 0.0f, modifier));
 
-							if (paintingsList.at(i) == selectedObject && roomDimensions.y - 0.5f <= objects[selectedObject]->getListOfMaxAndMin().at(5)) {
+							if (paintingsList.at(i) == selectedObject && room_dimensions.y - 0.5f <= objects[selectedObject]->getListOfMaxAndMin().at(5)) {
 
 									objects[selectedObject]->rotate(objects, -90, vec3(0, 1, 0));
 									objects[selectedObject]->translate(objects, vec3(1.55, 0.0f, 0.9f));
 							}
-							if (paintingsList.at(i) == selectedObject && (roomDimensions.y*-1 + 0.5f) > objects[selectedObject]->getListOfMaxAndMin().at(4)) {
+							if (paintingsList.at(i) == selectedObject && (room_dimensions.y*-1 + 0.5f) > objects[selectedObject]->getListOfMaxAndMin().at(4)) {
 									
 								objects[selectedObject]->rotate(objects, 90, vec3(0, 1, 0));						
 								objects[selectedObject]->translate(objects, vec3(1.55, 0.0f, -0.9f));
@@ -304,132 +291,22 @@ void mouse_motion_callback(GLFWwindow* window, double xpos, double ypos)
 	lastClickY = ypos;
 }
 
-///Extractedd the method which creates the vbos.
-void setIndividualBuffers(GLuint localVAO, GLuint verticesVBO, GLuint normalsVBO, GLuint uvsVBO, int id)
-{
-	glGenBuffers(1, &verticesVBO);
-	glGenBuffers(1, &normalsVBO);
-	glGenBuffers(1, &uvsVBO);
-
-	glBindVertexArray(localVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, verticesVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->vertices.size() * sizeof(glm::vec3), &objects[id]->vertices.front(), GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->normals.size() * sizeof(glm::vec3), &objects[id]->normals.front(), GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(1);
-
-	glBindBuffer(GL_ARRAY_BUFFER, uvsVBO);
-	glBufferData(GL_ARRAY_BUFFER, objects[id]->uvs.size() * sizeof(glm::vec3), &objects[id]->uvs.front(), GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), (GLvoid*)0);
-	glEnableVertexAttribArray(2);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-
-bool isUnique(int n, vector<int> list) {
-
-	for (int i = 0; i < list.size(); i++) {
-		if (n == list.at(i)) {
-			return false;
-		}
-	}
-	return true;
-}
-
-vec3 randomLocationGenerator(int objectId) {
-	glm::vec3 randomLocation = vec3(-1000, -1000, 1000);
-	
-	int randomX = 0, randomY = 0;
-
-	int startingPointX = ((roomDimensions.x/2) - 0.1)*10;
-	int startingPointY = ((roomDimensions.y/2) - 0.1)*10;
-	int endingPositionX = (roomDimensions.x + 0.1) * 10;
-	int endingPositionY = (roomDimensions.y + 0.1) * 10;
-
-	int overAllCounter = 0;
-
-	srand(time(0));
-	
-
-	while (overAllCounter != 5000)
-	{
-
-		randomX = rand() % endingPositionX - startingPointX;
-
-		while (!isUnique(randomX, randomXs))
-		{
-			randomX = rand() % endingPositionX - startingPointX;
-		}
-
-
-		randomY = rand() % endingPositionY - startingPointY;
-
-		while (!isUnique(randomY, randomYs))
-		{
-			randomY = rand() % endingPositionY - startingPointY;
-		}
-
-
-		randomLocation = vec3(randomX*0.1, 0.01f, randomY*0.1);
-
-		bool checkIfItCollidesX = objects[objectId]->isNextACollision(objects, randomLocation, 0, 1); //0 and 1 stands for minX and maxX
-		bool checkIfItCollidesY = objects[objectId]->isNextACollision(objects, randomLocation, 2, 3); //2 and 3 stands for minY and maxY
-		bool checkIfItCollidesZ = objects[objectId]->isNextACollision(objects, randomLocation, 4, 5); //4 and 5 stands for minZ and 
-
-		if (!checkIfItCollidesX && !checkIfItCollidesY && !checkIfItCollidesZ)
-		{
-			randomXs.push_back(randomX);
-			randomYs.push_back(randomY);
-			break;
-		}
-
-		randomLocation = vec3(-1000, -1000, 1000);
-		overAllCounter++;
-	}
-
-	return randomLocation;
-}
-
-int addFurniture(const char * type, vec3 position)
-{
-	Object *tempObject = new Object(0, type);
-	tempObject->loadObjToMap(objects);
-	objects[tempObject->id] = tempObject;
-
-	///----------------
-	glGenVertexArrays(1, &objects[tempObject->id]->VAO);
-
-	glGenBuffers(1, &objects[tempObject->id]->vertices_VBO);
-	glGenBuffers(1, &objects[tempObject->id]->normals_VBO);
-	glGenBuffers(1, &objects[tempObject->id]->uvs_VBO);
-	
-
-	setIndividualBuffers(objects[tempObject->id]->VAO, objects[tempObject->id]->vertices_VBO, objects[tempObject->id]->normals_VBO, objects[tempObject->id]->uvs_VBO, tempObject->id);
-	glBindVertexArray(0);
-
-	objects[tempObject->id]->translate(objects, position);
-
-	return tempObject->id;
-}
-
+///Helper method which changes the menu mode.
 void close_menu()
 {
 	menu_open = false;
 	menu_mode = 0;
 }
 
+///todo what is this>?
 void set_object_texture(int texture)
 {
 	if (selectedObject >= 0)
 		objects[selectedObject]->texture_number = texture;
+	close_menu();
 }
 
+///IO
 void handle_button_click(int buttonId)
 {
 	vec3 randomLocation;
@@ -458,42 +335,34 @@ void handle_button_click(int buttonId)
 		//Metal 1
 		case 0:
 			set_object_texture(0);
-			close_menu();
 			break;
 		//Metal 2
 		case 1:
 			set_object_texture(1);
-			close_menu();
 			break;
 		//Wood 1
 		case 2:
 			set_object_texture(2);
-			close_menu();
 			break;
 		//Wood 2
 		case 3:
 			set_object_texture(3);
-			close_menu();
 			break;
 		//Red
 		case 4:
 			set_object_texture(4);
-			close_menu();
 			break;
 		//Green
 		case 5:
 			set_object_texture(5);
-			close_menu();
 			break;
 		//Blue
 		case 6:
 			set_object_texture(6);
-			close_menu();
 			break;
 		//Yellow
 		case 7:
 			set_object_texture(7);
-			close_menu();
 			break;
 		}
 		break;
@@ -503,82 +372,34 @@ void handle_button_click(int buttonId)
 		int furniture;
 		//Bed
 		case 0:
-				furniture = addFurniture(BED1_NAME, default_furniture_location);
-				randomLocation = randomLocationGenerator(furniture);
-				
-				if (randomLocation != vec3(-1000, -1000, 1000)){
-					objects[furniture]->texture_number = 1;
-					objects[furniture]->translate(objects, randomLocation);
-				}
-			else {
-				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
-				objects.erase(furniture);
-			}
+			//bed1_name
+			main_room.set_furniture(1, Furniture::BED1_NAME);
 			close_menu();
 			break;
 		//Cabinet
 		case 1:
-			furniture = addFurniture(CABINET3_NAME, default_furniture_location);
-			randomLocation = randomLocationGenerator(furniture);
-
-			if (randomLocation != vec3(-1000, -1000, 1000)) {
-				objects[furniture]->texture_number = 2;
-				objects[furniture]->translate(objects, randomLocation);
-			}
-			else {
-				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
-				objects.erase(furniture);
-			}
+			main_room.set_furniture(2, Furniture::CABINET3_NAME);
 			close_menu();
 			break;
 		//Coffee Table
 		case 2:
-			furniture = addFurniture(COFFEE_TABLE1_NAME, default_furniture_location);
-			randomLocation = randomLocationGenerator(furniture);
-
-			if (randomLocation != vec3(-1000, -1000, 1000)) {
-				objects[furniture]->texture_number = 2;
-				objects[furniture]->translate(objects, randomLocation);
-			}
-			else {
-				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
-				objects.erase(furniture);
-			}
+			main_room.set_furniture(2, Furniture::COFFEE_TABLE1_NAME);
 			close_menu();
 			break;
 		//Toilet
 		case 3:
-			furniture = addFurniture(TOILET_NAME, default_furniture_location);
-			randomLocation = randomLocationGenerator(furniture);
-
-			if (randomLocation != vec3(-1000, -1000, 1000)) {
-				objects[furniture]->texture_number = 1;
-				objects[furniture]->translate(objects, randomLocation);
-			}
-			else {
-				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
-				objects.erase(furniture);
-			}
+			main_room.set_furniture(2, Furniture::TOILET_NAME);
 			close_menu();
 			break;
 		//Lamp
 		case 4:
-			furniture = addFurniture(TORCHERE1_NAME, default_furniture_location);
-			randomLocation = randomLocationGenerator(furniture);
-
-			if (randomLocation != vec3(-1000, -1000, 1000)) {
-				objects[furniture]->texture_number = 1;
-				objects[furniture]->translate(objects, randomLocation);
-			}
-			else {
-				cout << "Cannot find a free spot to spawn a bed in the room" << endl;
-				objects.erase(furniture);
-			}
+			main_room.set_furniture(2, Furniture::TORCHERE1_NAME);
 			close_menu();
 			break;
 		//Painting
 		case 5:
-			furniture = addFurniture(PAINTING_NAME, vec3(roomDimensions.x, default_furniture_location.y, default_furniture_location.z));
+			///todo what is the difference here?
+			furniture = main_room.add_furniture(Furniture::PAINTING_NAME, vec3(room_dimensions.x, Room::default_furniture_location.y, Room::default_furniture_location.y));
 			objects[furniture]->texture_number = 1;
 			close_menu();
 			paintingsList.push_back(furniture);
@@ -588,6 +409,7 @@ void handle_button_click(int buttonId)
 	}
 }
 
+///IO
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
 	if (action == GLFW_PRESS)
@@ -629,7 +451,6 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 					//Object Selected
 					currentClosest = distanceT;
 					selectedObject = ent.second->id;
-
 				}
 			}
 			cout << selectedObject << endl;
@@ -643,9 +464,6 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 	//last click for x and y
 	lastClickX = xpos;
 	lastClickY = ypos;
-	double diffY = lastClickX - ypos;
-	double diffX = lastClickY - xpos;
-
 	switch (currentButton)
 	{
 	case GLFW_MOUSE_BUTTON_LEFT:
@@ -663,7 +481,7 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 
 }
 
-//This method will be called when the window is resized and will ensure the application displays properly
+///This method will be called when the window is resized and will ensure the application displays properly
 void window_resize_callback(GLFWwindow* window, int width, int height)
 {
 	WIDTH = width;
@@ -672,7 +490,7 @@ void window_resize_callback(GLFWwindow* window, int width, int height)
 	projection_matrix = glm::perspective(45.0f, (GLfloat)width / (GLfloat)height, 1.0f, 100.0f);
 }
 
-///Process input from the keyboard.
+///IO Process input from the keyboard.
 void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -699,7 +517,7 @@ void processInput(GLFWwindow *window)
 		camera.Reset();
 }
 
-///Key callabck
+///Key callback
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
 {
 	//std::cout << key << std::endl;
@@ -743,62 +561,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 		case GLFW_KEY_ENTER:
 			menu_open = !menu_open;
 			menu_mode = 0;
-			//if (menu_open)
-			//{
-				//glm::mat4 menuViewMatrix = lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
-				//glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
-				//glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
-				////cameraPositionWorldSpace += glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8);
-				//for (int i = 0; i < 3; i++)
-				//{
-				//	buttonObjects[0][i]->resetObjectModel(buttonObjects[0]);
-				//	buttonObjects[0][i]->translate(buttonObjects[0], cameraPositionWorldSpace);
-				//	buttonObjects[0][i]->translate(buttonObjects[0], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
-				//}
-				//for (int i = 0; i < 8; i++)
-				//{
-				//	buttonObjects[1][i]->resetObjectModel(buttonObjects[1]);
-				//	buttonObjects[1][i]->translate(buttonObjects[1], cameraPositionWorldSpace);
-				//	buttonObjects[1][i]->translate(buttonObjects[1], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
-				//}
-				//for (int i = 0; i < 6; i++)
-				//{
-				//	buttonObjects[2][i]->resetObjectModel(buttonObjects[2]);
-				//	buttonObjects[2][i]->translate(buttonObjects[2], cameraPositionWorldSpace);
-				//	buttonObjects[2][i]->translate(buttonObjects[2], glm::normalize(glm::vec3(0, 0, 1)) * glm::vec3(8));
-				//}
-			//}
 		default:
 			break;
 		}
 	}
 }
 
-///Set the size of the room.
-void setRoomSize() {
-	while (roomDimensions.x < 4 || roomDimensions.x > 30) {
-		std::cout << "Enter room width(x): " << std::endl;
-		std::cin >> roomDimensions.x;
-		if (roomDimensions.x < 4) {
-			std::cout << "Minimum accepted value is 4.0" << std::endl;
-		}
-		if (roomDimensions.x > 30) {
-			std::cout << "Maximum accepted value is 30.0" << std::endl;
-		}
-	}
-	while (roomDimensions.y < 4 || roomDimensions.y > 30) {
-		std::cout << "Enter room length(z): " << std::endl;
-		std::cin >> roomDimensions.y;
-		if (roomDimensions.y < 4) {
-			std::cout << "Minimum accepted value is 4.0" << std::endl;
-		}
-		if (roomDimensions.y > 30) {
-			std::cout << "Maximum accepted value is 30.0" << std::endl;
-		}
-	}
-}
-
-///Read the files and create the shaders. Create main  shader program.
+///Read the files and create the shaders. Create main shader program. Stays in main
 void setShaders()
 {
 	std::cout << "Setting Shaders..." << std::endl;
@@ -879,7 +648,7 @@ void setShaders()
 	std::cout << "Shaders Set." << std::endl;
 }
 
-///Set teh window component. Including height and width.
+///Set the window component. Including height and width. Main
 int windowSetup()
 {
 	std::cout << "Starting GLFW context, OpenGL 3.3" << std::endl;
@@ -891,7 +660,7 @@ int windowSetup()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create a GLFWwindow object that we can use for GLFW's functions
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Interior Furniture Layout Design - Team Catchphrase", nullptr, nullptr);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Interior Furniture Layout Design", nullptr, nullptr);
 	if (window == nullptr)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -905,7 +674,7 @@ int windowSetup()
 	glfwSetFramebufferSizeCallback(window, window_resize_callback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 
-	// tell GLFW to capture our mouse
+	//tell GLFW to capture our mouse
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); ----------------------------------------------------------------
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
@@ -920,65 +689,37 @@ int windowSetup()
 	}
 }
 
-void addButtonVertices(float leftX, float rightX, float bottomY, float topY, vector<glm::vec3> *vertices, vector<glm::vec2> *uvs, map<int, Object*> *buttonObjects, int id)
-{
-	vector<glm::vec3> tempVertices;
-	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
-	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
-	tempVertices.push_back(glm::vec3(rightX, bottomY, 0.01f));
-	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
-	tempVertices.push_back(glm::vec3(leftX, topY, 0.01f));
-	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
-	for (int i = 0; i<tempVertices.size(); i++)
-		(*vertices).push_back(tempVertices[i]);
-
-	tempVertices.push_back(glm::vec3(rightX, bottomY, 0.01f));
-	tempVertices.push_back(glm::vec3(rightX, topY, 0.01f));
-	tempVertices.push_back(glm::vec3(leftX, bottomY, 0.01f));
-	
-	vector<glm::vec2> tempUVs;
-	tempUVs.push_back(glm::vec2(1.0f, 1.0f));
-	tempUVs.push_back(glm::vec2(0.0f, 0.0f));
-	tempUVs.push_back(glm::vec2(0.0f, 1.0f));
-	tempUVs.push_back(glm::vec2(1.0f, 1.0f));
-	tempUVs.push_back(glm::vec2(1.0f, 0.0f));
-	tempUVs.push_back(glm::vec2(0.0f, 0.0f));
-	for (int i = 0; i<tempUVs.size(); i++)
-		(*uvs).push_back(tempUVs[i]);
-	const char *temp = "";
-	Object *newButton = new Object(id, temp, tempVertices, tempUVs, *buttonObjects);
-	(*buttonObjects)[id] = newButton;
-}
-
+///todo Move to menu class
 void createMenuVertices()
 {
 	//First Menu
 	//Furniture
-	addButtonVertices(-3.0f, 3.0f, 2.0f, 4.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 0);
+	Menu::add_button_vertices(-3.0f, 3.0f, 2.0f, 4.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 0);
 	//Wallpaper
-	addButtonVertices(-3.0f, 3.0f, -1.0f, 1.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 1);
+	Menu::add_button_vertices(-3.0f, 3.0f, -1.0f, 1.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 1);
 	//Back
-	addButtonVertices(-3.0f, 3.0f, -4.0f, -2.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 2);
+	Menu::add_button_vertices(-3.0f, 3.0f, -4.0f, -2.0f, &menuVertices[0], &menuUVs[0], &buttonObjects[0], 2);
 
 	//Texture Menu
-	addButtonVertices(-5.0f, -1.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 0);
-	addButtonVertices(1.0f, 5.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 1);
-	addButtonVertices(-5.0f, -1.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 2);
-	addButtonVertices(1.0f, 5.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 3);
-	addButtonVertices(-5.0f, -1.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 4);
-	addButtonVertices(1.0f, 5.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 5);
-	addButtonVertices(-5.0f, -1.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 6);
-	addButtonVertices(1.0f, 5.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 7);
+	Menu::add_button_vertices(-5.0f, -1.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 0);
+	Menu::add_button_vertices(1.0f, 5.0f, 3.0f, 4.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 1);
+	Menu::add_button_vertices(-5.0f, -1.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 2);
+	Menu::add_button_vertices(1.0f, 5.0f, 1.0f, 2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 3);
+	Menu::add_button_vertices(-5.0f, -1.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 4);
+	Menu::add_button_vertices(1.0f, 5.0f, -1.0f, 0.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 5);
+	Menu::add_button_vertices(-5.0f, -1.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 6);
+	Menu::add_button_vertices(1.0f, 5.0f, -3.0f, -2.0f, &menuVertices[1], &menuUVs[1], &buttonObjects[1], 7);
 
 	//Furniture Menu
-	addButtonVertices(-5.0f, -1.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 0);
-	addButtonVertices(1.0f, 5.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 1);
-	addButtonVertices(-5.0f, -1.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 2);
-	addButtonVertices(1.0f, 5.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 3);
-	addButtonVertices(-5.0f, -1.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 4);
-	addButtonVertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 5);
+	Menu::add_button_vertices(-5.0f, -1.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 0);
+	Menu::add_button_vertices(1.0f, 5.0f, 2.0f, 4.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 1);
+	Menu::add_button_vertices(-5.0f, -1.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 2);
+	Menu::add_button_vertices(1.0f, 5.0f, -1.0f, 1.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 3);
+	Menu::add_button_vertices(-5.0f, -1.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 4);
+	Menu::add_button_vertices(1.0f, 5.0f, -4.0f, -2.0f, &menuVertices[2], &menuUVs[2], &buttonObjects[2], 5);
 }
 
+///Keep in main
 void setAxes()
 {
 	//start axes
@@ -1015,11 +756,10 @@ void setAxes()
 	glBindVertexArray(0);
 }
 
-///Set the VAO, VBOS for the vertices, UVs and the normals.
+///Set the VAO, VBOS for the vertices, UVs and the normals. Move to menu and then refactor
+///todo move the menu class
 void setVBOs()
-{
-	setAxes();
-	//Menus
+{	//Menus
 	createMenuVertices();
 	glGenVertexArrays(3, menuVAOs);
 	glGenBuffers(3, menuVBOs);
@@ -1085,7 +825,7 @@ void setIndividualTexture(unsigned int *texture, char* filename)
 	stbi_image_free(data);
 }
 
-//Set the textures
+///Set the textures, stays in main
 void setTexture()
 {
 	setIndividualTexture(&texture0, "Textures/metal1.jpg");
@@ -1118,7 +858,7 @@ void setTexture()
 	glUniform1i(glGetUniformLocation(shaderProgram, "texture_menu_wallpaper"), 22);
 }
 
-///Renders the objects inside the main loop.
+///Renders the objects inside the main loop. Stays in main
 void render(int id, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 {
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(objects[id]->objectModel));
@@ -1137,8 +877,8 @@ void render(int id, vec3 camera_pos, GLuint VAO, GLuint tex_num)
 	glBindVertexArray(0);
 }
 
-//Second version of the render button for the axes.
-void render(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
+//Second version of the render button for the axes. Consider refactoring with the one above.
+void renderAxe(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
 {
 	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(model));
 	glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
@@ -1156,10 +896,9 @@ void render(mat4 model, vec3 camera_pos, GLuint VAO, vector<vec3> vertices)
 
 /// The MAIN function, from here we start the application and run the game loop
 int main()
-{
-	roomDimensions.x = 0;
-	roomDimensions.y = 0;
-	setRoomSize();
+{		
+	main_room.set_room_size();
+	Menu menu();
 
 	if (-1 == windowSetup()) {
 		return -1;
@@ -1188,19 +927,20 @@ int main()
 	LightSource l1 = LightSource(vec3(1.0f, 1.0f, 1.0f), 1.9f, vec3(0.0f, 3.0f, 0.0f), 0.35f);
 	lights.push_back(l1);
 	
-	int tempExtWalls = addFurniture(INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[tempExtWalls]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
+	//Set up walls, can be refactored
+	auto tempExtWalls = main_room.add_furniture(Furniture::INVERTED_WALLS_NAME, vec3(0.0f, 0.0f, 0.0f));
+	objects[tempExtWalls]->scale(objects, vec3(room_dimensions.x, 2, room_dimensions.y));
 	objects[tempExtWalls]->texture_number = 3;
 
-	int tempFloor = addFurniture(INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[tempFloor]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
-	objects[tempFloor]->texture_number = 1;
+	auto tempFloor = main_room.add_furniture(Furniture::INVERTED_FLOOR_NAME, vec3(0.0f, 0.0f, 0.0f));
+	objects[tempFloor]->scale(objects, vec3(room_dimensions.x, 2, room_dimensions.y));
+	objects[tempFloor]->texture_number = 1;	
 	
-	
-	int tempCeiling = addFurniture(INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
-	objects[tempCeiling]->scale(objects, vec3(roomDimensions.x, 2, roomDimensions.y));
-	objects[tempCeiling]->texture_number = 4;	
+	auto tempCeiling = main_room.add_furniture(Furniture::INVERTED_CEILING_NAME, vec3(0.0f, 0.0f, 0.0f));
+	objects[tempCeiling]->scale(objects, vec3(room_dimensions.x, 2, room_dimensions.y));
+	objects[tempCeiling]->texture_number = 4;
 
+	setAxes();
 	setVBOs();
 	triangle_scale = glm::vec3(1.0f);	
 
@@ -1210,7 +950,7 @@ int main()
 	camera_pos_addr = glGetUniformLocation(shaderProgram, "view_pos");
 	texture_number = glGetUniformLocation(shaderProgram, "texture_number");
 
-	//Necessary for lighthing
+	//Necessary for lighting
 	light_colour_loc = glGetUniformLocation(shaderProgram, "light_colour");
 	specular_strength_loc = glGetUniformLocation(shaderProgram, "specular_strength");
 	light_position_loc = glGetUniformLocation(shaderProgram, "light_position");
@@ -1223,7 +963,7 @@ int main()
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		// Check if any events have been activiated (key pressed, mouse moved etc.) and call corresponding response functions
+		// Check if any events have been activaited (key pressed, mouse moved etc.) and call corresponding response functions
 		processInput(window);
 		glfwPollEvents();
 		
@@ -1275,13 +1015,15 @@ int main()
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(view_matrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 			glUniform3fv(camera_pos_addr, 1, glm::value_ptr(camera_pos));
-			render(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
+			renderAxe(mat4(1.0f), camera_pos, axes_VAO, axesVertices);
 		}
 		else
-		{			
+		{		
+			//Draws the menu
+			//TODO needs be refactored
 			glm::mat4 inverseViewMatrix = glm::inverse(menuViewMatrix);
 			glm::vec3 cameraPositionWorldSpace = glm::vec3(inverseViewMatrix[3][0], inverseViewMatrix[3][1], inverseViewMatrix[3][2]);
-			glm::mat4 menu_model_matrix = mat4(1.0f);		
+			glm::mat4 menu_model_matrix = glm::mat4(1.0f);
 			glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(menu_model_matrix));
 			glUniformMatrix4fv(viewMatrixLoc, 1, GL_FALSE, glm::value_ptr(menuViewMatrix));
 			glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
@@ -1344,7 +1086,7 @@ int main()
 
 
 	//Garbage collection
-	map<int, Object*>::iterator itr = objects.begin();
+	map<int, Furniture*>::iterator itr = objects.begin();
 	while (itr != objects.end()) {
 	itr = objects.erase(itr);
 	}	

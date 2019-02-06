@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="LightSource.cpp">
+      <Filter>Engine\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Furniture.cpp">
+      <Filter>Room</Filter>
+    </ClCompile>
+    <ClCompile Include="Triangle.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="UtilClass.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="objloader.cpp">
+      <Filter>openGL Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image.cpp">
+      <Filter>openGL Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>openGL Dependencies</Filter>
+    </ClCompile>
+    <ClCompile Include="Room.cpp">
+      <Filter>Room</Filter>
+    </ClCompile>
+    <ClCompile Include="Menu.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="camera.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="LightSource.h">
+      <Filter>Engine\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="Furniture.h">
+      <Filter>Room</Filter>
+    </ClInclude>
+    <ClInclude Include="Triangle.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="UtilClass.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="objloader.hpp">
+      <Filter>openGL Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>openGL Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>openGL Dependencies</Filter>
+    </ClInclude>
+    <ClInclude Include="Room.h">
+      <Filter>Room</Filter>
+    </ClInclude>
+    <ClInclude Include="Menu.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
+    <None Include="fragment.shader" />
+    <None Include="glew32.dll" />
+    <None Include="glfw3.dll" />
+    <None Include="vertex.shader" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Room">
+      <UniqueIdentifier>{ff9a183c-ceaf-4413-80a2-09b97900e81c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Interface">
+      <UniqueIdentifier>{f63aca8b-0d03-42c6-8c34-c9e8082dc98c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{383ceb02-c642-4e0a-a376-58c4ad7792a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Light">
+      <UniqueIdentifier>{a61ebffb-d1c1-4c60-b8fb-f7646f535f34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="openGL Dependencies">
+      <UniqueIdentifier>{b7a3d280-edb3-46f9-9033-f10eed80a10c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
